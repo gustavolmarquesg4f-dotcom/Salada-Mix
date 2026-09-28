@@ -24,7 +24,7 @@ class MarketplaceDemoSeederTest extends TestCase
         $this->assertDatabaseCount('users', 3);
 
         $this->get(route('home'))->assertOk()
-            ->assertSee('Fone Bluetooth sem fio (DEMO)')
+            ->assertSee('Sérum facial vitamina C (DEMO)')
             ->assertSee('BelleStore (DEMO)');
         $this->getJson(route('api.catalog.offers.index', ['q' => 'vitamina C']))
             ->assertOk()->assertJsonPath('meta.total', 1)
