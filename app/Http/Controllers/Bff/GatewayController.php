@@ -67,7 +67,8 @@ class GatewayController extends Controller
         // Authorization comes from seller.member middleware, never from a seller_id payload.
         $membership = $seller->memberships()->where('user_id', $request->user()->id)
             ->where('status', 'active')->firstOrFail();
-        $offers = $seller->offers()->with(['product.category', 'stock'])->latest()->limit(25)->get();
+        $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:10000']]);
+        $offers = $seller->offers()->with(['product.category', 'stock'])->latest()->paginate(20);
 
         return response()->json(['data' => [
             'seller' => [
@@ -76,7 +77,7 @@ class GatewayController extends Controller
                 'status' => $seller->status,
                 'role' => $membership->role,
             ],
-            'offers' => $offers->map(fn ($offer) => [
+            'offers' => $offers->getCollection()->map(fn ($offer) => [
                 'id' => $offer->id,
                 'name' => $offer->product->name,
                 'sku' => $offer->sku,
@@ -86,6 +87,11 @@ class GatewayController extends Controller
                 'stock_reserved' => $offer->stock?->quantity_reserved ?? 0,
                 'review_status' => $offer->review_status,
             ])->values(),
+            'meta' => [
+                'total' => $offers->total(),
+                'current_page' => $offers->currentPage(),
+                'last_page' => $offers->lastPage(),
+            ],
             'capabilities' => [
                 'edit_catalog' => in_array($membership->role, ['owner', 'manager'], true)
                     && in_array($seller->status, ['approved', 'active'], true),

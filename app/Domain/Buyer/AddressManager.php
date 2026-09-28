@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\CustomerAddress;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AddressManager
 {
@@ -19,7 +20,13 @@ class AddressManager
     {
         return DB::transaction(function () use ($user, $data): CustomerAddress {
             User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
-            $isFirst = ! CustomerAddress::query()->where('user_id', $user->id)->exists();
+            $count = CustomerAddress::query()->where('user_id', $user->id)->count();
+
+            if ($count >= 20) {
+                throw ValidationException::withMessages(['address' => 'Limite de 20 endereços por conta atingido.']);
+            }
+
+            $isFirst = $count === 0;
             $makeDefault = $isFirst || ($data['is_default'] ?? false);
 
             if ($makeDefault) {
