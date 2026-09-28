@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\PromotePlatformAdmin;
 use App\Http\Middleware\EnsureSellerMember;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller.member' => EnsureSellerMember::class,
         ]);
     })
+    ->withCommands([PromotePlatformAdmin::class])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
-
