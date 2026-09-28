@@ -63,6 +63,26 @@ class BackendDelivery2Test extends TestCase
 
         $this->getJson(route('api.catalog.offers.index', ['q' => 'Loja SKUC']))
             ->assertOk()->assertJsonPath('meta.total', 1);
+
+        $this->getJson(route('api.catalog.offers.index', ['seller' => $a->seller_id]))
+            ->assertOk()->assertJsonPath('meta.total', 1);
+
+        $this->getJson(route('api.catalog.offers.index', ['sort' => 'recent']))
+            ->assertOk()->assertJsonPath('meta.total', 3);
+    }
+
+    public function test_sql_like_wildcards_in_search_are_literal(): void
+    {
+        $cat = $this->category('Moda', 'moda');
+        $offer = $this->offer($cat, 'Desconto 100% demo', 4990);
+        $this->offer($cat, 'Desconto 100x demo', 5990, 'active', 'approved', 10, 'OTHER');
+
+        $this->getJson(route('api.catalog.offers.index', ['q' => '100%']))
+            ->assertOk()->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id', $offer->id);
+
+        $this->getJson(route('api.catalog.offers.index', ['q' => '100_']))
+            ->assertOk()->assertJsonPath('meta.total', 0);
     }
 
     public function test_invalid_search_input_and_price_range_are_rejected(): void
