@@ -139,13 +139,17 @@ class SsoManager
             }
 
             if (! $user) {
-                $user = User::query()->create([
+                // Security-sensitive identity flags are force-filled explicitly instead of
+                // making them mass assignable on the User model.
+                $user = new User([
                     'name' => $name !== '' ? $name : Str::before($email, '@'),
                     'email' => $email,
-                    'email_verified_at' => $trustedVerifiedEmail ? now() : null,
                     'password' => Hash::make(Str::random(64)),
-                    'password_login_enabled' => false,
                 ]);
+                $user->forceFill([
+                    'email_verified_at' => $trustedVerifiedEmail ? now() : null,
+                    'password_login_enabled' => false,
+                ])->save();
                 $created = true;
             }
 

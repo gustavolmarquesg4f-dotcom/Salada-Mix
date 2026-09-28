@@ -59,10 +59,10 @@ class SsoPlatformTest extends TestCase
             'sso.intent' => 'login',
         ])->get(route('sso.callback', 'google'));
 
-        $response->assertRedirect(route('verification.notice'));
+        $response->assertRedirect(route('home', absolute: false));
         $user = User::query()->where('email', 'cliente@example.test')->firstOrFail();
         $this->assertAuthenticatedAs($user);
-        $this->assertFalse($user->hasVerifiedEmail());
+        $this->assertTrue($user->hasVerifiedEmail());
         $this->assertFalse($user->password_login_enabled);
         $this->assertDatabaseHas('social_identities', [
             'user_id' => $user->id,
