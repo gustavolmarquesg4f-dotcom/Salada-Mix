@@ -31,8 +31,8 @@
             <img src="{{ asset('assets/salada/salada-mix-logo.svg') }}" alt="Salada Mix" width="178" height="36">
         </a>
         <form class="sm-search" method="get" action="{{ route('storefront.search') }}" role="search">
-            <label class="sr-only" for="sm-global-search">Buscar produtos, marcas ou lojas</label>
-            <input id="sm-global-search" name="q" type="search" value="{{ request()->routeIs('storefront.search') ? request()->query('q', '') : '' }}" maxlength="100" placeholder="Busque produtos, marcas ou lojas">
+            <label class="sr-only" for="sm-global-search">Buscar produtos ou lojas</label>
+            <input id="sm-global-search" name="q" type="search" value="{{ request()->routeIs('storefront.search') ? request()->query('q', '') : '' }}" maxlength="100" placeholder="Busque produtos ou lojas">
             <button type="submit" aria-label="Buscar produtos"><x-salada.icon name="search" size="21" /><span>Buscar</span></button>
         </form>
         <nav class="sm-actions" aria-label="Acesso rápido">
