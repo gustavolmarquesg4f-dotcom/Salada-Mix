@@ -16,9 +16,10 @@ class BffResponseHeaders
             $response->headers->set('Cache-Control', 'no-store, private');
             $response->headers->set('X-Content-Type-Options', 'nosniff');
             $response->headers->set('Vary', 'Cookie', false);
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+            $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
         }
 
         return $response;
     }
 }
-

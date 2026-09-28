@@ -5,6 +5,7 @@ use App\Console\Commands\ResetAdminMfa;
 use App\Http\Middleware\EnsureSellerMember;
 use App\Http\Middleware\EnsureAdminMfa;
 use App\Http\Middleware\BffResponseHeaders;
+use App\Http\Middleware\BffRequestContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller.member' => EnsureSellerMember::class,
             'admin.mfa' => EnsureAdminMfa::class,
         ]);
-        $middleware->web(append: [BffResponseHeaders::class]);
+        $middleware->web(append: [BffRequestContext::class, BffResponseHeaders::class]);
     })
     ->withCommands([PromotePlatformAdmin::class, ResetAdminMfa::class])
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -7,6 +7,7 @@ use App\Domain\Checkout\CheckoutPreview;
 use App\Domain\Catalog\Presenters\PublicOfferData;
 use App\Domain\Catalog\Queries\PublicCatalog;
 use App\Domain\Wishlist\WishlistManager;
+use App\Domain\Identity\SsoManager;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Seller;
@@ -128,4 +129,3 @@ class GatewayController extends Controller
         ]]);
     }
 }
-

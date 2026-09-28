@@ -34,6 +34,14 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(120)->by($request->user()?->id ?: $request->ip())
         );
 
+        RateLimiter::for('bff-write', fn (Request $request) =>
+            Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('sso', fn (Request $request) =>
+            Limit::perMinute(12)->by(($request->user()?->id ?: 'guest').'|'.$request->ip())
+        );
+
         ViewFacade::composer('components.salada.header', function (View $view): void {
             $view->with('navCategories', Category::query()
                 ->where('is_active', true)

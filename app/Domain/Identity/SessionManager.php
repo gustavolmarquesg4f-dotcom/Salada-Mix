@@ -39,10 +39,17 @@ class SessionManager
         ])->all();
     }
 
-    public function revoke(Request $request, string $fingerprint, string $currentPassword): bool
+    public function revoke(Request $request, string $fingerprint, ?string $currentPassword, bool $recentSso = false): bool
     {
-        if (! Hash::check($currentPassword, $request->user()->password)) {
-            throw ValidationException::withMessages(['current_password' => 'Senha atual incorreta.']);
+        $user = $request->user();
+        $passwordAuthorized = $user->password_login_enabled
+            && $currentPassword
+            && Hash::check($currentPassword, $user->password);
+
+        if (! $passwordAuthorized && ! $recentSso) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Confirme sua senha ou autentique-se novamente pelo SSO.',
+            ]);
         }
 
         $rows = DB::table($this->table())->where('user_id', $request->user()->id)
@@ -72,4 +79,3 @@ class SessionManager
         }
     }
 }
-
