@@ -48,7 +48,8 @@ class MfaManager
         return DB::transaction(function () use ($user, $result): array {
             $locked = User::query()->lockForUpdate()->findOrFail($user->id);
 
-            if ($locked->mfa_confirmed_at || ! $locked->mfa_pending_secret) {
+            if ($locked->mfa_confirmed_at || ! $locked->mfa_pending_secret
+                || ! hash_equals($user->mfa_pending_secret, $locked->mfa_pending_secret)) {
                 throw ValidationException::withMessages(['code' => 'Configuração já utilizada.']);
             }
 
@@ -115,7 +116,7 @@ class MfaManager
     /** @return array<int, string> */
     public function regenerateRecoveryCodes(User $user, string $code): array
     {
-        if (! $user->mfa_confirmed_at || ! $user->mfa_secret) {
+        if ($user->platform_role !== 'admin' || ! $user->mfa_confirmed_at || ! $user->mfa_secret) {
             abort(403);
         }
 
