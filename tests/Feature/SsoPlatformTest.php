@@ -40,14 +40,19 @@ class SsoPlatformTest extends TestCase
 
     public function test_verified_google_identity_creates_verified_sso_only_account_without_storing_tokens(): void
     {
-        Socialite::fake('google', SocialiteUser::fake([
+        $googleProfile = SocialiteUser::fake([
+            'id' => 'google-123',
+            'name' => 'Cliente Google',
+            'email' => 'cliente@example.test',
+            'token' => 'must-not-be-persisted',
+            'refreshToken' => 'must-not-be-persisted-either',
+        ])->setRaw([
             'id' => 'google-123',
             'name' => 'Cliente Google',
             'email' => 'cliente@example.test',
             'email_verified' => true,
-            'token' => 'must-not-be-persisted',
-            'refreshToken' => 'must-not-be-persisted-either',
-        ]));
+        ]);
+        Socialite::fake('google', $googleProfile);
 
         $response = $this->withSession([
             'sso.provider' => 'google',
@@ -77,12 +82,16 @@ class SsoPlatformTest extends TestCase
     public function test_verified_google_email_can_safely_link_existing_local_account(): void
     {
         $user = User::factory()->create(['email' => 'same@example.test']);
-        Socialite::fake('google', SocialiteUser::fake([
+        $existingGoogle = SocialiteUser::fake([
             'id' => 'google-existing',
             'email' => 'same@example.test',
             'name' => 'Same User',
+        ])->setRaw([
+            'id' => 'google-existing',
+            'email' => 'same@example.test',
             'email_verified' => true,
-        ]));
+        ]);
+        Socialite::fake('google', $existingGoogle);
 
         $this->withSession(['sso.provider' => 'google', 'sso.intent' => 'login'])
             ->get(route('sso.callback', 'google'))

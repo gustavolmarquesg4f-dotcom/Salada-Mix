@@ -18,6 +18,33 @@ use Illuminate\Support\Facades\DB;
 
 class GatewayController extends Controller
 {
+    public function meta(SsoManager $sso): JsonResponse
+    {
+        return response()->json(['data' => [
+            'api_version' => 1,
+            'application' => 'salada-mix',
+            'request_id' => request()->attributes->get('request_id'),
+            'auth' => [
+                'session_cookie' => true,
+                'csrf_required_for_writes' => true,
+                'sso_providers' => $sso->enabledProviders(),
+                'admin_mfa_required' => true,
+            ],
+            'features' => [
+                'catalog' => true,
+                'cart' => true,
+                'wishlist' => true,
+                'seller_onboarding' => true,
+                'seller_catalog' => true,
+                'addresses' => true,
+                'checkout_preview' => true,
+                'checkout_enabled' => false,
+                'payments_enabled' => false,
+                'shipping_quotes_enabled' => false,
+            ],
+        ]]);
+    }
+
     /**
      * Same-origin BFF: one public snapshot with no direct table access from the browser.
      * No billing operations are possible through this gateway.
