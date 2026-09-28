@@ -39,7 +39,7 @@ vm.runInContext(js,ctx,{filename:"preview/assets/app.js"});
 const display=()=>element("conteudo").innerHTML;
 const go=hash=>{ctx.location.hash=hash;ctx.window.hashchange();};
 assert.match(display(),/Seu mix\. Seu estilo\. Tudo num só lugar\./);
-assert.match(display(),/Fone Bluetooth sem fio \(DEMO\)/);
+assert.match(display(),/Sérum facial vitamina C \(DEMO\)/);
 assert.match(display(),/sm-home-hero/);
 go("#/buscar");
 assert.match(display(),/Refinar busca/);
