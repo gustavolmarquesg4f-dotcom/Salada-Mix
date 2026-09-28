@@ -25,7 +25,7 @@ class BffIdentityTest extends TestCase
             ->assertJsonPath('data.authenticated', false);
         $this->getJson(route('bff.buyer'))->assertUnauthorized();
         $this->getJson(route('bff.cart.index'))->assertUnauthorized();
-        $this->getJson(route('bff.admin'))->assertUnauthorized();
+        $this->getJson(route('bff.admin.index'))->assertUnauthorized();
     }
 
     public function test_registration_and_verification_boundary(): void

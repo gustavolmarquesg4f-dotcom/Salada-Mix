@@ -28,7 +28,7 @@ class AdminMfaTest extends TestCase
         $admin = $this->admin();
         $this->actingAs($admin)->get(route('admin.sellers.index'))
             ->assertRedirect(route('security.mfa.show'));
-        $this->actingAs($admin)->getJson(route('bff.admin'))->assertForbidden()
+        $this->actingAs($admin)->getJson(route('bff.admin.index'))->assertForbidden()
             ->assertJsonPath('code', 'mfa_enrollment_required');
 
         $this->actingAs($admin)->postJson(route('bff.auth.mfa.enroll'), [
@@ -48,12 +48,12 @@ class AdminMfaTest extends TestCase
         $this->assertFalse(in_array($recovery, $admin->fresh()->mfa_recovery_codes, true));
         $this->assertTrue(Hash::check($recovery, $admin->fresh()->mfa_recovery_codes[0]));
 
-        $this->actingAs($admin)->getJson(route('bff.admin'))->assertOk()
+        $this->actingAs($admin)->getJson(route('bff.admin.index'))->assertOk()
             ->assertJsonPath('data.features.checkout_enabled', false);
         $this->actingAs($admin)->get(route('admin.sellers.index'))->assertOk();
 
         $this->withSession(['admin_mfa_user_id' => null])
-            ->getJson(route('bff.admin'))->assertForbidden()
+            ->getJson(route('bff.admin.index'))->assertForbidden()
             ->assertJsonPath('code', 'mfa_challenge_required');
 
         $this->travel(31)->seconds();
@@ -78,7 +78,7 @@ class AdminMfaTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user)->withSession(['admin_mfa_user_id' => $user->id])
-            ->getJson(route('bff.admin'))->assertForbidden();
+            ->getJson(route('bff.admin.index'))->assertForbidden();
 
         $this->actingAs($user)->postJson(route('bff.auth.mfa.enroll'), [
             'current_password' => 'password',
