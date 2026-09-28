@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\PublicCatalogController;
 use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Bff\AccountController;
+use App\Http\Controllers\Bff\AdminModerationController;
 use App\Http\Controllers\Bff\AddressController;
 use App\Http\Controllers\Bff\GatewayController;
 use App\Http\Controllers\Bff\OfferSubmissionController;
@@ -77,7 +78,15 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
             Route::post('/offers', [OfferSubmissionController::class, 'store'])
                 ->middleware('throttle:20,1')->name('offers.store');
         });
-        Route::get('/admin', [GatewayController::class, 'admin'])
-            ->middleware(['can:review-sellers', 'admin.mfa'])->name('admin');
+        Route::prefix('admin')->middleware(['can:review-sellers', 'admin.mfa'])
+            ->name('admin.')->group(function (): void {
+                Route::get('/', [GatewayController::class, 'admin'])->name('index');
+                Route::get('/sellers', [AdminModerationController::class, 'sellers'])->name('sellers.index');
+                Route::post('/sellers/{seller}/decision', [AdminModerationController::class, 'decideSeller'])
+                    ->middleware('throttle:15,1')->name('sellers.decide');
+                Route::get('/offers', [AdminModerationController::class, 'offers'])->name('offers.index');
+                Route::post('/offers/{offer}/decision', [AdminModerationController::class, 'decideOffer'])
+                    ->middleware('throttle:15,1')->name('offers.decide');
+            });
     });
 });
