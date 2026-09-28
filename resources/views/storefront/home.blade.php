@@ -7,7 +7,7 @@
         <h1 id="sm-hero-title">Seu mix. Seu estilo. Tudo num só lugar.</h1>
         <p>Beleza, moda, tecnologia, casa e muito mais. Estamos reunindo empresas e preparando uma experiência de compra para todos.</p>
         <div class="sm-hero-ctas">
-            <a class="sm-btn sm-btn-primary" href="#departamentos">Explorar departamentos</a>
+            <a class="sm-btn sm-btn-primary" href="{{ route('storefront.search') }}">Explorar produtos</a>
             <a class="sm-btn sm-btn-secondary" href="{{ route('seller.apply') }}">Quero vender</a>
         </div>
     </div>
@@ -18,7 +18,7 @@
     </div>
 </section>
 <section id="departamentos" aria-labelledby="departamentos-titulo">
-    <div class="sm-section-heading"><h2 id="departamentos-titulo">Explore os departamentos</h2><p>Um mundo de possibilidades no seu mix</p></div>
+    <div class="sm-section-heading"><h2 id="departamentos-titulo">Explore os departamentos</h2><a href="{{ route('storefront.search') }}">Ver todos os produtos →</a></div>
     <div class="sm-category-grid">
         @forelse ($categories as $category)
             <a class="sm-category-link" href="{{ route('storefront.category', $category) }}">{{ $category->name }}</a>
@@ -28,7 +28,7 @@
     </div>
 </section>
 <section id="ofertas" aria-labelledby="ofertas-titulo">
-    <div class="sm-section-heading"><h2 id="ofertas-titulo">Ofertas disponíveis</h2><p>Somente anúncios revisados e empresas habilitadas</p></div>
+    <div class="sm-section-heading"><h2 id="ofertas-titulo">Ofertas disponíveis</h2><a href="{{ route('storefront.search') }}">Explorar catálogo →</a></div>
     <div class="sm-offer-grid">
         @forelse ($offers as $offer)
             @include('storefront._offer-card', ['offer' => $offer])

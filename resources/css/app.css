@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './salada-foundation.css';
+@import './salada-catalog.css';
 
 @source '../views/**/*.blade.php';
 @source '../../app/**/*.php';

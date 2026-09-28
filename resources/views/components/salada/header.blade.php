@@ -10,8 +10,10 @@
             <summary aria-label="Abrir menu principal"><x-salada.icon name="menu" size="22" /></summary>
             <nav class="sm-mobile-panel" aria-label="Navegação móvel">
                 <a href="{{ route('home') }}">Início</a>
-                <a href="{{ route('home') }}#departamentos">Departamentos</a>
-                <a href="{{ route('home') }}#ofertas">Ofertas</a>
+                <a href="{{ route('storefront.search') }}">Todos os produtos</a>
+                @foreach ($navCategories as $navCategory)
+                    <a href="{{ route('storefront.category', $navCategory) }}">{{ $navCategory->name }}</a>
+                @endforeach
                 <a href="{{ route('seller.apply') }}">Quero vender</a>
                 @auth
                     <a href="{{ route('buyer.account') }}">Minha conta</a>
@@ -28,11 +30,11 @@
         <a href="{{ route('home') }}" class="sm-brand" aria-label="Salada Mix — página inicial">
             <img src="{{ asset('assets/salada/salada-mix-logo.svg') }}" alt="Salada Mix" width="178" height="36">
         </a>
-        <div class="sm-search" role="search" aria-label="Busca de produtos em preparação">
-            <x-salada.icon name="search" size="21" />
-            <span>O que você procura hoje?</span>
-            <em>Em breve</em>
-        </div>
+        <form class="sm-search" method="get" action="{{ route('storefront.search') }}" role="search">
+            <label class="sr-only" for="sm-global-search">Buscar produtos, marcas ou lojas</label>
+            <input id="sm-global-search" name="q" type="search" value="{{ request()->routeIs('storefront.search') ? request()->query('q', '') : '' }}" maxlength="100" placeholder="Busque produtos, marcas ou lojas">
+            <button type="submit" aria-label="Buscar produtos"><x-salada.icon name="search" size="21" /><span>Buscar</span></button>
+        </form>
         <nav class="sm-actions" aria-label="Acesso rápido">
             <span class="sm-action is-unavailable" title="Cálculo de frete disponível em uma próxima entrega" aria-label="CEP em preparação">
                 <x-salada.icon name="pin" size="22" /><span class="sm-action-copy"><small>Enviar para</small><strong>Informe seu CEP</strong></span>
@@ -54,12 +56,10 @@
 </header>
 <div class="sm-nav">
     <nav class="sm-container sm-nav-inner" aria-label="Departamentos e área institucional">
-        <a href="{{ route('home') }}#departamentos">☰ &nbsp;Departamentos</a>
-        <a href="{{ route('home') }}#ofertas">Ofertas</a>
-        <a href="{{ route('home') }}#departamentos">Beleza &amp; cuidados</a>
-        <a href="{{ route('home') }}#departamentos">Moda &amp; acessórios</a>
-        <a href="{{ route('home') }}#departamentos">Tecnologia</a>
-        <a href="{{ route('home') }}#departamentos">Casa</a>
+        <a href="{{ route('storefront.search') }}">☰ &nbsp;Todos os produtos</a>
+        @foreach ($navCategories->take(4) as $navCategory)
+            <a href="{{ route('storefront.category', $navCategory) }}">{{ $navCategory->name }}</a>
+        @endforeach
         <span class="sm-nav-spacer"></span>
         @can('review-sellers')
             <a href="{{ route('admin.sellers.index') }}">Administração</a>

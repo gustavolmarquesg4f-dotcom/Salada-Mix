@@ -6,7 +6,7 @@
     </div>
     <div class="sm-container sm-footer-grid">
         <div><a class="sm-footer-brand" href="{{ route('home') }}" aria-label="Salada Mix — início"><img src="{{ asset('assets/salada/salada-mix-logo.svg') }}" alt="Salada Mix" width="158" height="32"></a><p>Seu mix, seu estilo. Moda, beleza, tecnologia, casa e achados de diferentes departamentos.</p></div>
-        <div><h2>Explore</h2><a href="{{ route('home') }}#departamentos">Departamentos</a><a href="{{ route('home') }}#ofertas">Ofertas</a><a href="{{ route('home') }}">Página inicial</a></div>
+        <div><h2>Explore</h2><a href="{{ route('home') }}#departamentos">Departamentos</a><a href="{{ route('storefront.search') }}">Todos os produtos</a><a href="{{ route('home') }}#ofertas">Ofertas</a></div>
         <div><h2>Minha conta</h2>@auth<a href="{{ route('buyer.account') }}">Meus dados</a><form action="{{ route('logout') }}" method="post">@csrf<button type="submit" class="text-left text-[13px] text-salada-jade hover:underline">Sair</button></form>@else<a href="{{ route('login') }}">Entrar</a><a href="{{ route('register') }}">Criar conta</a>@endauth</div>
         <div><h2>Seja parceiro</h2><a href="{{ route('seller.apply') }}">Cadastrar empresa</a><p>Cadastro sujeito a aprovação. Pagamentos e vendas ainda não estão habilitados.</p></div>
     </div>
