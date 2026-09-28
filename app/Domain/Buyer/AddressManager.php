@@ -22,8 +22,8 @@ class AddressManager
             User::query()->whereKey($user->id)->lockForUpdate()->firstOrFail();
             $count = CustomerAddress::query()->where('user_id', $user->id)->count();
 
-            if ($count >= 20) {
-                throw ValidationException::withMessages(['address' => 'Limite de 20 endereços por conta atingido.']);
+            if ($count >= 10) {
+                throw ValidationException::withMessages(['label' => 'Limite de 10 endereços por conta atingido.']);
             }
 
             $isFirst = $count === 0;
@@ -77,7 +77,7 @@ class AddressManager
 
             if ($wasDefault) {
                 $next = CustomerAddress::query()->where('user_id', $user->id)
-                    ->orderByDesc('updated_at')->first();
+                    ->orderBy('created_at')->orderBy('id')->first();
                 $next?->forceFill(['is_default' => true])->save();
             }
 
@@ -94,3 +94,4 @@ class AddressManager
         ]);
     }
 }
+

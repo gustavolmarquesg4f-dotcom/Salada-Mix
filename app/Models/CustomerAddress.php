@@ -11,8 +11,8 @@ class CustomerAddress extends Model
     use HasUlids;
 
     protected $fillable = [
-        'user_id', 'label', 'recipient', 'postal_code', 'street', 'number',
-        'complement', 'district', 'city', 'state', 'is_default',
+        'user_id', 'label', 'recipient_name', 'phone', 'postal_code', 'street', 'number',
+        'complement', 'neighborhood', 'city', 'state', 'is_default',
     ];
 
     protected function casts(): array
@@ -25,4 +25,5 @@ class CustomerAddress extends Model
         return $this->belongsTo(User::class);
     }
 }
+
 

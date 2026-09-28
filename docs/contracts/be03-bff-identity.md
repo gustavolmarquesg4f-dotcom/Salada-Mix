@@ -59,7 +59,7 @@ SSO via Google/Microsoft/IdP externo **não está ativado**: exige escolha do pr
 | POST | /bff/v1/admin/sellers/{seller}/decision | decision approved/rejected, reason obrigatório se rejeitado |
 | POST | /bff/v1/admin/offers/{offer}/decision | idem, decisão auditada |
 
-Endereços não fazem consulta automática a CEP nem cotação; só normalizam/armazenam campos informados pelo usuário. Default é único por usuário graças ao lock da linha do comprador. Informações de endereço NÃO são públicas.
+Endereços reutilizam o schema e as validações de BE-03A (#22), com `recipient_name`, `neighborhood` e limite de 10 por comprador. Não fazem consulta automática a CEP nem cotação; só normalizam/armazenam campos informados pelo usuário. Default é único por usuário graças ao lock da linha do comprador. Informações de endereço NÃO são públicas.
 
 ## Erros e contratos de segurança
 
@@ -72,3 +72,4 @@ Endereços não fazem consulta automática a CEP nem cotação; só normalizam/a
 ## Testes
 
 Executar `php artisan migrate --force`, `php artisan test`, `php artisan route:list` e `npm run build` em MySQL 8.4. Conferir especialmente criação/duplicidade de conta, login, verificação, redefinição, TOTP/códigos de recuperação, tenant, endereços e CSRF no navegador homologado.
+

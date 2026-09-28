@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\AdminSellerController;
 use App\Http\Controllers\Buyer\CartController;
+use App\Http\Controllers\Buyer\AddressController;
+use App\Http\Controllers\Buyer\CheckoutPreviewController;
 use App\Http\Controllers\Buyer\WishlistController;
 use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
@@ -13,6 +15,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Seller\SellerDashboardController;
 use App\Http\Controllers\Seller\SellerOnboardingController;
+use App\Http\Controllers\Seller\ShippingOriginController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +63,10 @@ Route::middleware(['auth', 'verified', 'throttle:10,1'])->prefix('seguranca/mfa'
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::view('/minha-conta', 'buyer.account')->name('buyer.account');
+    Route::get('/minha-conta/enderecos', [AddressController::class, 'index'])->name('buyer.addresses.index');
+    Route::post('/minha-conta/enderecos', [AddressController::class, 'store'])->name('buyer.addresses.store');
+    Route::delete('/minha-conta/enderecos/{address}', [AddressController::class, 'destroy'])->name('buyer.addresses.destroy');
+    Route::get('/minha-conta/resumo-compra', CheckoutPreviewController::class)->name('buyer.checkout.preview');
 
     // JSON endpoints share the browser's verified session and CSRF protection.
     // They store interests only; stock is not reserved and checkout is disabled.
@@ -74,6 +81,9 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/vendedor/{seller}/painel', [SellerDashboardController::class, 'show'])
         ->middleware('seller.member')->name('seller.dashboard');
     Route::prefix('vendedor/{seller}')->name('seller.')->middleware('seller.member')->group(function (): void {
+        Route::get('/origens', [ShippingOriginController::class, 'index'])->name('origins.index');
+        Route::post('/origens', [ShippingOriginController::class, 'store'])->name('origins.store');
+        Route::delete('/origens/{origin}', [ShippingOriginController::class, 'destroy'])->name('origins.destroy');
         Route::get('/ofertas', [SellerOfferController::class, 'index'])->name('offers.index');
         Route::get('/ofertas/nova', [SellerOfferController::class, 'create'])->name('offers.create');
         Route::post('/ofertas', [SellerOfferController::class, 'store'])->name('offers.store');
@@ -88,5 +98,6 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     });
 });
 
-// BFF is deliberately loaded inside the web middleware group (not routes/api.php).
+
+// Same-origin BFF shares Laravel web sessions and CSRF middleware.
 require __DIR__.'/bff.php';

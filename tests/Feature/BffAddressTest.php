@@ -47,10 +47,11 @@ class BffAddressTest extends TestCase
     private function payload(string $label, array $overrides = []): array
     {
         return array_merge([
-            'label' => $label, 'recipient' => 'Cliente Teste',
+            'label' => $label, 'recipient_name' => 'Cliente Teste',
             'postal_code' => '70000-000', 'street' => 'Rua Exemplo',
-            'number' => '10', 'complement' => 'Apto 2', 'district' => 'Centro',
-            'city' => 'Brasília', 'state' => 'df',
+            'number' => '10', 'complement' => 'Apto 2', 'neighborhood' => 'Centro',
+            'city' => 'Brasília', 'state' => 'DF',
         ], $overrides);
     }
 }
+

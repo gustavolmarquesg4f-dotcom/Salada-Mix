@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Bff;
 
 use App\Domain\Buyer\AddressManager;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddressFields;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,14 +17,35 @@ class AddressController extends Controller
 
     public function store(Request $request, AddressManager $manager): JsonResponse
     {
-        $address = $manager->create($request->user(), $this->validated($request, true));
+        $data = AddressFields::normalize($request->validate(AddressFields::rules(true)));
+        $address = $manager->create($request->user(), $data);
 
         return response()->json(['data' => $address], 201);
     }
 
     public function update(Request $request, string $address, AddressManager $manager): JsonResponse
     {
-        return response()->json(['data' => $manager->update($request->user(), $address, $this->validated($request, false))]);
+        $rules = AddressFields::rules(true);
+
+        foreach ($rules as $field => &$rule) {
+            // PATCH accepts only supplied fields, with the same validations as the HTML form.
+            if ($rule[0] === 'required') {
+                $rule[0] = 'sometimes';
+            }
+        }
+        unset($rule);
+
+        $data = $request->validate($rules);
+
+        if (array_key_exists('postal_code', $data)) {
+            $data['postal_code'] = str_replace('-', '', $data['postal_code']);
+        }
+
+        if (array_key_exists('is_default', $data)) {
+            $data['is_default'] = (bool) $data['is_default'];
+        }
+
+        return response()->json(['data' => $manager->update($request->user(), $address, $data)]);
     }
 
     public function destroy(Request $request, string $address, AddressManager $manager): JsonResponse
@@ -31,34 +53,6 @@ class AddressController extends Controller
         $manager->delete($request->user(), $address);
 
         return response()->json(['data' => ['deleted' => true]]);
-    }
-
-    private function validated(Request $request, bool $create): array
-    {
-        $required = $create ? 'required' : 'sometimes';
-
-        $data = $request->validate([
-            'label' => [$required, 'string', 'max:60'],
-            'recipient' => [$required, 'string', 'max:160'],
-            'postal_code' => [$required, 'string', 'regex:/^\d{5}-?\d{3}$/'],
-            'street' => [$required, 'string', 'max:180'],
-            'number' => [$required, 'string', 'max:20'],
-            'complement' => ['nullable', 'string', 'max:120'],
-            'district' => [$required, 'string', 'max:100'],
-            'city' => [$required, 'string', 'max:120'],
-            'state' => [$required, 'string', 'size:2', 'regex:/^[A-Za-z]{2}$/'],
-            'is_default' => ['sometimes', 'boolean'],
-        ]);
-
-        if (isset($data['postal_code'])) {
-            $data['postal_code'] = preg_replace('/\D/', '', $data['postal_code']);
-        }
-
-        if (isset($data['state'])) {
-            $data['state'] = strtoupper($data['state']);
-        }
-
-        return $data;
     }
 }
 
