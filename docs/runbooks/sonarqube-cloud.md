@@ -10,7 +10,7 @@ Os testes existentes continuam em `.github/workflows/quality.yml`. A análise es
 3. Copie exatamente as chaves exibidas pela SonarQube Cloud (não necessariamente idênticas ao nome do repo).
 4. Em https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/settings/secrets/actions crie o **Repository secret** `SONAR_TOKEN` com o token gerado pela SonarQube. Não coloque o token em arquivos, comentários, PRs, mensagens ou capturas.
 5. Em https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/settings/variables/actions crie **Repository variables** `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` com os valores exatos da plataforma.
-6. Acione o workflow **SonarQube Cloud** em Actions → Run workflow (main), ou faça novo push/PR. Confira no log que o scanner executou. Antes dessas configurações o job emite `SONAR_NOT_CONFIGURED` e não executa o scanner; status verde nesse caso **não é aprovação Sonar**.
+6. Acione o workflow **SonarQube Cloud** em Actions → Run workflow (main), ou faça novo push/PR. Confira no log que o scanner executou. Sem essas configurações o workflow **falha explicitamente** no preflight, com indicação de qual variável está ausente. Um check verde somente é possível após executar scanner e receber Quality Gate aprovado (espera de até 300 segundos).
 7. Quando a análise realmente gerar o check da SonarQube no GitHub, configure a proteção da main (Settings → Rules → Rulesets ou Branch protection) para exigir esse status e o CI atual. Verifique o nome real do check antes de torná-lo obrigatório.
 
 ## Escopo e critério

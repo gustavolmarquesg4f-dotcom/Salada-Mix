@@ -55,13 +55,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Avisar quando a integração ainda não foi conectada
-        if: ${{ env.SONAR_TOKEN == '' || env.SONAR_ORGANIZATION == '' || env.SONAR_PROJECT_KEY == '' }}
+      - name: Exigir conexão SonarQube antes de iniciar análise
+        shell: bash
         run: |
-          echo '::notice title=SonarQube ainda não ativado::Importe o repositório no SonarQube Cloud; configure o secret SONAR_TOKEN e as variables SONAR_ORGANIZATION e SONAR_PROJECT_KEY para executar a análise.'
-          echo 'SONAR_NOT_CONFIGURED: scanner não executado; este job não representa aprovação do Quality Gate.'
+          missing=0
+          for var in SONAR_TOKEN SONAR_ORGANIZATION SONAR_PROJECT_KEY; do
+            if [[ -z "${!var}" ]]; then
+              echo "::error title=SonarQube não configurado::$var está ausente. Configure secret e variables conforme docs/runbooks/sonarqube-cloud.md."
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            echo "::error::Análise SonarQube não executada. Este check deve falhar, nunca exibir verde por skip."
+            exit 1
+          fi
       - name: Configurar PHP e PCOV
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -69,26 +77,24 @@ jobs:
           coverage: pcov
           tools: composer:v2
       - name: Instalar dependências
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
         run: composer install --no-interaction --prefer-dist --no-progress
       - name: Preparar banco MySQL de testes
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
         run: |
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
       - name: Executar testes e gerar Clover
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
         run: |
           mkdir -p coverage
           php artisan test --coverage-clover=coverage/sonar-clover.xml
           test -s coverage/sonar-clover.xml
       - name: Analisar projeto com SonarQube Cloud
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
         uses: SonarSource/sonarqube-scan-action@v7.2.1
         with:
           args: >-
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
         env:
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
