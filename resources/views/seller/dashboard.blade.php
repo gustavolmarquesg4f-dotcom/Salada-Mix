@@ -8,5 +8,5 @@
     <h2 class="font-bold">Situação do cadastro: {{ $seller->status }}</h2>
     <p class="mt-2 text-sm">A habilitação de vendas exige análise, configuração financeira, logística e catálogo. O checkout permanece desligado.</p>
 </div>
+<a href="{{ route('seller.offers.index', $seller) }}" class="mt-5 inline-flex rounded-xl bg-teal-700 px-5 py-3 font-bold text-white">Gerenciar meus produtos</a>
 @endsection
-

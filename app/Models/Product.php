@@ -7,29 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Seller extends Model
+class Product extends Model
 {
     use HasUlids;
 
-    protected $fillable = ['owner_user_id', 'legal_name', 'trade_name', 'cnpj', 'contact_email', 'status'];
+    protected $fillable = [
+        'category_id', 'created_by_seller_id', 'name', 'slug', 'description', 'review_status',
+    ];
 
     protected function casts(): array
     {
-        return ['approved_at' => 'datetime'];
+        return ['reviewed_at' => 'datetime'];
     }
 
-    public function owner(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'owner_user_id');
+        return $this->belongsTo(Category::class);
     }
 
     public function offers(): HasMany
     {
         return $this->hasMany(SellerOffer::class);
     }
-
-    public function memberships(): HasMany
-    {
-        return $this->hasMany(SellerMembership::class);
-    }
 }
+
