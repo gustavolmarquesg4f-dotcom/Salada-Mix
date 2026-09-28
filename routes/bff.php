@@ -64,6 +64,7 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
         Route::patch('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
         Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
 
+        Route::get('/checkout/preview', [GatewayController::class, 'checkoutPreview'])->name('checkout.preview');
         Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
         Route::put('/cart/{offer}', [CartController::class, 'put'])->name('cart.put');
         Route::delete('/cart/{offer}', [CartController::class, 'destroy'])->name('cart.destroy');
@@ -75,6 +76,7 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
             ->middleware('throttle:3,1')->name('sellers.store');
         Route::prefix('sellers/{seller}')->middleware('seller.member')->name('sellers.')->group(function (): void {
             Route::get('/', [GatewayController::class, 'seller'])->name('show');
+            Route::get('/origins', [GatewayController::class, 'sellerOrigins'])->name('origins.index');
             Route::post('/offers', [OfferSubmissionController::class, 'store'])
                 ->middleware('throttle:20,1')->name('offers.store');
         });

@@ -47,11 +47,13 @@ SSO via Google/Microsoft/IdP externo **não está ativado**: exige escolha do pr
 | Método | URL | Condições |
 | --- | --- | --- |
 | GET | /bff/v1/buyer | conta, cart, wishlist e empresas do próprio usuário |
+| GET | /bff/v1/checkout/preview | resumo por vendedor somente leitura; frete e total final nulos |
 | GET/PUT/DELETE | /bff/v1/cart/{offer?} | sessão verificada, preço servidor, sem reserva |
 | GET/PUT/DELETE | /bff/v1/wishlist/{offer?} | sessão verificada, ofertas públicas |
 | GET/POST | /bff/v1/addresses | CRUD de endereço, POST validado |
 | PATCH/DELETE | /bff/v1/addresses/{address} | ownership por user_id; erro 404 cruzado |
 | POST | /bff/v1/sellers | cadastrar empresa com CNPJ validado |
+| GET | /bff/v1/sellers/{seller}/origins | origens da própria empresa; escrita permanece nas rotas HTML de BE-03A |
 | GET | /bff/v1/sellers/{seller} | membro ativo da própria empresa |
 | POST | /bff/v1/sellers/{seller}/offers | owner/manager de empresa aprovada |
 | GET | /bff/v1/admin | resumo limitado e segundo fator verificado |

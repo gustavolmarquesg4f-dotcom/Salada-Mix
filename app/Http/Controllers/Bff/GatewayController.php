@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Bff;
 
 use App\Domain\Cart\CartManager;
+use App\Domain\Checkout\CheckoutPreview;
 use App\Domain\Catalog\Presenters\PublicOfferData;
 use App\Domain\Catalog\Queries\PublicCatalog;
 use App\Domain\Wishlist\WishlistManager;
@@ -12,6 +13,7 @@ use App\Models\Seller;
 use App\Models\SellerOffer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GatewayController extends Controller
 {
@@ -60,6 +62,23 @@ class GatewayController extends Controller
                     'role' => $membership->role,
                 ])->values(),
         ]]);
+    }
+
+    public function checkoutPreview(Request $request, CheckoutPreview $preview): JsonResponse
+    {
+        // Read-only grouping from BE-03A: no order, payment, quote or stock reservation.
+        return response()->json(['data' => $preview->forBuyer($request->user())]);
+    }
+
+    public function sellerOrigins(Seller $seller): JsonResponse
+    {
+        // The route requires seller.member. Never load origins from other companies.
+        $origins = DB::table('shipping_origins')->where('seller_id', $seller->id)
+            ->orderByDesc('is_default')->orderBy('created_at')
+            ->get(['id', 'label', 'postal_code', 'street', 'number', 'complement',
+                'neighborhood', 'city', 'state', 'is_default', 'is_active']);
+
+        return response()->json(['data' => $origins]);
     }
 
     public function seller(Request $request, Seller $seller): JsonResponse
