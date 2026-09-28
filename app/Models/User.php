@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_login_enabled' => 'boolean',
             'mfa_pending_secret' => 'encrypted',
             'mfa_secret' => 'encrypted',
             'mfa_confirmed_at' => 'datetime',
@@ -29,10 +30,13 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function socialIdentities(): HasMany
+    {
+        return $this->hasMany(SocialIdentity::class);
+    }
+
     public function sellerMemberships(): HasMany
     {
         return $this->hasMany(SellerMembership::class);
     }
 }
-
-
