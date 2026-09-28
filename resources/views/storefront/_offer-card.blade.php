@@ -1,14 +1,11 @@
-<article class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-    <a href="{{ route('storefront.offer', $offer) }}" class="block">
-        <div class="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-teal-50 to-slate-100 px-6 text-center">
-            <span class="text-2xl font-black text-teal-700">{{ $offer->product->category->name }}</span>
-        </div>
-        <div class="p-5">
-            <p class="text-xs font-semibold uppercase tracking-wider text-teal-700">{{ $offer->seller->trade_name }}</p>
-            <h3 class="mt-2 line-clamp-2 min-h-12 text-lg font-bold text-slate-900">{{ $offer->product->name }}</h3>
-            <p class="mt-3 text-2xl font-extrabold text-slate-900">R$ {{ number_format($offer->price_cents / 100, 2, ',', '.') }}</p>
-            <p class="mt-2 text-sm text-slate-500">Consulte a descrição · vendas ainda indisponíveis</p>
+<article class="sm-product-card">
+    <a href="{{ route('storefront.offer', $offer) }}" class="block" aria-label="Ver oferta: {{ $offer->product->name }}">
+        <div class="sm-product-visual" aria-hidden="true">{{ $offer->product->category->name }}</div>
+        <div class="sm-product-body">
+            <p class="sm-product-seller">Vendido por {{ $offer->seller->trade_name }}</p>
+            <h3 class="sm-product-name">{{ $offer->product->name }}</h3>
+            <p class="sm-product-price">R$ {{ number_format($offer->price_cents / 100, 2, ',', '.') }}</p>
+            <p class="sm-product-hint">Consulte os detalhes · compras indisponíveis nesta fase</p>
         </div>
     </a>
 </article>
-
