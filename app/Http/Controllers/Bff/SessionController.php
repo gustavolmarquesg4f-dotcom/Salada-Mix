@@ -54,6 +54,7 @@ class SessionController extends Controller
         ]);
 
         event(new Registered($user));
+        $user->refresh(); // load database defaults, including the unprivileged customer role
         Auth::login($user);
         $request->session()->regenerate();
 
