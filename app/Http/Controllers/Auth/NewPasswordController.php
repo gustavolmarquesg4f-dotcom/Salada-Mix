@@ -33,6 +33,7 @@ class NewPasswordController extends Controller
             $user->forceFill([
                 'password' => Hash::make($password),
                 'remember_token' => Str::random(60),
+                'password_login_enabled' => true,
             ])->save();
 
             if (config('session.driver') === 'database') {

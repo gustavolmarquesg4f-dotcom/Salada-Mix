@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\Seller\SellerDashboardController;
 use App\Http\Controllers\Seller\SellerOnboardingController;
 use App\Http\Controllers\Seller\ShippingOriginController;
@@ -24,6 +25,12 @@ Route::get('/', [CatalogController::class, 'home'])->name('home');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
+
+// Stateful OAuth/OIDC browser flow. Socialite state protection stays enabled.
+Route::get('/auth/sso/{provider}/redirect', [SsoController::class, 'redirect'])
+    ->middleware('throttle:sso')->name('sso.redirect');
+Route::get('/auth/sso/{provider}/callback', [SsoController::class, 'callback'])
+    ->middleware('throttle:sso')->name('sso.callback');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/cadastro', [RegisteredUserController::class, 'create'])->name('register');

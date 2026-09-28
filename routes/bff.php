@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\PublicCatalogController;
 use App\Http\Controllers\Auth\MfaController;
+use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\Bff\AccountController;
 use App\Http\Controllers\Bff\AdminModerationController;
 use App\Http\Controllers\Bff\AddressController;
@@ -20,11 +21,13 @@ use Illuminate\Support\Facades\Route;
  */
 Route::prefix('bff/v1')->name('bff.')->group(function (): void {
     Route::middleware('throttle:bff-read')->group(function (): void {
+        Route::get('/meta', [GatewayController::class, 'meta'])->name('meta');
         Route::get('/storefront', [GatewayController::class, 'storefront'])->name('storefront');
         Route::get('/catalog/categories', [PublicCatalogController::class, 'categories'])->name('catalog.categories');
         Route::get('/catalog/offers', [PublicCatalogController::class, 'index'])->name('catalog.offers.index');
         Route::get('/catalog/offers/{offer}', [PublicCatalogController::class, 'show'])->name('catalog.offers.show');
         Route::get('/auth/me', [SessionController::class, 'me'])->name('auth.me');
+        Route::get('/auth/sso/providers', [SsoController::class, 'providers'])->name('auth.sso.providers');
     });
 
     Route::prefix('auth')->name('auth.')->group(function (): void {
@@ -38,10 +41,14 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
             Route::post('/logout', [SessionController::class, 'logout'])->name('logout');
             Route::post('/verification-email', [SessionController::class, 'resendVerification'])
                 ->middleware('throttle:6,1')->name('verify.resend');
+            Route::put('/password/establish', [AccountController::class, 'establishPassword'])
+                ->middleware('throttle:6,1')->name('password.establish');
+            Route::delete('/sso/{provider}', [SsoController::class, 'unlink'])
+                ->middleware('throttle:sso')->name('sso.unlink');
         });
     });
 
-    Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::middleware(['auth', 'verified', 'throttle:bff-write'])->group(function (): void {
         Route::prefix('auth/mfa')->name('auth.mfa.')->middleware('throttle:10,1')->group(function (): void {
             Route::get('/', [MfaController::class, 'status'])->name('status');
             Route::post('/enroll', [MfaController::class, 'begin'])->name('enroll');
