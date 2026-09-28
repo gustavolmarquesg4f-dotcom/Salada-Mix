@@ -12,7 +12,7 @@ class FrontendVisualDemoTest extends TestCase {
         $offer = SellerOffer::query()->whereHas('product', fn ($q) => $q->where('slug', 'demo-tech-fone'))->firstOrFail();
         $this->assertTrue(DemoMedia::enabled());
         $this->assertStringContainsString('images.unsplash.com', DemoMedia::product($offer));
-        $this->get(route('home'))->assertOk()->assertSee('SALADA MIX · DEMONSTRAÇÃO')->assertSee('images.unsplash.com')->assertSee('Fone Bluetooth sem fio (DEMO)')->assertSee('Produtos ilustrativos')->assertDontSee('Comprar agora');
+        $this->get(route('home'))->assertOk()->assertSee('SALADA MIX · DEMONSTRAÇÃO')->assertSee('images.unsplash.com')->assertSee('Sérum facial vitamina C (DEMO)')->assertSee('Produtos ilustrativos')->assertDontSee('Comprar agora');
         $this->get(route('storefront.search'))->assertOk()->assertSee('images.unsplash.com')->assertSee('sm-demo-image');
         $this->get(route('storefront.offer', $offer))->assertOk()->assertSee('sm-detail-image')->assertSee('checkout está desativado');
     }
