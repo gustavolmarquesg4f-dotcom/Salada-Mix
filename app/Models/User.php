@@ -14,11 +14,19 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = ['name', 'email', 'password'];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'mfa_pending_secret', 'mfa_secret', 'mfa_recovery_codes', 'mfa_last_used_step'];
 
     protected function casts(): array
     {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed'];
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'mfa_pending_secret' => 'encrypted',
+            'mfa_secret' => 'encrypted',
+            'mfa_confirmed_at' => 'datetime',
+            'mfa_last_used_step' => 'integer',
+            'mfa_recovery_codes' => 'encrypted:array',
+        ];
     }
 
     public function sellerMemberships(): HasMany
@@ -26,4 +34,5 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(SellerMembership::class);
     }
 }
+
 

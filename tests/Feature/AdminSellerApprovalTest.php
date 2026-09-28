@@ -21,7 +21,7 @@ class AdminSellerApprovalTest extends TestCase
     {
         $owner = User::factory()->create();
         $admin = User::factory()->create();
-        $admin->forceFill(['platform_role' => 'admin'])->save();
+        $admin->forceFill(['platform_role' => 'admin', 'mfa_confirmed_at' => now()])->save();
 
         $seller = app(SubmitSellerApplication::class)->execute($owner, [
             'legal_name' => 'Vendedor Exemplo LTDA',
@@ -30,7 +30,7 @@ class AdminSellerApprovalTest extends TestCase
             'contact_email' => 'venda@example.test',
         ]);
 
-        $this->actingAs($admin)->post(route('admin.sellers.approve', $seller))
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.sellers.approve', $seller))
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('sellers', [
@@ -51,7 +51,7 @@ class AdminSellerApprovalTest extends TestCase
     {
         $owner = User::factory()->create();
         $admin = User::factory()->create();
-        $admin->forceFill(['platform_role' => 'admin'])->save();
+        $admin->forceFill(['platform_role' => 'admin', 'mfa_confirmed_at' => now()])->save();
         $seller = app(SubmitSellerApplication::class)->execute($owner, [
             'legal_name' => 'Vendedor Exemplo LTDA',
             'trade_name' => 'Exemplo',
@@ -59,8 +59,8 @@ class AdminSellerApprovalTest extends TestCase
             'contact_email' => 'venda@example.test',
         ]);
 
-        $this->actingAs($admin)->post(route('admin.sellers.approve', $seller))->assertSessionHasNoErrors();
-        $this->actingAs($admin)->post(route('admin.sellers.approve', $seller))->assertSessionHasErrors('seller');
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.sellers.approve', $seller))->assertSessionHasNoErrors();
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.sellers.approve', $seller))->assertSessionHasErrors('seller');
         $this->assertDatabaseCount('seller_reviews', 1);
     }
 }

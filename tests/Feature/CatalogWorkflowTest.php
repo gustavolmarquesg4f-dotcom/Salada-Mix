@@ -111,9 +111,9 @@ class CatalogWorkflowTest extends TestCase
         $category = $this->category();
         $offer = app(CreateSellerOffer::class)->execute($seller, $owner, $this->payload($category));
         $admin = User::factory()->create();
-        $admin->forceFill(['platform_role' => 'admin'])->save();
+        $admin->forceFill(['platform_role' => 'admin', 'mfa_confirmed_at' => now()])->save();
 
-        $this->actingAs($admin)->post(route('admin.catalog.approve', $offer))->assertSessionHasNoErrors();
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.catalog.approve', $offer))->assertSessionHasNoErrors();
         $offer->refresh();
         $this->assertSame('approved', $offer->review_status);
         $this->assertSame('approved', $offer->product->review_status);
@@ -142,7 +142,7 @@ class CatalogWorkflowTest extends TestCase
         $this->assertSame(0, app(PublicCatalog::class)->visibleOffers()->count());
 
         $admin = User::factory()->create();
-        $admin->forceFill(['platform_role' => 'admin'])->save();
+        $admin->forceFill(['platform_role' => 'admin', 'mfa_confirmed_at' => now()])->save();
         app(ReviewSellerOffer::class)->execute($offer, $admin, 'approved');
 
         $offer->stock->update(['quantity_on_hand' => 0]);
@@ -160,9 +160,9 @@ class CatalogWorkflowTest extends TestCase
         $this->actingAs($owner)->post(route('admin.catalog.approve', $offer))->assertForbidden();
 
         $admin = User::factory()->create();
-        $admin->forceFill(['platform_role' => 'admin'])->save();
-        $this->actingAs($admin)->post(route('admin.catalog.approve', $offer))->assertSessionHasNoErrors();
-        $this->actingAs($admin)->post(route('admin.catalog.approve', $offer))->assertSessionHasErrors('offer');
+        $admin->forceFill(['platform_role' => 'admin', 'mfa_confirmed_at' => now()])->save();
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.catalog.approve', $offer))->assertSessionHasNoErrors();
+        $this->actingAs($admin)->withSession(['admin_mfa_user_id' => $admin->id])->post(route('admin.catalog.approve', $offer))->assertSessionHasErrors('offer');
     }
 
     public function test_seeder_creates_categories_without_default_user_and_is_idempotent(): void

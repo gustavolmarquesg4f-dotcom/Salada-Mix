@@ -55,6 +55,10 @@ O [mapa do código](docs/architecture/code-map.md) mostra onde ficam frontend, b
 
 A integração com SonarQube Cloud está preparada em [sonarqube.yml](.github/workflows/sonarqube.yml) e [sonar-project.properties](sonar-project.properties). Ela ainda depende da autorização da conta SonarQube/GitHub e da configuração segura de `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY`. Um job sem essas configurações **não representa análise ou Quality Gate aprovado**. Consulte o [runbook de ativação](docs/runbooks/sonarqube-cloud.md).
 
+## Backend BFF e identidade
+
+Entrada same-origin em `/bff/v1`: catálogo, conta, vendedor, administração, carrinho, favoritos e endereços. O login usa sessão do Laravel, e a área administrativa exige TOTP. Veja o [contrato BE-03](docs/contracts/be03-bff-identity.md). A prévia do GitHub Pages continua estática e não executa autenticação real. Checkout, pagamento e frete permanecem bloqueados.
+
 ## Status real
 
 Fundação de código com onboarding, catálogo inicial, moderação e estoque de cadastro implantada. **Não habilitar venda real:** checkout, OAuth Mercado Pago, split, frete, LGPD operacional, backup e deploy ainda exigem implementação/homologação. Use somente dados fictícios.
