@@ -15,7 +15,7 @@ Nenhum arquivo de código da loja anterior foi incorporado.
 
 O diretório [preview/](preview/) contém uma demonstração estática do frontend, com vitrine, categorias, produto, carrinho e áreas de vendedor e administrador com dados fictícios. **Não executa Laravel, MySQL nem pagamentos.**
 
-A URL pública será disponibilizada ao ativar GitHub Pages em **Settings → Pages → Build and deployment → Source: GitHub Actions**. O workflow [deploy-preview.yml](.github/workflows/deploy-preview.yml) publicará novas versões do diretório preview a partir da branch main. A URL esperada, após habilitação, é \`https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/\`.
+Para ativar pela primeira vez, abra **Settings → Pages → Build and deployment → Source: Deploy from a branch** e selecione **gh-pages / (root)**, depois Save. O branch [gh-pages](https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/tree/gh-pages) contém somente os arquivos públicos de visualização; a aplicação Laravel fica na main. As próximas versões da prévia serão sincronizadas ao gh-pages após revisão. A URL esperada é `https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/`. Veja [runbook](docs/runbooks/pages-preview.md).
 
 ## Rodar localmente (após instalar PHP, Composer, Node e MySQL)
 

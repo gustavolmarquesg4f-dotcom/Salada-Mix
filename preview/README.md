@@ -1,9 +1,13 @@
 # Prévia navegável Salada Mix no GitHub Pages
 
-Este diretório é uma **prévia estática visual** do frontend. Não executa Laravel, PHP, MySQL, autenticação, cadastro real, frete, pedidos nem pagamentos. Dados de lojas e produtos são demonstrativos. O checkout é intencionalmente desabilitado.
+Esta é uma **prévia estática visual**. Não executa Laravel, PHP, MySQL, autenticação real, frete ou pagamentos; dados fictícios e checkout intencionalmente bloqueado.
 
-Publicação via .github/workflows/deploy-preview.yml após habilitar GitHub Pages nas configurações do repositório com Source = GitHub Actions. Atualizações no diretório preview da branch main publicarão a mesma URL.
+## Publicação no GitHub Pages
 
-URL prevista: https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/
+No repositório, acesse Settings → Pages → Build and deployment. Escolha **Deploy from a branch**, branch **gh-pages**, pasta **/(root)** e Save.
 
-Código verdadeiro: app/, database/, resources/views/, tests/. Atualize a prévia junto de mudanças correspondentes ou documente a diferença, evitando demonstrar funcionalidades reais que ainda não existem.
+Os arquivos estáticos publicados estão na raiz da branch [gh-pages](https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/tree/gh-pages), que contém index.html, assets/ e .nojekyll. A pasta preview/ na main é fonte de desenvolvimento. Depois de uma alteração aprovada, publique a mesma versão em gh-pages. GitHub Pages atualizará quando a branch de publicação receber um push elegível.
+
+URL após a primeira publicação: https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/
+
+Código verdadeiro: app/, database/, resources/views/, tests/. Nunca afirmar que os dados fictícios da prévia representam operações reais.
