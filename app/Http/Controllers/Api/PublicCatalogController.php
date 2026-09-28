@@ -27,9 +27,10 @@ class PublicCatalogController extends Controller
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'category' => ['nullable', 'string', 'max:150', 'regex:/^[a-z0-9-]+$/'],
+            'seller' => ['nullable', 'string', 'size:26', 'alpha_num'],
             'min_price_cents' => ['nullable', 'integer', 'min:0', 'max:999999999999'],
             'max_price_cents' => ['nullable', 'integer', 'min:0', 'max:999999999999'],
-            'sort' => ['nullable', Rule::in(['newest', 'price_asc', 'price_desc', 'name_asc'])],
+            'sort' => ['nullable', Rule::in(['newest', 'recent', 'price_asc', 'price_desc', 'name_asc'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:24'],
             'page' => ['nullable', 'integer', 'min:1', 'max:10000'],
         ]);

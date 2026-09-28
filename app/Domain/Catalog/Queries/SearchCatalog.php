@@ -20,14 +20,22 @@ class SearchCatalog
         $term = trim((string) ($filters['q'] ?? ''));
 
         if ($term !== '') {
-            $query->where(function (Builder $builder) use ($term): void {
-                $builder->whereHas('product', function (Builder $product) use ($term): void {
-                    $product->where(function (Builder $inner) use ($term): void {
-                        $inner->where('name', 'like', '%'.$term.'%')
-                            ->orWhere('description', 'like', '%'.$term.'%');
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+            $pattern = '%'.$escaped.'%';
+
+            $query->where(function (Builder $builder) use ($pattern): void {
+                $builder->whereHas('product', function (Builder $product) use ($pattern): void {
+                    $product->where(function (Builder $inner) use ($pattern): void {
+                        $inner->whereRaw("products.name LIKE ? ESCAPE '!'", [$pattern])
+                            ->orWhereRaw("products.description LIKE ? ESCAPE '!'", [$pattern]);
                     });
-                })->orWhereHas('seller', fn (Builder $seller) => $seller->where('trade_name', 'like', '%'.$term.'%'));
+                })->orWhereHas('seller', fn (Builder $seller) =>
+                    $seller->whereRaw("sellers.trade_name LIKE ? ESCAPE '!'", [$pattern]));
             });
+        }
+
+        if (! empty($filters['seller'])) {
+            $query->where('seller_id', $filters['seller']);
         }
 
         if (! empty($filters['category'])) {

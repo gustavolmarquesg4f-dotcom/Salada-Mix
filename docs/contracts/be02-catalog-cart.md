@@ -10,7 +10,9 @@ Data: 2026-09-28. Backend/banco desenvolvido em branch própria, sem alterar os 
 | GET | /api/v1/catalog/offers | Busca, filtro, ordenação, paginação |
 | GET | /api/v1/catalog/offers/{offer} | Detalhe público de oferta elegível |
 
-Parâmetros de /offers: q (até 100 caracteres), category (slug), min_price_cents e max_price_cents (inteiros, BRL), sort = newest|price_asc|price_desc|name_asc, per_page = 1..24, page = 1..10000. Retorno: data[] com id, name, slug, category {name,slug}, seller {id,name}, price_cents, currency, available, url; meta {current_page,last_page,per_page,total}; links {next,prev}. Detalhe inclui description. Rejeições de entrada: HTTP 422. Oferta inelegível: HTTP 404.
+Parâmetros de /offers: q (até 100 caracteres), category (slug), seller (ULID público), min_price_cents e max_price_cents (inteiros, BRL), sort = newest|recent|price_asc|price_desc|name_asc, per_page = 1..24, page = 1..10000. Retorno: data[] com id, name, slug, category {name,slug}, seller {id,name}, price_cents, currency, available, url; meta {current_page,last_page,per_page,total}; links {next,prev}. Detalhe inclui description. Rejeições de entrada: HTTP 422. Oferta inelegível: HTTP 404.
+
+Busca textual trata %, _ e ! como caracteres literais usando parâmetros bindados e ESCAPE. O campo seller é um filtro restritivo, não substitui o gate de visibilidade.
 
 O servidor só expõe oferta quando vendedor = active, produto/oferta = approved, categoria ativa e saldo > reserva. Não há preço, vendedor ou disponibilidade autoritativos no JavaScript.
 
