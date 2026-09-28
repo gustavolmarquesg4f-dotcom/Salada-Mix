@@ -1,51 +1,65 @@
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
-const dir=path.resolve(__dirname,"..");
-const html=fs.readFileSync(path.join(dir,"index.html"),"utf8");
-const code=fs.readFileSync(path.join(dir,"assets/app.js"),"utf8");
-assert.match(html,/id="app"/);
-assert.match(html,/assets\/style.css/);
-assert.match(html,/assets\/app.js/);
-
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const vm=require("node:vm");
+const root=path.resolve(__dirname,"../..");
+const read=p=>fs.readFileSync(path.join(root,p),"utf8");
+const html=read("preview/index.html");
+const js=read("preview/assets/app.js");
+assert.match(html,/id="conteudo"/);
+assert.match(html,/sm-search/);
+assert.match(html,/assets\/salada\/salada-mix-logo\.svg/);
+assert.match(html,/PRÉVIA FE-02/);
+assert.equal(read("preview/assets/salada-foundation.css"),read("resources/css/salada-foundation.css"));
+assert.equal(read("preview/assets/salada-catalog.css"),read("resources/css/salada-catalog.css"));
+assert.equal(read("preview/assets/salada/salada-mix-logo.svg"),read("public/assets/salada/salada-mix-logo.svg"));
 const elements=new Map();
-const element=id=>{
+function element(id){
  if(!elements.has(id))elements.set(id,{
-   innerHTML:"",textContent:"",value:"",hidden:false,handlers:new Map(),
-   classList:{add(){},remove(){},toggle(){},contains(){return false}},
-   setAttribute(){},addEventListener(event,callback){this.handlers.set(event,callback)}
+  innerHTML:"",textContent:"",value:"",dataset:{},listeners:new Map(),
+  classList:{add(){},remove(){}},
+  addEventListener(event,handler){this.listeners.set(event,handler)},
+  scrollIntoView(){}
  });
  return elements.get(id);
-};
-const navLinks=[];
+}
 const ctx=vm.createContext({
- document:{getElementById:element,querySelectorAll:()=>navLinks,title:""},
- window:{addEventListener(event,cb){this[event]=cb},scrollTo(){}},
+ document:{
+  getElementById:element,querySelector(){return null},title:""
+ },
+ window:{
+  addEventListener(event,callback){this[event]=callback},
+  scrollTo(){}
+ },
  location:{hash:"#/"},
  Intl,URLSearchParams,Math,Number,String,Object,Array,Set,FormData,
- clearTimeout(){},setTimeout(){return 1}
+ encodeURIComponent,decodeURIComponent
 });
-vm.runInContext(code,ctx,{filename:"preview/assets/app.js"});
-const display=()=>element("app").innerHTML;
-const go=hash=>{ctx.location.hash=hash;ctx.window.hashchange()};
-assert.match(display(),/Um universo de escolhas/);
-assert.match(display(),/Sérum facial/);
-go("#/category/beleza");
-assert.match(display(),/Sérum facial/);
-assert.doesNotMatch(display(),/Câmera compacta/);
-go("#/product/fone-bluetooth");
-assert.match(display(),/Adicionar ao carrinho da prévia/);
-assert.match(display(),/não está homologado/);
-go("#/cart");
-assert.match(display(),/carrinho está vazio/);
-go("#/join");
-assert.match(display(),/Solicitação de cadastro/);
-assert.match(display(),/Não envie dados reais/);
-go("#/seller");
-assert.match(display(),/Portal do vendedor|PORTAL DO VENDEDOR/);
-go("#/admin");
-assert.match(display(),/Central Salada Mix/);
-assert.match(display(),/ilustrativo/);
-console.log("PREVIEW_SMOKE_OK: home, category, product, cart, onboarding, seller, admin.");
-
+vm.runInContext(js,ctx,{filename:"preview/assets/app.js"});
+const display=()=>element("conteudo").innerHTML;
+const go=hash=>{ctx.location.hash=hash;ctx.window.hashchange();};
+assert.match(display(),/Seu mix\. Seu estilo\. Tudo num só lugar\./);
+assert.match(display(),/Fone Bluetooth sem fio \(DEMO\)/);
+assert.match(display(),/sm-home-hero/);
+go("#/buscar");
+assert.match(display(),/Refinar busca/);
+assert.match(display(),/9 ofertas disponíveis/);
+go("#/buscar?q=vitamina");
+assert.match(display(),/Sérum facial vitamina C/);
+assert.doesNotMatch(display(),/Mouse ergonômico sem fio/);
+go("#/categorias/beleza-e-cuidados");
+assert.match(display(),/3 ofertas disponíveis/);
+assert.doesNotMatch(display(),/Câmera compacta \(DEMO\)/);
+go("#/buscar?min_price=100,00&sort=price_asc");
+assert.match(display(),/Fone Bluetooth sem fio/);
+assert.doesNotMatch(display(),/Sérum facial vitamina C \(DEMO\)/);
+go("#/ofertas/demo-home-light");
+assert.match(display(),/Luminária de mesa \(DEMO\)/);
+assert.match(display(),/O checkout está desativado/);
+assert.match(display(),/104,90/);
+go("#/vender/cadastro");assert.match(display(),/Simular solicitação/);
+assert.match(display(),/não recebe nem armazena dados/);
+go("#/vendedor");assert.match(display(),/MixTech \(DEMO\)/);
+go("#/admin");assert.match(display(),/nenhuma decisão é persistida/);
+go("#/conta");assert.match(display(),/não executa autenticação/);
+console.log("FE02_PREVIEW_OK: exact CSS/logo, home, catalog, filters, category, offer, seller, admin, account.");
