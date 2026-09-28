@@ -38,7 +38,7 @@ const detail=p=>"#/ofertas/"+encodeURIComponent(p.id);
 const categoryUrl=slug=>"#/categorias/"+encodeURIComponent(slug);
 const note=(text,warning=false)=>'<div class="sm-preview-info'+(warning?" warning":"")+'">'+text+'</div>';
 const brandName=p=>esc(category(p.category)?.name||"Departamento");
-const version='<div class="sm-preview-kicker"><span class="sm-preview-pill">FE-01 + FE-02 · MAIN</span><span>Catálogo de teste (MySQL local) reproduzido nesta página estática</span></div>';
+const version='<div class="sm-preview-kicker"><span class="sm-preview-pill">FE-03 · VISUAL DEMO</span><span>Catálogo de teste (MySQL local) reproduzido nesta página estática</span></div>';
 function card(p){
  const photo=photoUrl(DEMO_PHOTOS[p.id]);
  return '<article class="sm-product-card"><a href="'+detail(p)+'" class="sm-product-link" aria-label="Ver oferta: '+esc(p.name)+'"><div class="sm-product-visual sm-product-photo"><img class="sm-demo-image" src="'+photo+'" alt="Imagem ilustrativa: '+esc(p.name)+'" width="480" height="480" loading="lazy" referrerpolicy="no-referrer"><span class="sm-product-demo-badge">DEMO</span></div><div class="sm-product-body"><p class="sm-product-seller">'+esc(p.seller)+'</p><h3 class="sm-product-name">'+esc(p.name)+'</h3><p class="sm-product-price">'+money(p.price)+'</p><p class="sm-product-hint">Ver detalhes →</p></div></a></article>';
