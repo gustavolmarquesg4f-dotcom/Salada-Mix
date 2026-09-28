@@ -36,7 +36,7 @@ assert.match(display(),/Sérum facial/);
 assert.doesNotMatch(display(),/Câmera compacta/);
 go("#/product/fone-bluetooth");
 assert.match(display(),/Adicionar ao carrinho da prévia/);
-assert.match(display(),/checkout/);
+assert.match(display(),/não está homologado/);
 go("#/cart");
 assert.match(display(),/carrinho está vazio/);
 go("#/join");
