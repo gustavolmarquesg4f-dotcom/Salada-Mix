@@ -38,6 +38,7 @@ class GatewayController extends Controller
                 'seller_catalog' => true,
                 'addresses' => true,
                 'checkout_preview' => true,
+                'technical_order_drafts_enabled' => (bool) config('marketplace.order_drafts_enabled', false),
                 'checkout_enabled' => false,
                 'payments_enabled' => false,
                 'shipping_quotes_enabled' => false,
