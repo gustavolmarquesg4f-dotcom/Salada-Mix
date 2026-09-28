@@ -137,11 +137,13 @@ class StorefrontBrowseTest extends TestCase
 
     private function seller(string $name, string $status = 'active'): Seller
     {
+        static $sellerSequence = 0;
+        $sellerSequence++;
         $owner = User::factory()->create();
 
         return Seller::query()->create([
             'owner_user_id' => $owner->id, 'legal_name' => $name.' LTDA',
-            'trade_name' => $name, 'cnpj' => (string) Str::ulid(),
+            'trade_name' => $name, 'cnpj' => sprintf('%014d', $sellerSequence),
             'contact_email' => $owner->email, 'status' => $status,
         ]);
     }
