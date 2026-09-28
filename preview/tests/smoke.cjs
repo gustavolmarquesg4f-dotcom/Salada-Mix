@@ -43,7 +43,7 @@ assert.match(display(),/Tudo o que você ama, em um só lugar/);
 assert.match(display(),/sm-demo-image/);
 assert.match(display(),/sm-editorial-hero/);
 assert.match(display(),/Sérum facial vitamina C \(DEMO\)/);
-assert.match(display(),/sm-home-hero/);
+assert.match(display(),/sm-photo-category-grid/);
 go("#/buscar");
 assert.match(display(),/Refinar busca/);
 assert.match(display(),/9 ofertas disponíveis/);
