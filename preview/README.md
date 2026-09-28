@@ -1,6 +1,6 @@
-# Prévia pública FE-01 + FE-02 — Salada Mix 2.0
+# Prévia pública FE-01 + FE-02 + FE-03 — Salada Mix 2.0
 
-Esta prévia estática reproduz a marca oficial e os componentes visuais do storefront Blade. As folhas `salada-foundation.css` e `salada-catalog.css` são cópias exatas dos arquivos em `resources/css/`; os SVGs são os originais de `public/assets/salada/`. O smoke test verifica essa igualdade.
+Esta prévia estática reproduz a marca oficial e os componentes visuais do storefront Blade. As folhas `salada-foundation.css`, `salada-catalog.css` e `salada-visual-demo.css` são cópias exatas dos arquivos em `resources/css/`; os SVGs são os originais de `public/assets/salada/`. O smoke test verifica essa igualdade. As fotografias ilustrativas usam URLs externas da Unsplash e devem ser substituídas por imagens licenciadas e hospedadas pelo projeto antes de produção.
 
 **Não é a aplicação Laravel em execução.** A busca, categoria, filtro de preço, ordenação e detalhe funcionam no navegador com nove ofertas fictícias equivalentes ao `MarketplaceDemoSeeder`, que só pode ser usado localmente. Não há MySQL remoto, login, cadastro real, frete, reservas, pedidos, pagamentos nem armazenamento de dados dos formulários.
 

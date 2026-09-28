@@ -13,7 +13,7 @@ Nenhum arquivo de código da loja anterior foi incorporado.
 
 ## Prévia navegável no GitHub Pages
 
-O diretório [preview/](preview/) contém a **prévia da Entrega 2**, usando a identidade e o CSS oficiais, com home, busca, filtros, detalhe de produto e painéis informativos de vendedor e administrador. Os dados são fictícios, alinhados ao seeder de desenvolvimento. **Não executa Laravel, MySQL nem pagamentos.**
+O diretório [preview/](preview/) contém a **prévia visual da Entrega 3**, usando identidade e CSS oficiais, fotos ilustrativas, home, busca, filtros, detalhe de produto e painéis informativos de vendedor e administrador. Os dados são fictícios, alinhados ao seeder de desenvolvimento. **Não executa Laravel, MySQL nem pagamentos.**
 
 Para ativar pela primeira vez, abra **Settings → Pages → Build and deployment → Source: Deploy from a branch** e selecione **gh-pages / (root)**, depois Save. O branch [gh-pages](https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/tree/gh-pages) contém somente os arquivos públicos de visualização; a aplicação Laravel fica na main. As próximas versões da prévia serão sincronizadas ao gh-pages após revisão. A URL esperada é `https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/`. Veja [runbook](docs/runbooks/pages-preview.md).
 
