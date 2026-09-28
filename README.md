@@ -11,6 +11,12 @@ Nenhum arquivo de código da loja anterior foi incorporado.
 - Domínios: Identity, Seller, Catalog, Inventory, Orders, Payments, Shipping e Privacy.
 - Integrações externas sempre por adaptadores; nenhum segredo no cliente.
 
+## Prévia navegável no GitHub Pages
+
+O diretório [preview/](preview/) contém uma demonstração estática do frontend, com vitrine, categorias, produto, carrinho e áreas de vendedor e administrador com dados fictícios. **Não executa Laravel, MySQL nem pagamentos.**
+
+A URL pública será disponibilizada ao ativar GitHub Pages em **Settings → Pages → Build and deployment → Source: GitHub Actions**. O workflow [deploy-preview.yml](.github/workflows/deploy-preview.yml) publicará novas versões do diretório preview a partir da branch main. A URL esperada, após habilitação, é \`https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/\`.
+
 ## Rodar localmente (após instalar PHP, Composer, Node e MySQL)
 
 ```bash
