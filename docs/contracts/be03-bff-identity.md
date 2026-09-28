@@ -38,7 +38,7 @@ Verificação de e-mail ocorre no link assinado `/email/verify/{id}/{hash}` do p
 
 Todas as rotas `/admin/*` e `/bff/v1/admin/*` exigem `can:review-sellers` **e** `admin.mfa` após `auth` e `verified`. Enrolamento exige senha atual; segredo TOTP criptografado; confirmação por seis dígitos, tolerância de 30 segundos; desafio com passo único ou código de recuperação descartável com hash. Acessos sem configuração ou desafio recebem 403 JSON e URL da página `/seguranca/mfa` (ou redirect em HTML).
 
-GET /bff/v1/auth/mfa/ retorna estado; POST /enroll (current_password), /confirm (code), /challenge (code OU recovery_code) e /recovery-codes (current_password, code). O usuário deve guardar os códigos de recuperação no momento da geração. `APP_KEY` e backups criptografados são críticos para recuperar os segredos.
+GET /bff/v1/auth/mfa/ retorna estado; POST /enroll (current_password), /confirm (code), /challenge (code OU recovery_code) e /recovery-codes (current_password, code). O usuário deve guardar os códigos de recuperação no momento da geração. `APP_KEY` e backups criptografados são críticos para recuperar os segredos. Recuperação operacional quando todos os fatores forem perdidos: comando CLI `platform:reset-admin-mfa email --confirm`, após verificação externa da identidade, com auditoria e revogação das sessões do banco.
 
 SSO via Google/Microsoft/IdP externo **não está ativado**: exige escolha do provedor, credenciais OAuth/OIDC, URIs de retorno, políticas de vinculação de contas e testes de segurança. Não confundir sessão unificada do monólito com SSO federado.
 
