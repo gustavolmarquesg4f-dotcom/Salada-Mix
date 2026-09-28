@@ -48,7 +48,7 @@ class FrontendBuyerAccountTest extends TestCase
             ->assertSee(route('bff.account.update'), false)
             ->assertSee(route('bff.account.password'), false)
             ->assertSee(route('bff.account.sessions'), false)
-            ->assertSee('Pagamento real ainda', false)
+            ->assertSee('pagamento real ainda não está habilitado', false)
             ->assertDontSee('Comprar agora');
     }
 
