@@ -174,11 +174,16 @@ class DraftOrderService
                         'created_at' => $now,
                         'updated_at' => $now,
                     ]);
-                    DB::table('stock_levels')->where('offer_id', $offer->id)
-                        ->where('seller_id', $sellerId)->update([
-                            'quantity_reserved' => $item['stock']->quantity_reserved + $item['quantity'],
-                            'updated_at' => $now,
+                    $updated = DB::table('stock_levels')->where('offer_id', $offer->id)
+                        ->where('seller_id', $sellerId)
+                        ->whereRaw('(quantity_on_hand - quantity_reserved) >= ?', [$item['quantity']])
+                        ->increment('quantity_reserved', $item['quantity'], ['updated_at' => $now]);
+
+                    if ($updated !== 1) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Estoque alterado durante a reserva. Atualize o carrinho.',
                         ]);
+                    }
                 }
             }
 
