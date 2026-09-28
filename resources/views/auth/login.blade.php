@@ -1,13 +1,18 @@
 @extends('layouts.app')
 @section('title', 'Entrar — Salada Mix')
 @section('content')
-<form action="{{ route('login') }}" method="post" class="mx-auto max-w-md space-y-5 rounded-2xl border bg-white p-7">
-    @csrf
-    <h1 class="text-2xl font-black">Entrar na minha conta</h1>
+<x-salada.auth-shell title="Entrar na minha conta" subtitle="Acesse seu espaço e acompanhe seus dados e endereços." side-title="Seu universo, em um só lugar.">
+    <form action="{{ route('login') }}" method="post" class="sm-auth-form">
+        @csrf
+        <label for="login-email">E-mail</label>
+        <input id="login-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="255" value="{{ old('email') }}" placeholder="voce@exemplo.com" @error('email') aria-invalid="true" aria-describedby="login-email-error" @enderror>
+        @error('email')<small class="sm-field-error" id="login-email-error">{{ $message }}</small>@enderror
+        <div class="sm-input-top"><label for="login-password">Senha</label><a href="{{ route('password.request') }}">Esqueci minha senha</a></div>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="Digite sua senha" @error('password') aria-invalid="true" aria-describedby="login-password-error" @enderror>
+        @error('password')<small class="sm-field-error" id="login-password-error">{{ $message }}</small>@enderror
+        <button class="sm-btn sm-btn-primary sm-auth-submit" type="submit">Entrar na minha conta →</button>
+    </form>
     @include('auth._sso')
-    <label class="block text-sm font-semibold">E-mail <input class="mt-1 w-full rounded-lg border p-3" name="email" type="email" autocomplete="email" required value="{{ old('email') }}"></label>
-    <label class="block text-sm font-semibold">Senha <input class="mt-1 w-full rounded-lg border p-3" name="password" type="password" autocomplete="current-password" required></label>
-    <button class="w-full rounded-xl bg-teal-700 p-3 font-bold text-white" type="submit">Entrar</button>
-    <div class="flex justify-between text-sm"><a href="{{ route('register') }}" class="text-teal-700">Criar conta</a><a href="{{ route('password.request') }}" class="text-teal-700">Esqueci a senha</a></div>
-</form>
+    <p class="sm-auth-foot">Ainda não tem uma conta? <a href="{{ route('register') }}">Cadastre-se gratuitamente</a></p>
+</x-salada.auth-shell>
 @endsection

@@ -1,14 +1,18 @@
 @extends('layouts.app')
-@section('title', 'Nova senha — Salada Mix')
+@section('title', 'Definir nova senha — Salada Mix')
 @section('content')
-<form action="{{ route('password.update') }}" method="post" class="mx-auto max-w-md space-y-5 rounded-2xl border bg-white p-7">
-    @csrf
-    <input type="hidden" name="token" value="{{ $token }}">
-    <h1 class="text-2xl font-black">Definir nova senha</h1>
-    <label class="block text-sm font-semibold">E-mail <input name="email" type="email" required value="{{ old('email', $email) }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">Nova senha <input name="password" type="password" required autocomplete="new-password" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">Confirme a senha <input name="password_confirmation" type="password" required autocomplete="new-password" class="mt-1 w-full rounded-lg border p-3"></label>
-    <button class="w-full rounded-xl bg-teal-700 p-3 font-bold text-white">Alterar senha</button>
-</form>
+<x-salada.auth-shell eyebrow="Acesso à conta" title="Defina uma nova senha" subtitle="Escolha uma senha forte e confirme para recuperar seu acesso.">
+    <form action="{{ route('password.update') }}" method="post" class="sm-auth-form">
+        @csrf
+        <input type="hidden" name="token" value="{{ $token }}">
+        <label for="reset-email">E-mail</label>
+        <input id="reset-email" name="email" type="email" required autocomplete="email" value="{{ old('email', $email) }}">
+        <label for="reset-password">Nova senha</label>
+        <input id="reset-password" name="password" type="password" required autocomplete="new-password">
+        <label for="reset-confirm">Confirmar nova senha</label>
+        <input id="reset-confirm" name="password_confirmation" type="password" required autocomplete="new-password">
+        <button class="sm-btn sm-btn-primary sm-auth-submit" type="submit">Alterar minha senha →</button>
+    </form>
+    <p class="sm-auth-foot"><a href="{{ route('login') }}">Voltar para o login</a></p>
+</x-salada.auth-shell>
 @endsection
-

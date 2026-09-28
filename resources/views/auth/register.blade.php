@@ -1,15 +1,25 @@
 @extends('layouts.app')
 @section('title', 'Criar conta — Salada Mix')
 @section('content')
-<form action="{{ route('register') }}" method="post" class="mx-auto max-w-md space-y-5 rounded-2xl border bg-white p-7">
-    @csrf
-    <h1 class="text-2xl font-black">Criar conta</h1>
+<x-salada.auth-shell eyebrow="Vamos começar?" title="Crie sua conta" subtitle="Seus dados, seus endereços e seus produtos favoritos no mesmo lugar." side-title="Tudo o que você ama, em um só lugar.">
+    <form action="{{ route('register') }}" method="post" class="sm-auth-form">
+        @csrf
+        <label for="register-name">Nome completo</label>
+        <input id="register-name" name="name" required maxlength="160" autocomplete="name" value="{{ old('name') }}" placeholder="Como podemos chamar você?" @error('name') aria-invalid="true" aria-describedby="register-name-error" @enderror>
+        @error('name')<small class="sm-field-error" id="register-name-error">{{ $message }}</small>@enderror
+        <label for="register-email">E-mail</label>
+        <input id="register-email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="255" value="{{ old('email') }}" placeholder="voce@exemplo.com" @error('email') aria-invalid="true" aria-describedby="register-email-error" @enderror>
+        @error('email')<small class="sm-field-error" id="register-email-error">{{ $message }}</small>@enderror
+        <label for="register-password">Crie uma senha</label>
+        <input id="register-password" name="password" type="password" required autocomplete="new-password" placeholder="Use uma senha forte" @error('password') aria-invalid="true" aria-describedby="register-password-error" @enderror>
+        @error('password')<small class="sm-field-error" id="register-password-error">{{ $message }}</small>@enderror
+        <label for="register-confirm">Confirme sua senha</label>
+        <input id="register-confirm" name="password_confirmation" type="password" required autocomplete="new-password" placeholder="Digite novamente a senha">
+        <p class="sm-form-help">Enviaremos um link para verificar seu e-mail. Não usamos dados de cadastro para comunicação promocional sem a base legal aplicável.</p>
+        <button class="sm-btn sm-btn-primary sm-auth-submit" type="submit">Criar minha conta →</button>
+    </form>
     @include('auth._sso')
-    <label class="block text-sm font-semibold">Nome <input class="mt-1 w-full rounded-lg border p-3" name="name" required maxlength="160" value="{{ old('name') }}" autocomplete="name"></label>
-    <label class="block text-sm font-semibold">E-mail <input class="mt-1 w-full rounded-lg border p-3" type="email" name="email" required value="{{ old('email') }}" autocomplete="email"></label>
-    <label class="block text-sm font-semibold">Senha <input class="mt-1 w-full rounded-lg border p-3" name="password" type="password" required autocomplete="new-password"></label>
-    <label class="block text-sm font-semibold">Confirmar senha <input class="mt-1 w-full rounded-lg border p-3" name="password_confirmation" type="password" required autocomplete="new-password"></label>
-    <p class="text-xs text-slate-500">Antes de produção, termos e política de privacidade aprovados serão vinculados a este fluxo.</p>
-    <button class="w-full rounded-xl bg-teal-700 p-3 font-bold text-white" type="submit">Criar conta</button>
-</form>
+    <p class="sm-auth-foot">Já tem uma conta? <a href="{{ route('login') }}">Entrar</a></p>
+    <p class="sm-form-help">Os links de termos e política de privacidade serão disponibilizados após aprovação jurídica dos respectivos documentos.</p>
+</x-salada.auth-shell>
 @endsection
