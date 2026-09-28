@@ -78,3 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::post('/empresas/{seller}/rejeitar', [AdminSellerController::class, 'reject'])->name('sellers.reject');
     });
 });
+
+// BFF is deliberately loaded inside the web middleware group (not routes/api.php).
+require __DIR__.'/bff.php';
+

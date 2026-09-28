@@ -30,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        RateLimiter::for('bff-read', fn (Request $request) =>
+            Limit::perMinute(120)->by($request->user()?->id ?: $request->ip())
+        );
+
         ViewFacade::composer('components.salada.header', function (View $view): void {
             $view->with('navCategories', Category::query()
                 ->where('is_active', true)
