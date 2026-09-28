@@ -26,7 +26,7 @@
         <section class="sm-account-panel" id="dados" aria-labelledby="sm-account-data-title">
             <div class="sm-panel-top"><div><span class="sm-eyebrow">Dados pessoais</span><h2 id="sm-account-data-title">Minhas informações</h2></div><span class="sm-account-chip">{{ $user->hasVerifiedEmail() ? 'E-mail verificado' : 'Verificação pendente' }}</span></div>
             <p>Para alterar seu e-mail, confirme a senha atual ou faça uma autenticação SSO recente. O novo endereço precisará de verificação.</p>
-            <form class="sm-account-form" data-sm-bff data-method="PATCH" data-next-on-email="{{ route('verification.notice') }}" data-url="{{ route('bff.account.update') }}">
+            <form class="sm-account-form" data-sm-bff data-method="PATCH" data-next-on-email="{{ route('verification.notice') }}" data-initial-email="{{ $user->email }}" data-url="{{ route('bff.account.update') }}">
                 <label for="profile-name">Nome completo</label>
                 <input id="profile-name" name="name" value="{{ $user->name }}" maxlength="160" autocomplete="name" required>
                 <label for="profile-email">E-mail</label>
