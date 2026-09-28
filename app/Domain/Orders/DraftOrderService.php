@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\CustomerAddress;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -43,7 +44,7 @@ class DraftOrderService
                 ->where('status', 'reserved')->orderBy('id')->lockForUpdate()->get();
 
             foreach ($active as $previous) {
-                if ($previous->expires_at && $previous->expires_at <= now()) {
+                if ($previous->expires_at && Carbon::parse($previous->expires_at)->lessThanOrEqualTo(now())) {
                     $this->reservations->releaseLocked($previous, 'expired');
                 } else {
                     throw ValidationException::withMessages([
@@ -210,7 +211,7 @@ class DraftOrderService
             abort_unless($order, 404);
 
             if ($order->status === 'reserved') {
-                $reason = $order->expires_at && $order->expires_at <= now() ? 'expired' : 'cancelled';
+                $reason = $order->expires_at && Carbon::parse($order->expires_at)->lessThanOrEqualTo(now()) ? 'expired' : 'cancelled';
                 $this->reservations->releaseLocked($order, $reason, $buyer->id);
             } elseif (! in_array($order->status, ['expired', 'cancelled'], true)) {
                 throw ValidationException::withMessages([
@@ -299,7 +300,7 @@ class DraftOrderService
     {
         return [
             'id' => $order->id,
-            'status' => $order->status === 'reserved' && $order->expires_at <= now()
+            'status' => $order->status === 'reserved' && $order->expires_at && Carbon::parse($order->expires_at)->lessThanOrEqualTo(now())
                 ? 'expired_pending_cleanup' : $order->status,
             'items_total_cents' => $order->items_total_cents,
             'shipping_total_cents' => null,
@@ -311,4 +312,3 @@ class DraftOrderService
         ];
     }
 }
-

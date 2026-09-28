@@ -8,6 +8,7 @@ use App\Http\Controllers\Bff\AdminModerationController;
 use App\Http\Controllers\Bff\AddressController;
 use App\Http\Controllers\Bff\GatewayController;
 use App\Http\Controllers\Bff\OfferSubmissionController;
+use App\Http\Controllers\Bff\OrderDraftController;
 use App\Http\Controllers\Bff\SellerApplicationController;
 use App\Http\Controllers\Bff\SessionController;
 use App\Http\Controllers\Buyer\CartController;
@@ -72,6 +73,14 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
         Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
 
         Route::get('/checkout/preview', [GatewayController::class, 'checkoutPreview'])->name('checkout.preview');
+
+        // Technical drafts only; feature switch defaults OFF. No payment or shipping quote.
+        Route::get('/orders/drafts', [OrderDraftController::class, 'index'])->name('orders.drafts.index');
+        Route::post('/orders/drafts', [OrderDraftController::class, 'store'])
+            ->middleware('throttle:5,1')->name('orders.drafts.store');
+        Route::get('/orders/drafts/{order}', [OrderDraftController::class, 'show'])->name('orders.drafts.show');
+        Route::delete('/orders/drafts/{order}', [OrderDraftController::class, 'cancel'])
+            ->middleware('throttle:10,1')->name('orders.drafts.cancel');
         Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
         Route::put('/cart/{offer}', [CartController::class, 'put'])->name('cart.put');
         Route::delete('/cart/{offer}', [CartController::class, 'destroy'])->name('cart.destroy');
@@ -84,12 +93,16 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
         Route::prefix('sellers/{seller}')->middleware('seller.member')->name('sellers.')->group(function (): void {
             Route::get('/', [GatewayController::class, 'seller'])->name('show');
             Route::get('/origins', [GatewayController::class, 'sellerOrigins'])->name('origins.index');
+            Route::get('/order-reservations', [OrderDraftController::class, 'seller'])
+                ->name('orders.reservations');
             Route::post('/offers', [OfferSubmissionController::class, 'store'])
                 ->middleware('throttle:20,1')->name('offers.store');
         });
         Route::prefix('admin')->middleware(['can:review-sellers', 'admin.mfa'])
             ->name('admin.')->group(function (): void {
                 Route::get('/', [GatewayController::class, 'admin'])->name('index');
+                Route::get('/order-drafts', [OrderDraftController::class, 'admin'])
+                    ->name('orders.drafts');
                 Route::get('/sellers', [AdminModerationController::class, 'sellers'])->name('sellers.index');
                 Route::post('/sellers/{seller}/decision', [AdminModerationController::class, 'decideSeller'])
                     ->middleware('throttle:15,1')->name('sellers.decide');

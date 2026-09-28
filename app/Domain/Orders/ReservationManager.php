@@ -4,6 +4,7 @@ namespace App\Domain\Orders;
 
 use App\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use LogicException;
 
@@ -93,7 +94,7 @@ class ReservationManager
                 $order = DB::table('orders')->where('id', $id)->lockForUpdate()->first();
 
                 if (! $order || $order->status !== 'reserved' || ! $order->expires_at
-                    || $order->expires_at > now()) {
+                    || Carbon::parse($order->expires_at)->greaterThan(now())) {
                     return false;
                 }
 
@@ -104,4 +105,3 @@ class ReservationManager
         return $released;
     }
 }
-

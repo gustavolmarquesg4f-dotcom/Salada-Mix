@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\PromotePlatformAdmin;
+use App\Console\Commands\ExpireOrderReservations;
 use App\Console\Commands\ResetAdminMfa;
 use App\Http\Middleware\EnsureSellerMember;
 use App\Http\Middleware\EnsureAdminMfa;
@@ -25,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [GatewayRequestContext::class, BffResponseHeaders::class]);
         $middleware->api(append: [GatewayRequestContext::class]);
     })
-    ->withCommands([PromotePlatformAdmin::class, ResetAdminMfa::class])
+    ->withCommands([PromotePlatformAdmin::class, ResetAdminMfa::class, ExpireOrderReservations::class])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
