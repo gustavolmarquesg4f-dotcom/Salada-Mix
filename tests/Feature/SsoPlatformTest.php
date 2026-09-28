@@ -167,6 +167,28 @@ class SsoPlatformTest extends TestCase
         ]);
     }
 
+    public function test_user_cannot_attach_second_identity_from_same_provider(): void
+    {
+        $user = User::factory()->create(['email' => 'owner@example.test']);
+        SocialIdentity::query()->create([
+            'user_id' => $user->id,
+            'provider' => 'google',
+            'provider_user_id' => 'google-first',
+        ]);
+
+        Socialite::fake('google', SocialiteUser::fake([
+            'id' => 'google-second',
+            'email' => 'second@example.test',
+        ]));
+
+        $this->actingAs($user)
+            ->withSession(['sso.provider' => 'google', 'sso.intent' => 'link'])
+            ->get(route('sso.callback', 'google'))
+            ->assertSessionHasErrors('sso');
+
+        $this->assertDatabaseCount('social_identities', 1);
+    }
+
     public function test_sso_only_user_can_establish_password_after_recent_sso_and_then_unlink(): void
     {
         $user = User::factory()->create([

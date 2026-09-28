@@ -74,6 +74,12 @@ class SsoManager
                     ]);
                 }
 
+                if (! $identity && $currentUser->socialIdentities()->where('provider', $provider)->exists()) {
+                    throw ValidationException::withMessages([
+                        'sso' => 'Este usuário já possui outra conta deste provedor conectada.',
+                    ]);
+                }
+
                 $identity ??= new SocialIdentity([
                     'user_id' => $currentUser->id,
                     'provider' => $provider,
@@ -123,6 +129,12 @@ class SsoManager
             if ($user && ! $trustedVerifiedEmail) {
                 throw ValidationException::withMessages([
                     'sso' => 'Já existe uma conta com este e-mail. Entre com a senha e conecte este provedor pela sua conta.',
+                ]);
+            }
+
+            if ($user && $user->socialIdentities()->where('provider', $provider)->exists()) {
+                throw ValidationException::withMessages([
+                    'sso' => 'Este e-mail já está associado a outra identidade do mesmo provedor. Entre pela conta já conectada.',
                 ]);
             }
 
