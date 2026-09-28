@@ -27,6 +27,24 @@ php artisan serve
 Configure DB_HOST, DB_DATABASE, DB_USERNAME e DB_PASSWORD no .env. Para testes automatizados: `php artisan test`.
 A primeira instalação deve gerar `composer.lock` e `package-lock.json` e registrá-los no Git antes de qualquer release; o scaffold publicado ainda não contém lockfiles.
 
+
+## Acompanhar o projeto no VS Code
+
+Repositório público: https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix
+
+```bash
+git clone https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix.git
+cd Salada-Mix
+code .
+git fetch origin
+git switch main
+git pull --ff-only origin main
+```
+
+Se a pasta já está clonada, execute somente os últimos três comandos dentro dela. No VS Code, ative **Git: Autofetch** para identificar novos commits; use **Git: Pull** para trazer os arquivos ao disco. Para inspecionar código sem instalar nada, abra [github.dev](https://github.dev/gustavolmarquesg4f-dotcom/Salada-Mix).
+
+O [mapa do código](docs/architecture/code-map.md) mostra onde ficam frontend, backend e migrations. Antes de contribuir, leia [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Status real
 
 Fundação de código com onboarding, catálogo inicial, moderação e estoque de cadastro implantada. **Não habilitar venda real:** checkout, OAuth Mercado Pago, split, frete, LGPD operacional, backup e deploy ainda exigem implementação/homologação. Use somente dados fictícios.
