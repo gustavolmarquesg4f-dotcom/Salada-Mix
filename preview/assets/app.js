@@ -118,8 +118,35 @@ function admin(){
  return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span>Administração</nav><div class="sm-preview-panel"><span class="sm-eyebrow">Administração · demonstração</span><h1>Governança do marketplace</h1>'+note("A interface real exige login e permissão administrativa. Aqui nenhuma decisão é persistida nem aplicada a empresas.",true)+
  '<div class="sm-preview-grid"><div class="sm-preview-stat"><strong>3</strong><span>Empresas fictícias</span></div><div class="sm-preview-stat"><strong>9</strong><span>Ofertas fictícias</span></div><div class="sm-preview-stat"><strong>0</strong><span>Transações reais</span></div></div><h2 style="margin-top:25px">Empresas ilustrativas</h2><div style="overflow-x:auto"><table class="sm-preview-table"><thead><tr><th>Empresa</th><th>Produtos</th><th>Ambiente</th></tr></thead><tbody>'+SELLERS.map(s=>'<tr><td>'+esc(s)+'</td><td>'+PRODUCTS.filter(p=>p.seller===s).length+'</td><td>Fictício</td></tr>').join("")+'</tbody></table></div></div>';
 }
+function authScreen(mode){
+ const title=mode==="register"?"Crie sua conta":mode==="forgot"?"Esqueceu sua senha?":"Entrar na minha conta";
+ const fields=mode==="register"?["Nome completo","E-mail","Crie uma senha","Confirme sua senha"]:mode==="forgot"?["E-mail da conta"]:["E-mail","Senha"];
+ const inputs=fields.map(label=>'<label class="sm-static-label">'+label+'<input disabled tabindex="-1" placeholder="'+(label.includes("mail")?"voce@exemplo.com":"Preenchimento disponível no Laravel")+'" aria-label="'+label+' (demonstração)"></label>').join("");
+ const action=mode==="register"?"Criar minha conta":mode==="forgot"?"Enviar instruções":"Entrar na minha conta";
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span><span>'+title+'</span></nav>'+
+ '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL · FE-04</strong><span>Não digite dados reais: esta prévia não executa autenticação nem envia formulários.</span></div>'+
+ '<div class="sm-auth-layout"><section class="sm-auth-card"><a class="sm-auth-back" href="#/">← Voltar para a loja</a><span class="sm-eyebrow">Sua conta Salada Mix</span><h1>'+title+'</h1><p class="sm-auth-subtitle">As credenciais são processadas apenas pelo aplicativo Laravel, não pelo GitHub Pages.</p><div class="sm-auth-form">'+inputs+'<button class="sm-btn sm-btn-primary sm-auth-submit" disabled type="button">'+action+' →</button></div><div class="sm-auth-divider"><span>Outras opções</span></div><p class="sm-form-help">Google e GitHub aparecem somente quando o SSO está configurado no servidor Laravel.</p><p class="sm-auth-foot"><a href="#/entrar">Entrar</a> · <a href="#/cadastro">Criar conta</a> · <a href="#/recuperar">Recuperar senha</a></p></section><aside class="sm-auth-aside"><div class="sm-auth-aside-content"><img src="assets/salada/salada-mix-logo.svg" alt="Salada Mix" width="212"><span class="sm-auth-overline">Um universo de possibilidades</span><h2>Seu mix começa aqui.</h2><p>Beleza, moda, tecnologia, casa e muito mais.</p><div class="sm-auth-bubbles"><span>Beleza</span><span>Tecnologia</span><span>Casa</span><span>Moda</span></div></div></aside></div>';
+}
 function account(){
- return '<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span>Minha conta</nav><div class="sm-preview-panel"><h1>Acesso à conta</h1>'+note("O GitHub Pages não executa autenticação nem armazena dados. Cadastro e login estão implementados no Laravel, mas precisam de um servidor PHP e configuração de e-mail para homologação.",true)+'<a class="sm-btn sm-btn-secondary" href="#/">Voltar para a loja</a></div>';
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span>Minha conta</nav>'+
+ '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL · FE-04</strong><span>Perfil ilustrativo. O GitHub Pages não executa autenticação nem armazena dados.</span></div>'+
+ '<div class="sm-account-heading"><div><span class="sm-eyebrow">Seu espaço no Salada Mix</span><h1>Olá, Cliente Demo!</h1><p>Organize seus dados e acompanhe suas preferências em um só lugar.</p></div><span class="sm-account-avatar" aria-hidden="true">C</span></div>'+
+ '<div class="sm-account-notice">Loja em preparação: o checkout e pagamentos reais estão indisponíveis.</div>'+
+ '<div class="sm-account-layout"><nav class="sm-account-nav" aria-label="Minha conta"><a href="#/conta" aria-current="page">Meus dados</a><a href="#/enderecos">Endereços</a><a href="#/resumo">Resumo da sacola</a><a href="#/entrar">Ver login</a><a href="#/cadastro">Ver cadastro</a></nav>'+
+ '<div class="sm-account-panels"><section class="sm-account-panel"><div class="sm-panel-top"><div><span class="sm-eyebrow">Dados pessoais</span><h2>Minhas informações</h2></div><span class="sm-account-chip">Dados sintéticos</span></div><p>Exemplo visual. A atualização real utiliza BFF e sessão protegida.</p><div class="sm-account-form"><label>Nome completo</label><input disabled value="Cliente Demo"><label>E-mail</label><input disabled value="cliente@example.test"><button class="sm-btn sm-btn-primary" disabled>Salvar alterações</button></div></section>'+
+ '<section class="sm-account-panel"><div class="sm-panel-top"><div><span class="sm-eyebrow">Proteja seu acesso</span><h2>Login e segurança</h2></div></div><p>Senha, contas vinculadas e alteração segura são operadas pelo backend Laravel.</p><div class="sm-linked-account"><div><strong>Google</strong><small>Exemplo de provedor vinculado</small></div><span class="sm-account-chip">Ilustrativo</span></div></section>'+
+ '<section class="sm-account-panel"><h2>Dispositivos conectados</h2><p>Esta funcionalidade consulta sessões reais apenas quando o Laravel usa sessão em banco.</p><button class="sm-btn sm-btn-secondary" disabled>Consultar dispositivos</button></section></div></div>';
+}
+function addressScreen(){
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span><a href="#/conta">Minha conta</a><span>/</span>Endereços</nav>'+
+ '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL</strong><span>Endereços sintéticos. Nenhuma informação é enviada ou persistida.</span></div>'+
+ '<div class="sm-account-heading"><div><span class="sm-eyebrow">Minha conta</span><h1>Meus endereços</h1><p>Gerencie onde deseja receber suas futuras compras.</p></div></div>'+
+ '<div class="sm-address-layout"><section class="sm-account-panel"><h2>Endereços cadastrados</h2><article class="sm-address-item"><div><strong>Casa (DEMO)</strong><span class="sm-account-chip">Principal</span></div><p>Cliente Demo</p><p>Rua Exemplo, 100 · Centro · Cidade/DF · 00000-000</p><button class="sm-destructive" disabled>Excluir endereço</button></article></section><section class="sm-account-panel"><h2>Adicionar endereço</h2><p>Formulário somente visual; o aplicativo Laravel realiza a gravação com validação.</p><div class="sm-account-form">'+["Apelido","Nome de quem recebe","CEP","Rua ou avenida","Número","Bairro","Cidade","UF"].map(x=>'<label>'+x+'</label><input disabled placeholder="Disponível no Laravel" aria-label="'+x+' demonstrativo">').join("")+'<button class="sm-btn sm-btn-primary" disabled>Salvar endereço</button></div></section></div>';
+}
+function bagScreen(){
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span><a href="#/conta">Minha conta</a><span>/</span>Resumo da sacola</nav>'+
+ '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL</strong><span>O resumo não corresponde a um pedido e não representa cobrança.</span></div>'+
+ '<div class="sm-account-heading"><div><span class="sm-eyebrow">Minha conta</span><h1>Resumo da sacola</h1><p>Itens separados por vendedor para consulta.</p></div></div><div class="sm-summary-list"><section class="sm-account-panel"><h2>MixTech (DEMO)</h2><div class="sm-summary-line"><span>1 × Fone Bluetooth sem fio (DEMO)</span><strong>R$ 129,90</strong></div><p class="sm-summary-note">Frete ainda sem cotação real.</p></section><button class="sm-btn sm-btn-primary" disabled>Pagamento indisponível nesta etapa</button><a class="sm-btn sm-btn-secondary" href="#/enderecos">Gerenciar endereços</a></div>';
 }
 function missing(){return '<div class="sm-empty"><strong>Conteúdo não encontrado nesta prévia.</strong><a class="sm-btn sm-btn-secondary" href="#/">Voltar ao início</a></div>';}
 function route(){
@@ -133,10 +160,15 @@ function route(){
  else if(path==="/vendedor")html=seller();
  else if(path==="/admin")html=admin();
  else if(path==="/conta")html=account();
+ else if(path==="/entrar")html=authScreen("login");
+ else if(path==="/cadastro")html=authScreen("register");
+ else if(path==="/recuperar")html=authScreen("forgot");
+ else if(path==="/enderecos")html=addressScreen();
+ else if(path==="/resumo")html=bagScreen();
  else html=missing();
  ROOT.innerHTML=html;
  const search=document.getElementById("sm-global-search");if(search)search.value=params.get("q")||"";
- document.title=(path==="/buscar"?"Buscar":path.startsWith("/categorias/")?(category(decodeURIComponent(path.slice(12)))?.name||"Categoria"):path.startsWith("/ofertas/")?(product(decodeURIComponent(path.slice(9)))?.name||"Oferta"):"Salada Mix")+" — Entrega 2 (prévia)";
+ document.title=(path==="/buscar"?"Buscar":path.startsWith("/categorias/")?(category(decodeURIComponent(path.slice(12)))?.name||"Categoria"):path.startsWith("/ofertas/")?(product(decodeURIComponent(path.slice(9)))?.name||"Oferta"):"Salada Mix")+" — Entrega 4 (prévia)";
  const menu=document.querySelector(".sm-mobile-details");if(menu)menu.open=false;
  if(path==="/departamentos"||path==="/ofertas"){const section=document.getElementById(path);if(section)section.scrollIntoView({block:"start"});}
  else if(typeof window.scrollTo==="function")window.scrollTo(0,0);
