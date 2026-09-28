@@ -1,0 +1,94 @@
+name: SonarQube Cloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonar:
+    name: Análise de código e cobertura
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: salada_mix
+          MYSQL_USER: salada_mix
+          MYSQL_PASSWORD: ci-only-password
+          MYSQL_ROOT_PASSWORD: ci-only-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pci-only-root"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: salada_mix
+      DB_USERNAME: salada_mix
+      DB_PASSWORD: ci-only-password
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      MARKETPLACE_CHECKOUT_ENABLED: false
+    steps:
+      - name: Obter o código e o histórico
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Avisar quando a integração ainda não foi conectada
+        if: ${{ env.SONAR_TOKEN == '' || env.SONAR_ORGANIZATION == '' || env.SONAR_PROJECT_KEY == '' }}
+        run: |
+          echo '::notice title=SonarQube ainda não ativado::Importe o repositório no SonarQube Cloud; configure o secret SONAR_TOKEN e as variables SONAR_ORGANIZATION e SONAR_PROJECT_KEY para executar a análise.'
+          echo 'SONAR_NOT_CONFIGURED: scanner não executado; este job não representa aprovação do Quality Gate.'
+      - name: Configurar PHP e PCOV
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, intl, zip, dom, fileinfo
+          coverage: pcov
+          tools: composer:v2
+      - name: Instalar dependências
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Preparar banco MySQL de testes
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+      - name: Executar testes e gerar Clover
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
+        run: |
+          mkdir -p coverage
+          php artisan test --coverage-clover=coverage/sonar-clover.xml
+          test -s coverage/sonar-clover.xml
+      - name: Analisar projeto com SonarQube Cloud
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_ORGANIZATION != '' && env.SONAR_PROJECT_KEY != '' }}
+        uses: SonarSource/sonarqube-scan-action@v7.2.1
+        with:
+          args: >-
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
