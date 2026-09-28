@@ -1,13 +1,11 @@
-# Prévia navegável Salada Mix no GitHub Pages
+# Prévia pública FE-01 + FE-02 — Salada Mix 2.0
 
-Esta é uma **prévia estática visual**. Não executa Laravel, PHP, MySQL, autenticação real, frete ou pagamentos; dados fictícios e checkout intencionalmente bloqueado.
+Esta prévia estática reproduz a marca oficial e os componentes visuais do storefront Blade. As folhas `salada-foundation.css` e `salada-catalog.css` são cópias exatas dos arquivos em `resources/css/`; os SVGs são os originais de `public/assets/salada/`. O smoke test verifica essa igualdade.
 
-## Publicação no GitHub Pages
+**Não é a aplicação Laravel em execução.** A busca, categoria, filtro de preço, ordenação e detalhe funcionam no navegador com nove ofertas fictícias equivalentes ao `MarketplaceDemoSeeder`, que só pode ser usado localmente. Não há MySQL remoto, login, cadastro real, frete, reservas, pedidos, pagamentos nem armazenamento de dados dos formulários.
 
-No repositório, acesse Settings → Pages → Build and deployment. Escolha **Deploy from a branch**, branch **gh-pages**, pasta **/(root)** e Save.
+O link é https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/ .
 
-Os arquivos estáticos publicados estão na raiz da branch [gh-pages](https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/tree/gh-pages), que contém index.html, assets/ e .nojekyll. A pasta preview/ na main é fonte de desenvolvimento. Depois de uma alteração aprovada, publique a mesma versão em gh-pages. GitHub Pages atualizará quando a branch de publicação receber um push elegível.
+Fonte da prévia: `preview/` em `main`. Publicação: copiar exclusivamente seu conteúdo para a raiz de `gh-pages` (branch de GitHub Pages). A mera atualização de `main` não publica automaticamente a nova tela: atualizar `preview/` e sincronizar `gh-pages` após cada entrega visual.
 
-URL após a primeira publicação: https://gustavolmarquesg4f-dotcom.github.io/Salada-Mix/
-
-Código verdadeiro: app/, database/, resources/views/, tests/. Nunca afirmar que os dados fictícios da prévia representam operações reais.
+Validação: `node --check preview/assets/app.js` e `node preview/tests/smoke.cjs`. A aplicação verdadeira permanece em `app/`, `resources/`, `database/` e `tests/`.
