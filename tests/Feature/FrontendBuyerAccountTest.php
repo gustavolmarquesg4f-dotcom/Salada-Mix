@@ -41,7 +41,7 @@ class FrontendBuyerAccountTest extends TestCase
 
     public function test_account_uses_existing_bff_contracts_without_creating_commerce(): void
     {
-        $user = User::factory()->create(['name' => 'Cliente Exemplo']);
+        $user = User::factory()->create(['name' => 'Cliente Exemplo', 'password_login_enabled' => true]);
         $this->actingAs($user)->get(route('buyer.account'))->assertOk()
             ->assertSee('Cliente Exemplo')
             ->assertSee('sm-account-layout')
