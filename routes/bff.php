@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\PublicCatalogController;
 use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Bff\AccountController;
+use App\Http\Controllers\Bff\AddressController;
 use App\Http\Controllers\Bff\GatewayController;
 use App\Http\Controllers\Bff\OfferSubmissionController;
 use App\Http\Controllers\Bff\SellerApplicationController;
@@ -56,6 +57,11 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
         Route::get('/account/sessions', [AccountController::class, 'sessions'])->name('account.sessions');
         Route::delete('/account/sessions/{fingerprint}', [AccountController::class, 'revokeSession'])
             ->middleware('throttle:10,1')->name('account.sessions.revoke');
+
+        Route::get('/addresses', [AddressController::class, 'index'])->name('addresses.index');
+        Route::post('/addresses', [AddressController::class, 'store'])->middleware('throttle:20,1')->name('addresses.store');
+        Route::patch('/addresses/{address}', [AddressController::class, 'update'])->name('addresses.update');
+        Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
 
         Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
         Route::put('/cart/{offer}', [CartController::class, 'put'])->name('cart.put');
