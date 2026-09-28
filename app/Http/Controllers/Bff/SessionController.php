@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Bff;
 
 use App\Http\Controllers\Controller;
+use App\Domain\Identity\SsoManager;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -18,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 
 class SessionController extends Controller
 {
-    public function me(Request $request): JsonResponse
+    public function me(Request $request, SsoManager $sso): JsonResponse
     {
         $user = $request->user();
 
@@ -30,6 +31,11 @@ class SessionController extends Controller
                 && (bool) $user->mfa_confirmed_at
                 && (string) $request->session()->get('admin_mfa_user_id') === (string) $user->id,
             'user' => $user ? $this->publicUser($user) : null,
+            'password_login_enabled' => $user?->password_login_enabled ?? false,
+            'sso_providers' => $sso->enabledProviders(),
+            'connected_sso' => $user
+                ? $user->socialIdentities()->orderBy('provider')->pluck('provider')->values()
+                : [],
             'links' => [
                 'login' => route('login'),
                 'register' => route('register'),
@@ -72,7 +78,7 @@ class SessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt(['email' => Str::lower(trim($data['email'])), 'password' => $data['password']])) {
+        if (! Auth::attempt(['email' => Str::lower(trim($data['email'])), 'password' => $data['password'], 'password_login_enabled' => true])) {
             throw ValidationException::withMessages(['email' => 'E-mail ou senha inválidos.']);
         }
 
@@ -128,6 +134,7 @@ class SessionController extends Controller
             $user->forceFill([
                 'password' => Hash::make($password),
                 'remember_token' => Str::random(60),
+                'password_login_enabled' => true,
             ])->save();
 
             if (config('session.driver') === 'database') {

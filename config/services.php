@@ -14,6 +14,19 @@ return [
     |
     */
 
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => '/auth/sso/google/callback',
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_OAUTH_CLIENT_ID'),
+        'client_secret' => env('GITHUB_OAUTH_CLIENT_SECRET'),
+        'redirect' => '/auth/sso/github/callback',
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

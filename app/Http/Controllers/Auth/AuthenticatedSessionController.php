@@ -25,6 +25,8 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $credentials['password_login_enabled'] = true;
+
         if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages(['email' => 'E-mail ou senha inválidos.']);
         }

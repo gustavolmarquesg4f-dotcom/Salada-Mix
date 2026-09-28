@@ -30,8 +30,20 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        RateLimiter::for('api-public', fn (Request $request) =>
+            Limit::perMinute(90)->by($request->ip())
+        );
+
         RateLimiter::for('bff-read', fn (Request $request) =>
             Limit::perMinute(120)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('bff-write', fn (Request $request) =>
+            Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+        );
+
+        RateLimiter::for('sso', fn (Request $request) =>
+            Limit::perMinute(12)->by(($request->user()?->id ?: 'guest').'|'.$request->ip())
         );
 
         ViewFacade::composer('components.salada.header', function (View $view): void {
