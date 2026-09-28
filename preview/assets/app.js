@@ -29,6 +29,8 @@ const PRODUCTS=[
 const DEMO_PHOTOS={"demo-tech-fone":"photo-1505740420928-5e560c06d30e","demo-tech-mouse":"photo-1527814050087-3793815479db","demo-tech-camera":"photo-1516035069371-29a1b244cc32","demo-belle-serum":"photo-1556228578-0d85b1a4d571","demo-belle-maquiagem":"photo-1596462502278-27bfdc403348","demo-belle-perfume":"photo-1541643600914-78b084683601","demo-home-cafe":"photo-1495474472287-4d71bcdd2085","demo-home-light":"photo-1507473885765-e6ed057f782c","demo-home-bag":"photo-1547949003-9792a18a2601"};
 const DEMO_CATEGORIES={"beleza-e-cuidados":"photo-1596462502278-27bfdc403348","moda-e-acessorios":"photo-1547949003-9792a18a2601","tecnologia-e-informatica":"photo-1505740420928-5e560c06d30e","casa-e-decoracao":"photo-1493663284031-b7e3aefcae8c","infantil-e-brinquedos":"photo-1558060370-d644479cb6f7","eletrodomesticos":"photo-1495474472287-4d71bcdd2085"};
 const photoUrl=(id,w=520)=>id?'https://images.unsplash.com/'+id+'?auto=format&fit=crop&w='+w+'&q=80':'';
+const PREVIEW_CART=new Map([["demo-tech-fone",1],["demo-belle-serum",1]]);
+const PREVIEW_FAVORITES=new Set(["demo-belle-serum","demo-home-bag"]);
 const ROOT=document.getElementById("conteudo");
 const money=cents=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(cents/100);
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -38,10 +40,10 @@ const detail=p=>"#/ofertas/"+encodeURIComponent(p.id);
 const categoryUrl=slug=>"#/categorias/"+encodeURIComponent(slug);
 const note=(text,warning=false)=>'<div class="sm-preview-info'+(warning?" warning":"")+'">'+text+'</div>';
 const brandName=p=>esc(category(p.category)?.name||"Departamento");
-const version='<div class="sm-preview-kicker"><span class="sm-preview-pill">FE-03 · VISUAL DEMO</span><span>Catálogo de teste (MySQL local) reproduzido nesta página estática</span></div>';
+const version='<div class="sm-preview-kicker"><span class="sm-preview-pill">FE-05 · VISUAL DEMO</span><span>Catálogo de teste (MySQL local) reproduzido nesta página estática</span></div>';
 function card(p){
  const photo=photoUrl(DEMO_PHOTOS[p.id]);
- return '<article class="sm-product-card"><a href="'+detail(p)+'" class="sm-product-link" aria-label="Ver oferta: '+esc(p.name)+'"><div class="sm-product-visual sm-product-photo"><img class="sm-demo-image" src="'+photo+'" alt="Imagem ilustrativa: '+esc(p.name)+'" width="480" height="480" loading="lazy" referrerpolicy="no-referrer"><span class="sm-product-demo-badge">DEMO</span></div><div class="sm-product-body"><p class="sm-product-seller">'+esc(p.seller)+'</p><h3 class="sm-product-name">'+esc(p.name)+'</h3><p class="sm-product-price">'+money(p.price)+'</p><p class="sm-product-hint">Ver detalhes →</p></div></a></article>';
+ return '<article class="sm-product-card"><a href="'+detail(p)+'" class="sm-product-link" aria-label="Ver oferta: '+esc(p.name)+'"><div class="sm-product-visual sm-product-photo"><img class="sm-demo-image" src="'+photo+'" alt="Imagem ilustrativa: '+esc(p.name)+'" width="480" height="480" loading="lazy" referrerpolicy="no-referrer"><span class="sm-product-demo-badge">DEMO</span></div><div class="sm-product-body"><p class="sm-product-seller">'+esc(p.seller)+'</p><h3 class="sm-product-name">'+esc(p.name)+'</h3><p class="sm-product-price">'+money(p.price)+'</p><p class="sm-product-hint">Ver detalhes →</p></div></a><div class="sm-card-actions"><button type="button" class="sm-action-add" data-demo-action="cart-add" data-id="'+esc(p.id)+'">Adicionar à sacola</button><button type="button" class="sm-action-favorite" data-demo-action="wishlist-toggle" data-id="'+esc(p.id)+'" aria-label="Favoritar '+esc(p.name)+'">'+(PREVIEW_FAVORITES.has(p.id)?'♥':'♡')+'</button></div></article>';
 }
 function grid(items){
  return items.length?'<div class="sm-offer-grid">'+items.map(card).join("")+'</div>':
@@ -102,7 +104,7 @@ function offer(id){
  return '<div class="sm-demo-label"><strong>PRODUTO DE DEMONSTRAÇÃO</strong><span>Imagem ilustrativa e dados sintéticos. Não disponível para compra.</span></div>'+
  '<nav class="sm-breadcrumb" aria-label="Caminho de navegação"><a href="#/">Início</a><span>/</span><a href="'+categoryUrl(p.category)+'">'+title+'</a><span>/</span><span aria-current="page">'+esc(p.name)+'</span></nav>'+
  '<article class="sm-detail sm-detail-premium"><div class="sm-detail-gallery"><img class="sm-detail-image" src="'+photoUrl(DEMO_PHOTOS[p.id],720)+'" alt="Imagem ilustrativa: '+esc(p.name)+'" width="720" height="720" referrerpolicy="no-referrer"><p>Imagem meramente ilustrativa, vinculada apenas ao catálogo sintético.</p></div>'+
- '<div class="sm-detail-info"><span class="sm-detail-category">'+title+'</span><p class="sm-eyebrow">Vendido por '+esc(p.seller)+'</p><h1>'+esc(p.name)+'</h1><p class="sm-detail-sku">Referência do vendedor: '+esc(p.sku)+'</p><p class="sm-detail-price">'+money(p.price)+'</p><p class="sm-detail-stock">Disponível para consulta · '+p.stock+' unidades cadastradas (dados fictícios)</p><div class="sm-notice info"><strong>O checkout está desativado.</strong> Estamos preparando pagamentos e logística para compras entre diferentes vendedores.</div><a class="sm-btn sm-btn-secondary" href="'+categoryUrl(p.category)+'">Mais neste departamento →</a></div>'+
+ '<div class="sm-detail-info"><span class="sm-detail-category">'+title+'</span><p class="sm-eyebrow">Vendido por '+esc(p.seller)+'</p><h1>'+esc(p.name)+'</h1><p class="sm-detail-sku">Referência do vendedor: '+esc(p.sku)+'</p><p class="sm-detail-price">'+money(p.price)+'</p><p class="sm-detail-stock">Disponível para consulta · '+p.stock+' unidades cadastradas (dados fictícios)</p><div class="sm-card-actions sm-card-actions-compact"><button type="button" class="sm-action-add" data-demo-action="cart-add" data-id="'+esc(p.id)+'">Adicionar à sacola</button><button type="button" class="sm-action-favorite" data-demo-action="wishlist-toggle" data-id="'+esc(p.id)+'">♡ Favoritar</button></div><div class="sm-notice info"><strong>O checkout está desativado.</strong> Estamos preparando pagamentos e logística para compras entre diferentes vendedores.</div><a class="sm-btn sm-btn-secondary" href="'+categoryUrl(p.category)+'">Mais neste departamento →</a></div>'+
  '<section class="sm-detail-description"><h2>Descrição do produto</h2><p>Produto fictício para validação visual do Salada Mix. Não disponível para compra.</p></section></article>';
 }
 function join(){
@@ -132,7 +134,7 @@ function account(){
  '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL · FE-04</strong><span>Perfil ilustrativo. O GitHub Pages não executa autenticação nem armazena dados.</span></div>'+
  '<div class="sm-account-heading"><div><span class="sm-eyebrow">Seu espaço no Salada Mix</span><h1>Olá, Cliente Demo!</h1><p>Organize seus dados e acompanhe suas preferências em um só lugar.</p></div><span class="sm-account-avatar" aria-hidden="true">C</span></div>'+
  '<div class="sm-account-notice">Loja em preparação: o checkout e pagamentos reais estão indisponíveis.</div>'+
- '<div class="sm-account-layout"><nav class="sm-account-nav" aria-label="Minha conta"><a href="#/conta" aria-current="page">Meus dados</a><a href="#/enderecos">Endereços</a><a href="#/resumo">Resumo da sacola</a><a href="#/entrar">Ver login</a><a href="#/cadastro">Ver cadastro</a></nav>'+
+ '<div class="sm-account-layout"><nav class="sm-account-nav" aria-label="Minha conta"><a href="#/conta" aria-current="page">Meus dados</a><a href="#/enderecos">Endereços</a><a href="#/resumo">Resumo da sacola</a><a href="#/sacola">Minha sacola</a><a href="#/favoritos">Meus favoritos</a><a href="#/entrar">Ver login</a><a href="#/cadastro">Ver cadastro</a></nav>'+
  '<div class="sm-account-panels"><section class="sm-account-panel"><div class="sm-panel-top"><div><span class="sm-eyebrow">Dados pessoais</span><h2>Minhas informações</h2></div><span class="sm-account-chip">Dados sintéticos</span></div><p>Exemplo visual. A atualização real utiliza BFF e sessão protegida.</p><div class="sm-account-form"><label>Nome completo</label><input disabled value="Cliente Demo"><label>E-mail</label><input disabled value="cliente@example.test"><button class="sm-btn sm-btn-primary" disabled>Salvar alterações</button></div></section>'+
  '<section class="sm-account-panel"><div class="sm-panel-top"><div><span class="sm-eyebrow">Proteja seu acesso</span><h2>Login e segurança</h2></div></div><p>Senha, contas vinculadas e alteração segura são operadas pelo backend Laravel.</p><div class="sm-linked-account"><div><strong>Google</strong><small>Exemplo de provedor vinculado</small></div><span class="sm-account-chip">Ilustrativo</span></div></section>'+
  '<section class="sm-account-panel"><h2>Dispositivos conectados</h2><p>Esta funcionalidade consulta sessões reais apenas quando o Laravel usa sessão em banco.</p><button class="sm-btn sm-btn-secondary" disabled>Consultar dispositivos</button></section></div></div>';
@@ -147,6 +149,18 @@ function bagScreen(){
  return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span><a href="#/conta">Minha conta</a><span>/</span>Resumo da sacola</nav>'+
  '<div class="sm-demo-label"><strong>DEMONSTRAÇÃO VISUAL</strong><span>O resumo não corresponde a um pedido e não representa cobrança.</span></div>'+
  '<div class="sm-account-heading"><div><span class="sm-eyebrow">Minha conta</span><h1>Resumo da sacola</h1><p>Itens separados por vendedor para consulta.</p></div></div><div class="sm-summary-list"><section class="sm-account-panel"><h2>MixTech (DEMO)</h2><div class="sm-summary-line"><span>1 × Fone Bluetooth sem fio (DEMO)</span><strong>R$ 129,90</strong></div><p class="sm-summary-note">Frete ainda sem cotação real.</p></section><button class="sm-btn sm-btn-primary" disabled>Pagamento indisponível nesta etapa</button><a class="sm-btn sm-btn-secondary" href="#/enderecos">Gerenciar endereços</a></div>';
+}
+function cartScreen(){
+ const items=[...PREVIEW_CART].map(([id,quantity])=>({p:product(id),quantity})).filter(x=>x.p);
+ const groups=new Map();
+ for(const line of items){const name=line.p.seller;if(!groups.has(name))groups.set(name,[]);groups.get(name).push(line)}
+ const total=items.reduce((sum,x)=>sum+x.p.price*x.quantity,0);
+ const block=[...groups].map(([seller,lines])=>'<section class="sm-seller-group"><div class="sm-seller-group-header"><span class="sm-seller-dot" aria-hidden="true"></span><strong>Vendido por '+esc(seller)+'</strong><span>'+lines.length+' produto(s)</span></div>'+lines.map(({p,quantity})=>'<article class="sm-shopping-line"><a class="sm-shopping-thumb" href="'+detail(p)+'"><img src="'+photoUrl(DEMO_PHOTOS[p.id],320)+'" alt="Imagem ilustrativa de '+esc(p.name)+'"><span>DEMO</span></a><div class="sm-shopping-info"><a class="sm-shopping-product" href="'+detail(p)+'">'+esc(p.name)+'</a><p>'+brandName(p)+'</p><span class="sm-shopping-availability">Disponibilidade fictícia</span><button type="button" class="sm-shopping-remove" data-demo-action="cart-remove" data-id="'+esc(p.id)+'">Remover da sacola</button></div><div class="sm-shopping-numbers"><strong>'+money(p.price*quantity)+'</strong><small>'+money(p.price)+' por unidade</small><label class="sr-only" for="qty-'+esc(p.id)+'">Quantidade</label><select class="sm-shopping-qty" id="qty-'+esc(p.id)+'" data-demo-qty="'+esc(p.id)+'">'+Array.from({length:20},(_,i)=>'<option value="'+(i+1)+'" '+(i+1===quantity?'selected':'')+'>'+(i+1)+' unidade(s)</option>').join("")+'</select></div></article>').join("")+'</section>').join("");
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span>Minha sacola</nav><div class="sm-demo-label"><strong>FE-05 · DADOS SINTÉTICOS</strong><span>Interações temporárias nesta página; recarregar restaura os exemplos. Sem conta, pedido ou cobrança.</span></div><div class="sm-shopping-title"><div><span class="sm-eyebrow">Seu mix, suas escolhas</span><h1>Minha sacola <span>('+items.length+')</span></h1><p>Produtos organizados por vendedor.</p></div><a class="sm-btn sm-btn-secondary" href="#/favoritos">♡ Meus favoritos</a></div><div class="sm-shopping-alert"><strong>Somente demonstração visual:</strong> nenhum estoque é reservado. Frete e total final indisponíveis.</div>'+(!items.length?'<section class="sm-shopping-empty"><span class="sm-empty-symbol">◇</span><h2>Sua sacola está esperando seus achados.</h2><p>Explore departamentos e escolha seus produtos.</p><a class="sm-btn sm-btn-primary" href="#/buscar">Explorar produtos →</a></section>':'<div class="sm-shopping-layout"><div class="sm-shopping-sellers">'+block+'</div><aside class="sm-shopping-summary"><span class="sm-eyebrow">Resumo de demonstração</span><h2>Seu mix até agora</h2><div class="sm-shopping-total"><span>Subtotal ilustrativo</span><strong>'+money(total)+'</strong></div><p>Frete: indisponível.</p><p>Total final: indisponível.</p><button disabled class="sm-btn sm-btn-primary sm-shopping-disabled">Finalizar compra indisponível</button><a class="sm-btn sm-btn-secondary" href="#/resumo">Ver resumo por vendedor</a><small>Não existe reserva, pedido ou pagamento.</small></aside></div>');
+}
+function favoritesScreen(){
+ const items=[...PREVIEW_FAVORITES].map(product).filter(Boolean);
+ return version+'<nav class="sm-breadcrumb"><a href="#/">Início</a><span>/</span>Favoritos</nav><div class="sm-demo-label"><strong>FE-05 · DADOS SINTÉTICOS</strong><span>Favoritos não são gravados no servidor nesta prévia.</span></div><div class="sm-shopping-title"><div><span class="sm-eyebrow">Seus próximos achados</span><h1>Meus favoritos <span>('+items.length+')</span></h1><p>Uma seleção ilustrativa para avaliar o layout.</p></div><a class="sm-btn sm-btn-secondary" href="#/sacola">Ver minha sacola →</a></div>'+(!items.length?'<section class="sm-shopping-empty"><span class="sm-empty-symbol">♡</span><h2>Seus favoritos vão aparecer aqui.</h2><a class="sm-btn sm-btn-primary" href="#/buscar">Descobrir produtos →</a></section>':'<div class="sm-favorites-grid">'+items.map(p=>'<article class="sm-favorite-card"><a class="sm-favorite-thumb" href="'+detail(p)+'"><img src="'+photoUrl(DEMO_PHOTOS[p.id],360)+'" alt="Imagem ilustrativa: '+esc(p.name)+'"><span>DEMO</span></a><div class="sm-favorite-body"><small>'+esc(p.seller)+'</small><a class="sm-favorite-name" href="'+detail(p)+'">'+esc(p.name)+'</a><strong>'+money(p.price)+'</strong><p>Preço sintético sujeito a alteração.</p><div class="sm-favorite-actions"><button type="button" class="sm-btn sm-btn-primary" data-demo-action="cart-add" data-id="'+esc(p.id)+'">Adicionar à sacola</button><button type="button" class="sm-shopping-remove" data-demo-action="wishlist-toggle" data-id="'+esc(p.id)+'">Remover ♡</button></div></div></article>').join("")+'</div>');
 }
 function missing(){return '<div class="sm-empty"><strong>Conteúdo não encontrado nesta prévia.</strong><a class="sm-btn sm-btn-secondary" href="#/">Voltar ao início</a></div>';}
 function route(){
@@ -165,10 +179,12 @@ function route(){
  else if(path==="/recuperar")html=authScreen("forgot");
  else if(path==="/enderecos")html=addressScreen();
  else if(path==="/resumo")html=bagScreen();
+ else if(path==="/sacola")html=cartScreen();
+ else if(path==="/favoritos")html=favoritesScreen();
  else html=missing();
  ROOT.innerHTML=html;
  const search=document.getElementById("sm-global-search");if(search)search.value=params.get("q")||"";
- document.title=(path==="/buscar"?"Buscar":path.startsWith("/categorias/")?(category(decodeURIComponent(path.slice(12)))?.name||"Categoria"):path.startsWith("/ofertas/")?(product(decodeURIComponent(path.slice(9)))?.name||"Oferta"):"Salada Mix")+" — Entrega 4 (prévia)";
+ document.title=(path==="/buscar"?"Buscar":path.startsWith("/categorias/")?(category(decodeURIComponent(path.slice(12)))?.name||"Categoria"):path.startsWith("/ofertas/")?(product(decodeURIComponent(path.slice(9)))?.name||"Oferta"):"Salada Mix")+" — Entrega 5 (prévia)";
  const menu=document.querySelector(".sm-mobile-details");if(menu)menu.open=false;
  if(path==="/departamentos"||path==="/ofertas"){const section=document.getElementById(path);if(section)section.scrollIntoView({block:"start"});}
  else if(typeof window.scrollTo==="function")window.scrollTo(0,0);
@@ -177,6 +193,23 @@ document.getElementById("global-search").addEventListener("submit",event=>{
  event.preventDefault();const input=document.getElementById("sm-global-search");const q=input?input.value.trim():"";
  location.hash="#/buscar"+(q?"?q="+encodeURIComponent(q):"");
  if(!q&&location.hash==="#/buscar")route();
+});
+ROOT.addEventListener("click",event=>{
+ const target=event.target.closest("[data-demo-action]");
+ if(!target)return;
+ const id=target.dataset.id,action=target.dataset.demoAction;
+ if(!product(id))return;
+ if(action==="cart-add")PREVIEW_CART.set(id,Math.min(20,(PREVIEW_CART.get(id)||0)+1));
+ else if(action==="cart-remove")PREVIEW_CART.delete(id);
+ else if(action==="wishlist-toggle"){if(PREVIEW_FAVORITES.has(id))PREVIEW_FAVORITES.delete(id);else PREVIEW_FAVORITES.add(id)}
+ route();
+});
+ROOT.addEventListener("change",event=>{
+ const target=event.target.closest("[data-demo-qty]");
+ if(!target)return;
+ const q=Number(target.value);
+ if(Number.isInteger(q)&&q>=1&&q<=20)PREVIEW_CART.set(target.dataset.demoQty,q);
+ route();
 });
 ROOT.addEventListener("submit",event=>{
  if(event.target.id==="browse-form"){
