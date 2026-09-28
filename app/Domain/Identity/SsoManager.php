@@ -164,7 +164,7 @@ class SsoManager
 
     public function unlink(User $user, string $provider, ?string $currentPassword, bool $recentSso): void
     {
-        $this->providerConfig($provider);
+        abort_unless(is_array(config("sso.providers.{$provider}")), 404);
         $identity = $user->socialIdentities()->where('provider', $provider)->firstOrFail();
 
         if ($user->password_login_enabled) {
@@ -186,4 +186,3 @@ class SsoManager
         ]);
     }
 }
-
