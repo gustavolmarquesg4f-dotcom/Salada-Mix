@@ -1,1 +1,1 @@
-//
+import './salada-account.js';

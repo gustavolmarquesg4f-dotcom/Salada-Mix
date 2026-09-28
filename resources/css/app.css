@@ -2,6 +2,7 @@
 @import './salada-foundation.css';
 @import './salada-catalog.css';
 @import './salada-visual-demo.css';
+@import './salada-account.css';
 
 @source '../views/**/*.blade.php';
 @source '../../app/**/*.php';
