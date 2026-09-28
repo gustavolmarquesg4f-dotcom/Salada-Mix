@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminSellerController;
+use App\Http\Controllers\Admin\CatalogModerationController;
+use App\Http\Controllers\Seller\SellerOfferController;
+use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -11,7 +14,9 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'storefront.home')->name('home');
+Route::get('/', [CatalogController::class, 'home'])->name('home');
+Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
+Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/cadastro', [RegisteredUserController::class, 'create'])->name('register');
@@ -47,10 +52,17 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('/vender/cadastro', [SellerOnboardingController::class, 'store'])->name('seller.submit');
     Route::get('/vendedor/{seller}/painel', [SellerDashboardController::class, 'show'])
         ->middleware('seller.member')->name('seller.dashboard');
+    Route::prefix('vendedor/{seller}')->name('seller.')->middleware('seller.member')->group(function (): void {
+        Route::get('/ofertas', [SellerOfferController::class, 'index'])->name('offers.index');
+        Route::get('/ofertas/nova', [SellerOfferController::class, 'create'])->name('offers.create');
+        Route::post('/ofertas', [SellerOfferController::class, 'store'])->name('offers.store');
+    });
     Route::prefix('admin')->name('admin.')->middleware('can:review-sellers')->group(function (): void {
+        Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
+        Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
+        Route::post('/catalogo/{offer}/rejeitar', [CatalogModerationController::class, 'reject'])->name('catalog.reject');
         Route::get('/empresas', [AdminSellerController::class, 'index'])->name('sellers.index');
         Route::post('/empresas/{seller}/aprovar', [AdminSellerController::class, 'approve'])->name('sellers.approve');
         Route::post('/empresas/{seller}/rejeitar', [AdminSellerController::class, 'reject'])->name('sellers.reject');
     });
 });
-

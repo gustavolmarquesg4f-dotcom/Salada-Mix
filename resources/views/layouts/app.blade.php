@@ -15,11 +15,13 @@
             <a href="{{ route('home') }}" class="text-2xl font-black tracking-tight text-teal-700">SALADA<span class="text-orange-500"> MIX</span></a>
             <nav aria-label="Navegação principal" class="flex flex-wrap items-center gap-4 text-sm font-semibold">
                 <a href="{{ route('home') }}" class="hover:text-teal-700">Início</a>
+                <a href="{{ route('home') }}#departamentos" class="hover:text-teal-700">Departamentos</a>
                 <a href="{{ route('seller.apply') }}" class="hover:text-teal-700">Quero vender</a>
                 @auth
                     <a href="{{ route('buyer.account') }}" class="hover:text-teal-700">Minha conta</a>
                     @can('review-sellers')
                         <a href="{{ route('admin.sellers.index') }}" class="hover:text-teal-700">Administração</a>
+                        <a href="{{ route('admin.catalog.index') }}" class="hover:text-teal-700">Moderação</a>
                     @endcan
                     <form action="{{ route('logout') }}" method="post">@csrf<button type="submit" class="hover:text-teal-700">Sair</button></form>
                 @else
@@ -47,4 +49,3 @@
     @livewireScripts
 </body>
 </html>
-
