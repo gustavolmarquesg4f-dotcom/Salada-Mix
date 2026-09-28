@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminSellerController;
+use App\Http\Controllers\Buyer\CartController;
+use App\Http\Controllers\Buyer\WishlistController;
 use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
@@ -48,6 +50,15 @@ Route::middleware('auth')->group(function (): void {
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::view('/minha-conta', 'buyer.account')->name('buyer.account');
+
+    // JSON endpoints share the browser's verified session and CSRF protection.
+    // They store interests only; stock is not reserved and checkout is disabled.
+    Route::get('/minha-conta/carrinho', [CartController::class, 'index'])->name('buyer.cart.index');
+    Route::put('/minha-conta/carrinho/{offer}', [CartController::class, 'put'])->name('buyer.cart.put');
+    Route::delete('/minha-conta/carrinho/{offer}', [CartController::class, 'destroy'])->name('buyer.cart.destroy');
+    Route::get('/minha-conta/favoritos', [WishlistController::class, 'index'])->name('buyer.wishlist.index');
+    Route::put('/minha-conta/favoritos/{offer}', [WishlistController::class, 'put'])->name('buyer.wishlist.put');
+    Route::delete('/minha-conta/favoritos/{offer}', [WishlistController::class, 'destroy'])->name('buyer.wishlist.destroy');
     Route::get('/vender/cadastro', [SellerOnboardingController::class, 'create'])->name('seller.apply');
     Route::post('/vender/cadastro', [SellerOnboardingController::class, 'store'])->name('seller.submit');
     Route::get('/vendedor/{seller}/painel', [SellerDashboardController::class, 'show'])
