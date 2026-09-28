@@ -9,9 +9,12 @@ class ValidCnpj implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $cnpj = preg_replace('/\D/', '', (string) $value);
+        // Desde julho de 2026 a Receita Federal emite também CNPJs alfanuméricos.
+        $cnpj = preg_replace('/[^A-Z0-9]/', '', strtoupper((string) $value));
 
-        if (strlen($cnpj) !== 14 || preg_match('/^(\d)\1{13}$/', $cnpj)) {
+        if (strlen($cnpj) !== 14
+            || ! preg_match('/^[A-Z0-9]{12}[0-9]{2}$/D', $cnpj)
+            || preg_match('/^(\d)\1{13}$/D', $cnpj)) {
             $fail('Informe um CNPJ válido.');
 
             return;
@@ -25,7 +28,8 @@ class ValidCnpj implements ValidationRule
             $sum = 0;
 
             for ($i = 0; $i < $length; $i++) {
-                $sum += (int) $cnpj[$i] * $weights[$i];
+                // Valor ASCII - 48: 0..9 => 0..9; A..Z => 17..42.
+                $sum += (ord($cnpj[$i]) - 48) * $weights[$i];
             }
 
             $remainder = $sum % 11;

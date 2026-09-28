@@ -7,10 +7,9 @@
     @csrf
     <label class="block text-sm font-semibold">Razão social <input name="legal_name" required maxlength="200" value="{{ old('legal_name') }}" class="mt-1 w-full rounded-lg border p-3"></label>
     <label class="block text-sm font-semibold">Nome fantasia <input name="trade_name" required maxlength="160" value="{{ old('trade_name') }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">CNPJ <input name="cnpj" inputmode="numeric" required maxlength="18" value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00" class="mt-1 w-full rounded-lg border p-3"></label>
+    <label class="block text-sm font-semibold">CNPJ <input name="cnpj" inputmode="text" required maxlength="18" value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00 ou 00.000.000/E08G-12" class="mt-1 w-full rounded-lg border p-3"></label>
     <label class="block text-sm font-semibold">E-mail comercial <input name="contact_email" type="email" required maxlength="255" value="{{ old('contact_email') }}" class="mt-1 w-full rounded-lg border p-3"></label>
     <p class="text-xs text-slate-500">Não envie documentos sensíveis por este formulário. A etapa documental será habilitada após revisão jurídica e do armazenamento privado.</p>
     <button class="rounded-xl bg-teal-700 px-6 py-3 font-bold text-white" type="submit">Enviar para análise</button>
 </form>
 @endsection
-

@@ -70,6 +70,17 @@ class SellerOnboardingTest extends TestCase
         $this->assertDatabaseCount('sellers', 1);
     }
 
+
+    public function test_alphanumeric_cnpj_is_accepted_and_normalized(): void
+    {
+        $owner = User::factory()->create();
+
+        $this->actingAs($owner)->post(route('seller.submit'), $this->form('00.000.000/E08G-12'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('sellers', ['cnpj' => '00000000E08G12', 'status' => 'submitted']);
+    }
+
     private function form(string $cnpj = self::VALID_CNPJ): array
     {
         return [
@@ -80,4 +91,3 @@ class SellerOnboardingTest extends TestCase
         ];
     }
 }
-

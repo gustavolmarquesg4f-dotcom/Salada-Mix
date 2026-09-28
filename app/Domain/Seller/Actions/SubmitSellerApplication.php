@@ -13,7 +13,7 @@ class SubmitSellerApplication
 {
     public function execute(User $owner, array $data): Seller
     {
-        $cnpj = preg_replace('/\D/', '', $data['cnpj']);
+        $cnpj = preg_replace('/[^A-Z0-9]/', '', strtoupper($data['cnpj']));
 
         if (Seller::query()->where('cnpj', $cnpj)->exists()) {
             throw ValidationException::withMessages(['cnpj' => 'CNPJ já cadastrado.']);
@@ -47,4 +47,3 @@ class SubmitSellerApplication
         });
     }
 }
-
