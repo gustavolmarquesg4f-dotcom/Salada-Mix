@@ -75,6 +75,8 @@ class SessionController extends Controller
         return response()->json(['data' => [
             'user' => $this->publicUser($user),
             'email_verification_required' => ! $user->hasVerifiedEmail(),
+            'admin_mfa_required' => $user->platform_role === 'admin',
+            'admin_mfa_enrollment_required' => $user->platform_role === 'admin' && ! $user->mfa_confirmed_at,
         ]]);
     }
 
@@ -145,4 +147,3 @@ class SessionController extends Controller
         ];
     }
 }
-

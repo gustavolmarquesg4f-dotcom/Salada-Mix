@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -49,6 +50,14 @@ Route::middleware('auth')->group(function (): void {
     })->middleware('throttle:6,1')->name('verification.send');
 });
 
+Route::middleware(['auth', 'verified', 'throttle:10,1'])->prefix('seguranca/mfa')->name('security.mfa.')->group(function (): void {
+    Route::get('/', [MfaController::class, 'show'])->name('show');
+    Route::post('/iniciar', [MfaController::class, 'begin'])->name('begin');
+    Route::post('/confirmar', [MfaController::class, 'confirm'])->name('confirm');
+    Route::post('/validar', [MfaController::class, 'challenge'])->name('challenge');
+    Route::post('/recuperacao', [MfaController::class, 'regenerate'])->name('regenerate');
+});
+
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::view('/minha-conta', 'buyer.account')->name('buyer.account');
 
@@ -69,7 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/ofertas/nova', [SellerOfferController::class, 'create'])->name('offers.create');
         Route::post('/ofertas', [SellerOfferController::class, 'store'])->name('offers.store');
     });
-    Route::prefix('admin')->name('admin.')->middleware('can:review-sellers')->group(function (): void {
+    Route::prefix('admin')->name('admin.')->middleware(['can:review-sellers', 'admin.mfa'])->group(function (): void {
         Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
         Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
         Route::post('/catalogo/{offer}/rejeitar', [CatalogModerationController::class, 'reject'])->name('catalog.reject');
@@ -81,4 +90,3 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
 // BFF is deliberately loaded inside the web middleware group (not routes/api.php).
 require __DIR__.'/bff.php';
-

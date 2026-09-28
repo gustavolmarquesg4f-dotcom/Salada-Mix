@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\PublicCatalogController;
+use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Bff\AccountController;
 use App\Http\Controllers\Bff\GatewayController;
 use App\Http\Controllers\Bff\OfferSubmissionController;
@@ -39,6 +40,14 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
     });
 
     Route::middleware(['auth', 'verified'])->group(function (): void {
+        Route::prefix('auth/mfa')->name('auth.mfa.')->middleware('throttle:10,1')->group(function (): void {
+            Route::get('/', [MfaController::class, 'status'])->name('status');
+            Route::post('/enroll', [MfaController::class, 'begin'])->name('enroll');
+            Route::post('/confirm', [MfaController::class, 'confirm'])->name('confirm');
+            Route::post('/challenge', [MfaController::class, 'challenge'])->name('challenge');
+            Route::post('/recovery-codes', [MfaController::class, 'regenerate'])->name('recovery');
+        });
+
         Route::get('/buyer', [GatewayController::class, 'buyer'])->name('buyer');
         Route::get('/account', [AccountController::class, 'show'])->name('account.show');
         Route::patch('/account', [AccountController::class, 'update'])->middleware('throttle:15,1')->name('account.update');
@@ -63,7 +72,6 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
                 ->middleware('throttle:20,1')->name('offers.store');
         });
         Route::get('/admin', [GatewayController::class, 'admin'])
-            ->middleware('can:review-sellers')->name('admin');
+            ->middleware(['can:review-sellers', 'admin.mfa'])->name('admin');
     });
 });
-
