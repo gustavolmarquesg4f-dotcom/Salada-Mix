@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Identity\SsoManager;
 use App\Models\SocialIdentity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,7 +39,7 @@ class SsoPlatformTest extends TestCase
             ->assertSessionHas('sso.intent', 'login');
     }
 
-    public function test_verified_google_identity_creates_verified_sso_only_account_without_storing_tokens(): void
+    public function test_google_callback_creates_sso_only_account_without_storing_tokens(): void
     {
         $rawGoogle = [
             'id' => 'google-123',
@@ -58,10 +59,10 @@ class SsoPlatformTest extends TestCase
             'sso.intent' => 'login',
         ])->get(route('sso.callback', 'google'));
 
-        $response->assertRedirect(route('home', absolute: false));
+        $response->assertRedirect(route('verification.notice'));
         $user = User::query()->where('email', 'cliente@example.test')->firstOrFail();
         $this->assertAuthenticatedAs($user);
-        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertFalse($user->hasVerifiedEmail());
         $this->assertFalse($user->password_login_enabled);
         $this->assertDatabaseHas('social_identities', [
             'user_id' => $user->id,
@@ -78,7 +79,7 @@ class SsoPlatformTest extends TestCase
         ]);
     }
 
-    public function test_verified_google_email_can_safely_link_existing_local_account(): void
+    public function test_verified_google_claim_can_safely_link_existing_local_account(): void
     {
         $user = User::factory()->create(['email' => 'same@example.test']);
         $rawExistingGoogle = [
@@ -91,13 +92,11 @@ class SsoPlatformTest extends TestCase
             ->setRaw($rawExistingGoogle)
             ->map($rawExistingGoogle)
             ->setToken('fake-token');
-        Socialite::fake('google', $existingGoogle);
 
-        $this->withSession(['sso.provider' => 'google', 'sso.intent' => 'login'])
-            ->get(route('sso.callback', 'google'))
-            ->assertRedirect(route('home', absolute: false));
+        $result = app(SsoManager::class)->resolve('google', $existingGoogle);
 
-        $this->assertAuthenticatedAs($user);
+        $this->assertTrue($result['linked']);
+        $this->assertSame($user->id, $result['user']->id);
         $this->assertDatabaseHas('social_identities', [
             'user_id' => $user->id,
             'provider' => 'google',
