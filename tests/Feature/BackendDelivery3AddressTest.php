@@ -125,9 +125,13 @@ class BackendDelivery3AddressTest extends TestCase
             ...$this->originRow($a->id),
         ]);
 
-        $this->actingAs($buyer)->getJson(route('buyer.checkout.preview'))->assertOk()
-            ->assertJsonPath('groups.0.shipping.status', 'provider_not_configured')
-            ->assertJsonPath('checkout_enabled', false);
+        $withOrigin = $this->actingAs($buyer)->getJson(route('buyer.checkout.preview'))
+            ->assertOk()->assertJsonPath('checkout_enabled', false);
+        $sellerGroup = collect($withOrigin->json('groups'))->first(
+            fn (array $group): bool => $group['seller']['id'] === $a->id
+        );
+        $this->assertSame('provider_not_configured', $sellerGroup['shipping']['status']);
+        $this->assertNull($sellerGroup['shipping']['amount_cents']);
     }
 
     private function address(): array
