@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\PromotePlatformAdmin;
+use App\Console\Commands\ResetAdminMfa;
 use App\Http\Middleware\EnsureSellerMember;
 use App\Http\Middleware\EnsureAdminMfa;
 use App\Http\Middleware\BffResponseHeaders;
@@ -22,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->web(append: [BffResponseHeaders::class]);
     })
-    ->withCommands([PromotePlatformAdmin::class])
+    ->withCommands([PromotePlatformAdmin::class, ResetAdminMfa::class])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
