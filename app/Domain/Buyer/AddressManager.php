@@ -26,10 +26,10 @@ class AddressManager
                 CustomerAddress::query()->where('user_id', $user->id)->update(['is_default' => false]);
             }
 
-            $address = CustomerAddress::query()->create($data + [
+            $address = CustomerAddress::query()->create(array_merge($data, [
                 'user_id' => $user->id,
                 'is_default' => $makeDefault,
-            ]);
+            ]));
             // Never let caller-supplied tenant information override identity.
             $address->forceFill(['user_id' => $user->id, 'is_default' => $makeDefault])->save();
             $this->audit($user, 'buyer.address.created', $address->id);
@@ -87,4 +87,3 @@ class AddressManager
         ]);
     }
 }
-

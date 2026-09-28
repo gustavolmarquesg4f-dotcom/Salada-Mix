@@ -27,7 +27,7 @@ class Totp
             return null;
         }
 
-        $step = intdiv($now ?? time(), 30);
+        $step = intdiv($now ?? now()->timestamp, 30);
 
         // Accept clock drift of up to 30 seconds, but caller rejects reused steps.
         foreach ([$step, $step - 1, $step + 1] as $candidate) {
@@ -88,4 +88,3 @@ class Totp
         return $result;
     }
 }
-

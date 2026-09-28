@@ -25,6 +25,10 @@ class SessionController extends Controller
         return response()->json(['data' => [
             'authenticated' => (bool) $user,
             'email_verified' => $user?->hasVerifiedEmail() ?? false,
+            'admin_mfa_required' => $user?->platform_role === 'admin',
+            'admin_mfa_verified' => $user?->platform_role === 'admin'
+                && (bool) $user->mfa_confirmed_at
+                && (string) $request->session()->get('admin_mfa_user_id') === (string) $user->id,
             'user' => $user ? $this->publicUser($user) : null,
             'links' => [
                 'login' => route('login'),
@@ -36,6 +40,7 @@ class SessionController extends Controller
 
     public function register(Request $request): JsonResponse
     {
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
@@ -60,6 +65,7 @@ class SessionController extends Controller
 
     public function login(Request $request): JsonResponse
     {
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],

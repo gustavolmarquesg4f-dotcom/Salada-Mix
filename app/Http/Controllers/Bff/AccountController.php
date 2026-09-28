@@ -32,6 +32,9 @@ class AccountController extends Controller
     public function update(Request $request): JsonResponse
     {
         $user = $request->user();
+        if ($request->exists('email')) {
+            $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+        }
         $data = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:160'],
             'email' => ['sometimes', 'required', 'email', 'max:255',
@@ -120,4 +123,3 @@ class AccountController extends Controller
         return response()->json(['data' => ['revoked' => $removed]]);
     }
 }
-
