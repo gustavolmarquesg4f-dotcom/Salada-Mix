@@ -39,7 +39,7 @@
             </span>
             @auth
                 <a class="sm-action" href="{{ route('buyer.account') }}">
-                    <x-salada.icon name="user" size="22" /><span class="sm-action-copy"><small>Olá, {{ IlluminateSupportStr::limit(auth()->user()->name, 12) }}</small><strong>Minha conta</strong></span>
+                    <x-salada.icon name="user" size="22" /><span class="sm-action-copy"><small>Olá, {{ \Illuminate\Support\Str::limit(auth()->user()->name, 12) }}</small><strong>Minha conta</strong></span>
                 </a>
             @else
                 <a class="sm-action" href="{{ route('login') }}">
