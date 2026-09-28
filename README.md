@@ -53,7 +53,7 @@ O [mapa do código](docs/architecture/code-map.md) mostra onde ficam frontend, b
 
 ## SonarQube Cloud — qualidade contínua
 
-A integração com SonarQube Cloud está preparada em [sonarqube.yml](.github/workflows/sonarqube.yml) e [sonar-project.properties](sonar-project.properties). Ela ainda depende da autorização da conta SonarQube/GitHub e da configuração segura de `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY`. Um job sem essas configurações **não representa análise ou Quality Gate aprovado**. Consulte o [runbook de ativação](docs/runbooks/sonarqube-cloud.md).
+A integração com SonarQube Cloud está preparada em [sonarqube.yml](.github/workflows/sonarqube.yml) e [sonar-project.properties](sonar-project.properties). Ela ainda depende da autorização da conta SonarQube/GitHub e da configuração segura de `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY`. Sem elas o job **falha explicitamente**; quando configurado, aguarda o resultado do Quality Gate. Consulte o [runbook de ativação](docs/runbooks/sonarqube-cloud.md).
 
 ## Backend BFF e identidade
 
