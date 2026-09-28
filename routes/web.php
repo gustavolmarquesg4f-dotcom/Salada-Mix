@@ -5,6 +5,7 @@ use App\Http\Controllers\Buyer\CartController;
 use App\Http\Controllers\Buyer\AddressController;
 use App\Http\Controllers\Buyer\CheckoutPreviewController;
 use App\Http\Controllers\Buyer\WishlistController;
+use App\Http\Controllers\Buyer\ShoppingPageController;
 use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
@@ -70,6 +71,8 @@ Route::middleware(['auth', 'verified', 'throttle:10,1'])->prefix('seguranca/mfa'
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::view('/minha-conta', 'buyer.account')->name('buyer.account');
+    Route::get('/sacola', [ShoppingPageController::class, 'cart'])->name('buyer.cart.page');
+    Route::get('/favoritos', [ShoppingPageController::class, 'wishlist'])->name('buyer.wishlist.page');
     Route::get('/minha-conta/enderecos', [AddressController::class, 'index'])->name('buyer.addresses.index');
     Route::post('/minha-conta/enderecos', [AddressController::class, 'store'])->name('buyer.addresses.store');
     Route::delete('/minha-conta/enderecos/{address}', [AddressController::class, 'destroy'])->name('buyer.addresses.destroy');

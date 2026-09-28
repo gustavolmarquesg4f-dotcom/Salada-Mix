@@ -17,6 +17,8 @@
                 <a href="{{ route('seller.apply') }}">Quero vender</a>
                 @auth
                     <a href="{{ route('buyer.account') }}">Minha conta</a>
+                    <a href="{{ route('buyer.cart.page') }}">Minha sacola</a>
+                    <a href="{{ route('buyer.wishlist.page') }}">Favoritos</a>
                     @can('review-sellers')
                         <a href="{{ route('admin.sellers.index') }}">Empresas</a>
                         <a href="{{ route('admin.catalog.index') }}">Moderação</a>
@@ -48,9 +50,16 @@
                     <x-salada.icon name="user" size="22" /><span class="sm-action-copy"><small>Bem-vindo(a)</small><strong>Entre ou cadastre-se</strong></span>
                 </a>
             @endauth
-            <span class="sm-action is-unavailable" title="Carrinho disponível após integração comercial" aria-label="Carrinho em preparação">
-                <x-salada.icon name="cart" size="25" />
-            </span>
+            @auth
+                @php($shoppingCount = (int) \Illuminate\Support\Facades\DB::table('cart_items')->where('user_id', auth()->id())->sum('quantity'))
+                <a class="sm-action sm-cart-action" href="{{ route('buyer.cart.page') }}" aria-label="Minha sacola com {{ $shoppingCount }} itens">
+                    <x-salada.icon name="cart" size="25" />
+                    @if($shoppingCount > 0)<span class="sm-cart-count" aria-hidden="true">{{ min($shoppingCount, 99) }}</span>@endif
+                </a>
+                <a class="sm-action" href="{{ route('buyer.wishlist.page') }}" aria-label="Meus favoritos" title="Favoritos">♡</a>
+            @else
+                <a class="sm-action" href="{{ route('login') }}" aria-label="Entre para acessar sua sacola"><x-salada.icon name="cart" size="25" /></a>
+            @endauth
         </nav>
     </div>
 </header>

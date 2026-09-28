@@ -16,6 +16,8 @@
     <nav class="sm-account-nav" aria-label="Minha conta">
         <a href="#dados" aria-current="page">Meus dados</a>
         <a href="{{ route('buyer.addresses.index') }}">Endereços</a>
+        <a href="{{ route('buyer.cart.page') }}">Minha sacola</a>
+        <a href="{{ route('buyer.wishlist.page') }}">Meus favoritos</a>
         <a href="{{ route('buyer.checkout.preview') }}">Resumo da sacola</a>
         <a href="#seguranca">Login e segurança</a>
         <a href="#sessoes">Dispositivos conectados</a>
