@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CatalogController::class, 'home'])->name('home');
+Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
 
