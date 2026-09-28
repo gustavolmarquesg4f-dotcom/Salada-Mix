@@ -20,6 +20,7 @@ php artisan key:generate
 npm install
 npm run build
 php artisan migrate
+php artisan db:seed
 php artisan serve
 ```
 
@@ -28,6 +29,6 @@ A primeira instalação deve gerar `composer.lock` e `package-lock.json` e regis
 
 ## Status real
 
-Fundação de código e documentação em implantação. **Não habilitar venda real:** checkout, OAuth Mercado Pago, split, frete, LGPD operacional, backup e deploy ainda exigem implementação/homologação. Use somente dados fictícios.
+Fundação de código com onboarding, catálogo inicial, moderação e estoque de cadastro implantada. **Não habilitar venda real:** checkout, OAuth Mercado Pago, split, frete, LGPD operacional, backup e deploy ainda exigem implementação/homologação. Use somente dados fictícios.
 
 Arquitetura: [visão técnica](docs/architecture/README.md). Critérios de entrada em produção: [checklist](docs/runbooks/go-live.md).

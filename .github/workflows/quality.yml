@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: salada-quality-\${{ github.ref }}
+  group: salada-quality-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -73,4 +73,3 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run build
-
