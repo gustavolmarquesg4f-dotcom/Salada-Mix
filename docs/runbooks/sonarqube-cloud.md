@@ -7,7 +7,7 @@ Os testes existentes continuam em `.github/workflows/quality.yml`. A análise es
 
 1. Abra https://sonarcloud.io/ e entre com **GitHub**. Autorize a aplicação SonarQube a acessar o repositório `gustavolmarquesg4f-dotcom/Salada-Mix` e importe-o como projeto.
 2. Selecione **CI-based analysis/GitHub Actions**. Se o projeto já existir com **Automatic Analysis**, desative-a em Project Administration → Analysis Method: as duas modalidades não podem rodar juntas.
-3. Identificadores públicos do projeto existente, confirmados pelo proprietário: organization key `gustavolmarquesg4f-ponto-com` e project key `gustavolmarquesg4f-dotcom_Salada-Mix`. Estão versionados no workflow; não é necessário criar Repository Variables para eles.
+3. Identificadores públicos do projeto existente, confirmados pelo proprietário: organization key `gustavolmarquesg4f-dotcom` e project key `gustavolmarquesg4f-dotcom_Salada-Mix`. Estão versionados no workflow; não é necessário criar Repository Variables para eles.
 4. Em https://github.com/gustavolmarquesg4f-dotcom/Salada-Mix/settings/secrets/actions crie o **Repository secret** `SONAR_TOKEN` com o token gerado pela SonarQube. Não coloque o token em arquivos, comentários, PRs, mensagens ou capturas.
 5. O workflow contém `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` como identificadores públicos; **somente** `SONAR_TOKEN` é um secret. Não inclua tokens no código.
 6. Acione o workflow **SonarQube Cloud** em Actions → Run workflow (main), ou faça novo push/PR. Confira no log que o scanner executou. Sem essas configurações o workflow **falha explicitamente** no preflight, com indicação de qual variável está ausente. Um check verde somente é possível após executar scanner e receber Quality Gate aprovado (espera de até 300 segundos).

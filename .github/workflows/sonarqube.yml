@@ -35,7 +35,7 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_ORGANIZATION: gustavolmarquesg4f-ponto-com
+      SONAR_ORGANIZATION: gustavolmarquesg4f-dotcom
       SONAR_PROJECT_KEY: gustavolmarquesg4f-dotcom_Salada-Mix
       APP_ENV: testing
       APP_DEBUG: false
