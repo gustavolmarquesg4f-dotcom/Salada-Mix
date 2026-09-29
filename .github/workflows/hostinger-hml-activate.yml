@@ -114,7 +114,7 @@ jobs:
             -i "$HOME/.ssh/hml_key" -P "$HML_SSH_PORT" \
             infrastructure/hostinger/activate-installed.sh \
             infrastructure/hostinger/rollback-first.sh \
-            "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/activate-installed.sh"
+            "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/"
       - name: Ativar somente os arquivos publicos do Laravel ja instalado
         shell: bash
         run: |
