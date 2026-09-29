@@ -1,0 +1,91 @@
+name: Hostinger HML - verificar permissoes do webroot
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hostinger-hml-permissions.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salada-hml-domain-routing
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: homologacao
+    env:
+      HOST: ${{ secrets.HML_SSH_HOST }}
+      PORT: ${{ secrets.HML_SSH_PORT }}
+      USER: ${{ secrets.HML_SSH_USER }}
+      KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      KNOWN: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+      HML_DOMAIN: ivory-rook-276202.hostingersite.com
+    steps:
+      - name: Verificar branch e acesso SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for x in HOST PORT USER KEY KNOWN; do test -n "${!x}"; done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$KEY" > "$HOME/.ssh/hml_key"
+          printf '%s\n' "$KNOWN" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/hml_key" "$HOME/.ssh/known_hosts"
+      - name: Verificar e restaurar temporariamente permissao padrao 755
+        id: mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$PORT" "$USER@$HOST" \
+            'set -eu; web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; test -f "$web/default.php"; test ! -e "$web/index.php"; stat -c %a "$web"')"
+          [[ "$before" == 750 || "$before" == 755 ]] || { echo "::error::Permissao inesperada no webroot HML"; exit 1; }
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$PORT" "$USER@$HOST" \
+            'set -eu; web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; test ! -e "$web/__sm_permission_probe.txt"; chmod 755 "$web"; printf "SALADA_HML_PERMISSION_OK\n" > "$web/__sm_permission_probe.txt"; chmod 644 "$web/__sm_permission_probe.txt"'
+          echo "Changed only HML public_html: $before -> 755"
+      - name: Conferir resposta HTTPS do arquivo real em cada IP do dominio
+        id: http
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          ips="$(getent ahostsv4 "$HML_DOMAIN" | awk '{print $1}' | sort -u)"
+          test -n "$ips"
+          while read -r ip; do
+            [[ -n "$ip" ]] || continue
+            out="$(curl -sS --connect-timeout 8 --max-time 15 \
+              --resolve "$HML_DOMAIN:443:$ip" \
+              -w '\nHTTP_CODE:%{http_code}\n' "https://$HML_DOMAIN/__sm_permission_probe.txt")"
+            code="$(printf '%s\n' "$out" | sed -n 's/^HTTP_CODE://p')"
+            printf 'IP %s: HTTP %s\n' "$ip" "$code"
+            [[ "$code" == 200 ]]
+            printf '%s\n' "$out" | grep -qx SALADA_HML_PERMISSION_OK
+          done <<< "$ips"
+          echo "HML static route: ALL IPs confirmed"
+      - name: Remover probe e reverter permissao se o teste falhar
+        if: always() && steps.mode.outcome == 'success'
+        shell: bash
+        env:
+          ORIGINAL_MODE: ${{ steps.mode.outputs.before }}
+          TEST_OUTCOME: ${{ steps.http.outcome }}
+        run: |
+          set -euo pipefail
+          [[ "$ORIGINAL_MODE" == 750 || "$ORIGINAL_MODE" == 755 ]]
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$PORT" "$USER@$HOST" \
+            "web=\"\$HOME/domains/ivory-rook-276202.hostingersite.com/public_html\"; rm -f \"\$web/__sm_permission_probe.txt\"; if [ '$TEST_OUTCOME' != success ]; then chmod '$ORIGINAL_MODE' \"\$web\"; fi"
+          if [[ "$TEST_OUTCOME" != success ]]; then
+            echo 'Permissao anterior restaurada; webroot ainda nao atende pelo dominio.'
+            exit 1
+          fi
