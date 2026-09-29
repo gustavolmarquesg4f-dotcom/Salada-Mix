@@ -97,12 +97,14 @@ rm -rf "$stage/storage"; ln -s "$shared/storage" "$stage/storage"
 cd "$stage"
 php artisan migrate --force --no-interaction --no-ansi
 php artisan migrate:status --no-ansi >/dev/null
-php artisan config:cache --no-ansi
-php artisan view:cache --no-ansi
+# Do not cache absolute storage/log paths until the release lives at /current.
 php artisan route:list --json >/dev/null
 printf '%s\n' "$sha" "$oldsha" "$prev" "$backup" > "$root/.pending-release"
 mv "$current" "$prev"; cutover=1
 mv "$stage" "$current"
+# Laravel config cache embeds absolute paths (including logging and file cache).
+# Generating it in /releases/SHA and moving that directory produced HTTP 500.
+(cd "$current" && php artisan config:clear --no-ansi && php artisan config:cache --no-ansi && php artisan view:clear --no-ansi && php artisan view:cache --no-ansi && php artisan route:list --json >/dev/null)
 find "$current/public" -mindepth 1 -maxdepth 1 ! -name index.php ! -name .htaccess ! -name robots.txt -exec cp -a {} "$web/" \;
 find "$web" -type d -exec chmod 755 {} +
 find "$web" -type f -exec chmod 644 {} +

@@ -76,6 +76,13 @@ jobs:
           bash -n infrastructure/hostinger/release-update.sh
           bash -n infrastructure/hostinger/rollback-update.sh
           bash -n infrastructure/hostinger/confirm-update.sh
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path('infrastructure/hostinger/release-update.sh').read_text()
+          cutover = source.index('mv "$stage" "$current"')
+          for command in ('php artisan config:cache', 'php artisan view:cache'):
+              assert source.index(command) > cutover, f'{command} must execute after current swap'
+          PY
       - name: Verificar rotas
         run: php artisan route:list
       - name: Build frontend
