@@ -28,16 +28,18 @@ return new class extends Migration
             $table->index(['order_id', 'created_at']);
         });
 
-        // MySQL 8.4 enforces the invariant even when another stock writer bypasses
-        // the domain service. SQLite does not support ADD CONSTRAINT in ALTER TABLE.
-        if (DB::getDriverName() === 'mysql') {
+        // Enforce the invariant in MySQL 8.4 and MariaDB 11.8, even when a stock
+        // writer bypasses the domain service. SQLite cannot add CHECK via ALTER.
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
             DB::statement('ALTER TABLE stock_levels ADD CONSTRAINT chk_stock_reserved_le_on_hand CHECK (quantity_reserved <= quantity_on_hand)');
         }
     }
 
     public function down(): void
     {
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::getDriverName() === 'mariadb') {
+            DB::statement('ALTER TABLE stock_levels DROP CONSTRAINT chk_stock_reserved_le_on_hand');
+        } elseif (DB::getDriverName() === 'mysql') {
             DB::statement('ALTER TABLE stock_levels DROP CHECK chk_stock_reserved_le_on_hand');
         }
 
