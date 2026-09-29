@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 // HML presents the approved FE-06 visual reference byte-for-byte (except its base path).
 // Live Laravel routes remain available; the commercial production home stays dynamic.
-Route::get('/', function (\\App\\Domain\\Catalog\\Queries\\PublicCatalog $catalog) {
+Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
     if (app()->environment('staging')) {
         return response()->file(public_path('fe06/index.html'), [
             'Content-Type' => 'text/html; charset=UTF-8',
