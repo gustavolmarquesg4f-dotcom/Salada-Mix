@@ -100,7 +100,14 @@ php artisan migrate:status --no-ansi >/dev/null
 # Seed only the isolated, non-commercial HML after backup; the seeder refuses
 # checkout/payment flags and refuses to mix synthetic with genuine merchant/order data.
 php artisan db:seed --class=MarketplaceDemoSeeder --force --no-ansi
-php artisan tinker --execute="echo 'DEMO_DB_OK sellers='.\\App\\Models\\Seller::where('trade_name', 'like', '%(DEMO)')->count().' products='.\\App\\Models\\Product::where('slug', 'like', 'demo-%')->count();" --no-ansi
+php -r '
+require "vendor/autoload.php"; $app=require "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$s=Illuminate\Support\Facades\DB::table("sellers")->where("trade_name", "like", "%(DEMO)")->count();
+$p=Illuminate\Support\Facades\DB::table("products")->where("slug", "like", "demo-%")->count();
+if ($s !== 3 || $p !== 9) exit(8);
+echo "DEMO_DB_OK sellers=$s products=$p\n";
+'
 
 # Do not cache absolute storage/log paths until the release lives at /current.
 php artisan route:list --json >/dev/null
