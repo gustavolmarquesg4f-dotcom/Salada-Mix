@@ -67,6 +67,12 @@ jobs:
         run: php artisan migrate --force
       - name: Testes automatizados
         run: php artisan test
+      - name: Verificar sintaxe dos scripts privados de implantação
+        run: |
+          php -l infrastructure/hostinger/prepare-env.php
+          php -l infrastructure/hostinger/hml-index.php
+          bash -n infrastructure/hostinger/first-deploy.sh
+          bash -n infrastructure/hostinger/rollback-first.sh
       - name: Verificar rotas
         run: php artisan route:list
       - name: Build frontend
