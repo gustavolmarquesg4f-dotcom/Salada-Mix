@@ -1,0 +1,75 @@
+name: Hostinger HML - validar banco (somente leitura)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-hml-db-preflight
+  cancel-in-progress: false
+
+jobs:
+  database:
+    name: Verificar conectividade MariaDB da HML
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: homologacao
+    steps:
+      - name: Restringir à branch principal
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Execute apenas na branch main."
+            exit 1
+          fi
+
+      - name: Validar secrets
+        shell: bash
+        env:
+          HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+          HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+          HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+          HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+          HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+          HML_DB_PASSWORD: ${{ secrets.HML_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in HML_SSH_HOST HML_SSH_PORT HML_SSH_USER HML_SSH_PRIVATE_KEY HML_SSH_KNOWN_HOSTS HML_DB_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error title=Secret ausente::Cadastre ${name} antes de executar."
+              exit 1
+            fi
+          done
+
+      - name: Preparar chave e host validado
+        shell: bash
+        env:
+          HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+          HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HML_SSH_PRIVATE_KEY" > "$HOME/.ssh/salada_hml_deploy"
+          printf '%s\n' "$HML_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/salada_hml_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/salada_hml_deploy" > /dev/null
+
+      - name: Conectar ao banco sem alterar dados
+        shell: bash
+        env:
+          HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+          HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+          HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+          HML_DB_PASSWORD: ${{ secrets.HML_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # A senha entra somente por STDIN: não aparece na linha de comando nem nos logs.
+          printf '%s' "$HML_DB_PASSWORD" |
+            ssh -F /dev/null -T -o BatchMode=yes -o ConnectTimeout=20 \
+              -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -i "$HOME/.ssh/salada_hml_deploy" -p "$HML_SSH_PORT" \
+              "$HML_SSH_USER@$HML_SSH_HOST" \
+              'php -r '"'"'$password = stream_get_contents(STDIN); $db = new PDO("mysql:host=localhost;port=3306;dbname=u904890479_salada_hml;charset=utf8mb4", "u904890479_sm_hml", $password, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 8]); $version = $db->query("SELECT VERSION()")->fetchColumn(); $tables = $db->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()")->fetchColumn(); echo "Conexao HML: OK".PHP_EOL; echo "Servidor: ".$version.PHP_EOL; echo "Tabelas no banco HML: ".$tables.PHP_EOL;'"'"''
