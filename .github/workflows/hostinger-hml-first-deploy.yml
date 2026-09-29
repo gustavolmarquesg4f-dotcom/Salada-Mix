@@ -172,9 +172,11 @@ jobs:
           url="https://ivory-rook-276202.hostingersite.com"
           if ! (
             curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$url/up" > /dev/null &&
-            curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$url/" | grep -q 'Salada Mix' &&
+            curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$url/" -o "$RUNNER_TEMP/hml-home.html" &&
+            grep -q 'Salada Mix' "$RUNNER_TEMP/hml-home.html" &&
             curl -fsS --connect-timeout 10 --max-time 30 "$url/entrar" > /dev/null &&
-            curl -fsS "$url/robots.txt" | grep -q '^Disallow: /' &&
+            curl -fsS "$url/robots.txt" -o "$RUNNER_TEMP/hml-robots.txt" &&
+            grep -q '^Disallow: /' "$RUNNER_TEMP/hml-robots.txt" &&
             [[ "$(curl -s -o /dev/null -w '%{http_code}' "$url/.env")" != '200' ]]
           ); then
             echo "::error::Smoke test HTTP reprovado. Restaurando a pagina original."
