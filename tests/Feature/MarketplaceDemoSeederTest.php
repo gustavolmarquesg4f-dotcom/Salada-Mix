@@ -48,5 +48,63 @@ class MarketplaceDemoSeederTest extends TestCase
         $this->assertDatabaseCount('sellers', 0);
         $this->assertDatabaseCount('seller_offers', 0);
     }
-}
+    public function test_guarded_hostinger_staging_has_real_demo_catalog_and_images(): void
+    {
+        $previous = app()->environment();
+        $url = config('app.url');
 
+        try {
+            app()->detectEnvironment(fn (): string => 'staging');
+            config(['app.url' => 'https://ivory-rook-276202.hostingersite.com']);
+
+            $this->seed(MarketplaceDemoSeeder::class);
+            $this->seed(MarketplaceDemoSeeder::class);
+            $this->assertDatabaseCount('sellers', 3);
+            $this->assertDatabaseCount('seller_offers', 9);
+
+            $this->get('/loja')->assertOk()
+                ->assertSee('Fone Bluetooth sem fio (DEMO)')
+                ->assertSee('sm-demo-image');
+            $this->get('/buscar?q=vitamina')->assertOk()
+                ->assertSee('Sérum facial vitamina C (DEMO)');
+        } finally {
+            app()->detectEnvironment(fn (): string => $previous);
+            config(['app.url' => $url]);
+        }
+    }
+
+    public function test_staging_demo_refuses_unrelated_host_or_existing_commercial_data(): void
+    {
+        $previous = app()->environment();
+        $url = config('app.url');
+
+        try {
+            app()->detectEnvironment(fn (): string => 'staging');
+            config(['app.url' => 'https://another-host.test']);
+            try {
+                $this->seed(MarketplaceDemoSeeder::class);
+                $this->fail('Seeder must reject an unrelated host.');
+            } catch (\RuntimeException $e) {
+                $this->assertStringContainsString('Seeder DEMO exige', $e->getMessage());
+            }
+
+            config(['app.url' => 'https://ivory-rook-276202.hostingersite.com']);
+            $this->seed(\Database\Seeders\CatalogCategorySeeder::class);
+            \Illuminate\Support\Facades\DB::table('orders')->insert([
+                'id' => (string) \Illuminate\Support\Str::ulid(),
+                'user_id' => \App\Models\User::factory()->create()->id,
+                'status' => 'draft',
+                'items_total_cents' => 0,
+                'currency' => 'BRL',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $this->expectException(\RuntimeException::class);
+            $this->seed(MarketplaceDemoSeeder::class);
+        } finally {
+            app()->detectEnvironment(fn (): string => $previous);
+            config(['app.url' => $url]);
+        }
+    }
+
+}
