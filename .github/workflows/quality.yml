@@ -123,7 +123,7 @@ jobs:
           php artisan key:generate
       - name: Confirmar driver e migrar no MariaDB
         run: |
-          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); if (Illuminate\\Support\\Facades\\DB::getDriverName() !== "mariadb") { fwrite(STDERR, "Driver nao e MariaDB.\\n"); exit(2); }'
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); if (Illuminate\Support\Facades\DB::getDriverName() !== "mariadb") { fwrite(STDERR, "Driver nao e MariaDB.\n"); exit(2); }'
           php artisan migrate --force
           php artisan migrate:rollback --step=1 --force
           php artisan migrate --force
