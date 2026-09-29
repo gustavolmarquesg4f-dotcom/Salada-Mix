@@ -2,8 +2,6 @@ name: Hostinger HML - validar SSH (somente leitura)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [chore/hostinger-hml-ssh-bootstrap]
 
 permissions:
   contents: read
@@ -17,15 +15,13 @@ jobs:
     name: Validar acesso à hospedagem HML
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    environment: homologacao
     steps:
-      - name: Verificar origem permitida do diagnóstico
-        shell: bash
+      - name: Restringir execução à main
+        if: ${{ github.ref != 'refs/heads/main' }}
         run: |
-          set -euo pipefail
-          case "${GITHUB_REF}" in
-            refs/heads/main|refs/heads/chore/hostinger-hml-ssh-bootstrap) ;;
-            *) echo "::error::Branch não autorizada para teste SSH."; exit 1 ;;
-          esac
+          echo "::error::O diagnóstico SSH só pode ser executado a partir da main."
+          exit 1
 
       - name: Validar parâmetros e segredos
         shell: bash
