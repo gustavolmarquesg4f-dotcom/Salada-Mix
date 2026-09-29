@@ -22,6 +22,7 @@
     @endif
     <div class="sm-account-panel sm-summary-total"><span>Subtotal dos produtos</span><strong>R$ {{ number_format($preview['items_subtotal_cents'] / 100, 2, ',', '.') }}</strong></div>
     <button type="button" class="sm-btn sm-btn-primary" disabled aria-disabled="true">Pagamento indisponível nesta etapa</button>
+    <a href="{{ route('buyer.checkout.prepare') }}" class="sm-btn sm-btn-secondary">Preparar endereço e entrega →</a>
     <a href="{{ route('buyer.addresses.index') }}" class="sm-btn sm-btn-secondary">Gerenciar endereços</a>
 </div>
 @endsection
