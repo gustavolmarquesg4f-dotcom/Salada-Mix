@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminSellerController;
 use App\Http\Controllers\Buyer\CartController;
 use App\Http\Controllers\Buyer\AddressController;
 use App\Http\Controllers\Buyer\CheckoutPreviewController;
+use App\Http\Controllers\Buyer\CheckoutPreparationController;
 use App\Http\Controllers\Buyer\WishlistController;
 use App\Http\Controllers\Buyer\ShoppingPageController;
 use App\Http\Controllers\Admin\CatalogModerationController;
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::post('/minha-conta/enderecos', [AddressController::class, 'store'])->name('buyer.addresses.store');
     Route::delete('/minha-conta/enderecos/{address}', [AddressController::class, 'destroy'])->name('buyer.addresses.destroy');
     Route::get('/minha-conta/resumo-compra', CheckoutPreviewController::class)->name('buyer.checkout.preview');
+    Route::get('/minha-conta/preparar-compra', [CheckoutPreparationController::class, 'page'])->name('buyer.checkout.prepare');
 
     // JSON endpoints share the browser's verified session and CSRF protection.
     // They store interests only; stock is not reserved and checkout is disabled.

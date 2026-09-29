@@ -12,6 +12,7 @@ use App\Http\Controllers\Bff\OrderDraftController;
 use App\Http\Controllers\Bff\SellerApplicationController;
 use App\Http\Controllers\Bff\SessionController;
 use App\Http\Controllers\Buyer\CartController;
+use App\Http\Controllers\Buyer\CheckoutPreparationController;
 use App\Http\Controllers\Buyer\WishlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -73,6 +74,7 @@ Route::prefix('bff/v1')->name('bff.')->group(function (): void {
         Route::delete('/addresses/{address}', [AddressController::class, 'destroy'])->name('addresses.destroy');
 
         Route::get('/checkout/preview', [GatewayController::class, 'checkoutPreview'])->name('checkout.preview');
+        Route::get('/checkout/preparation', [CheckoutPreparationController::class, 'json'])->name('checkout.preparation');
 
         // Technical drafts only; feature switch defaults OFF. No payment or shipping quote.
         Route::get('/orders/drafts', [OrderDraftController::class, 'index'])->name('orders.drafts.index');

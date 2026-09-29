@@ -40,7 +40,7 @@
         </section>
         @endif
     </div>
-    <aside class="sm-shopping-summary" aria-label="Resumo da sacola"><span class="sm-eyebrow">Resumo dos produtos</span><h2>Seu mix até agora</h2><div class="sm-shopping-total"><span>Subtotal dos itens disponíveis</span><strong>R$ {{ number_format($snapshot['subtotal_cents'] / 100, 2, ',', '.') }}</strong></div><p>Frete: aguardando cálculo real.</p><p>Total final: indisponível.</p><button type="button" disabled aria-disabled="true" class="sm-btn sm-btn-primary sm-shopping-disabled">Finalizar compra indisponível</button><a href="{{ route('buyer.checkout.preview') }}" class="sm-btn sm-btn-secondary">Ver resumo por vendedor</a><small>Não há cobrança ou reserva de estoque nesta tela.</small></aside>
+    <aside class="sm-shopping-summary" aria-label="Resumo da sacola"><span class="sm-eyebrow">Resumo dos produtos</span><h2>Seu mix até agora</h2><div class="sm-shopping-total"><span>Subtotal dos itens disponíveis</span><strong>R$ {{ number_format($snapshot['subtotal_cents'] / 100, 2, ',', '.') }}</strong></div><p>Frete: aguardando cálculo real.</p><p>Total final: indisponível.</p><button type="button" disabled aria-disabled="true" class="sm-btn sm-btn-primary sm-shopping-disabled">Finalizar compra indisponível</button><a href="{{ route('buyer.checkout.prepare') }}" class="sm-btn sm-btn-secondary">Preparar compra e endereço →</a><small>Não há cobrança ou reserva de estoque nesta tela.</small></aside>
 </div>
 @endif
 @endsection
