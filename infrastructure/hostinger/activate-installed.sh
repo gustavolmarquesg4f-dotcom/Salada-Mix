@@ -12,6 +12,7 @@ rollback_partial() {
     cp -p "$backup/default.php" "$web/default.php" || true
     rm -f "$web/index.php" "$web/.htaccess" "$web/robots.txt" "$root/deployed_commit.txt" || true
     rm -rf "$web/build" "$web/assets" || true
+    chmod 755 "$web" || true
     echo 'A ativacao foi revertida para a pagina original da HML.' >&2
   fi
 }
@@ -25,7 +26,7 @@ trap rollback_partial ERR
 [[ -f "$root/current/infrastructure/hostinger/hml-index.php" ]]
 [[ -f "$root/shared/.env" && -f "$backup/default.php" ]]
 [[ -d "$web" && ! -L "$web" ]]
-[[ "$(stat -c %a "$web")" == 755 ]]
+[[ "$(stat -c %a "$web")" == 750 || "$(stat -c %a "$web")" == 755 ]]
 [[ ! -e "$root/deployed_commit.txt" ]]
 shopt -s nullglob dotglob
 existing=("$web"/*)
@@ -58,6 +59,10 @@ php artisan route:list --path=up --no-ansi > /dev/null
 # Only public assets and the adjusted entrypoint leave the private app tree.
 activated=1
 cp -a "$root/current/public/." "$web/"
+# cp -a SOURCE/. DEST/ also preserves SOURCE directory mode on DEST. The
+# release was extracted under umask 027, so public may be mode 750; Apache
+# cannot traverse that webroot. Restore only this HML document root to 755.
+chmod 755 "$web"
 cp "$root/current/infrastructure/hostinger/hml-index.php" "$web/index.php"
 cat >> "$web/.htaccess" <<'HTACCESS'
 

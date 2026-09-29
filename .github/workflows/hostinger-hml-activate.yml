@@ -70,7 +70,8 @@ jobs:
             -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" 'bash -s' <<'REMOTE'
           set -eu
           web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
-          test "$(stat -c %a "$web")" = 755
+          mode="$(stat -c %a "$web")"
+          case "$mode" in 750|755) chmod 755 "$web" ;; *) echo "Unexpected HML permission"; exit 1 ;; esac
           test -f "$web/default.php"
           test ! -e "$web/index.php"
           test ! -e "$web/__sm_routecheck.txt"
@@ -112,6 +113,7 @@ jobs:
             -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
             -i "$HOME/.ssh/hml_key" -P "$HML_SSH_PORT" \
             infrastructure/hostinger/activate-installed.sh \
+            infrastructure/hostinger/rollback-first.sh \
             "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/activate-installed.sh"
       - name: Ativar somente os arquivos publicos do Laravel ja instalado
         shell: bash

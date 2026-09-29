@@ -7,6 +7,7 @@ rollback_partial() {
     cp -p "$backup/default.php" "$web/default.php" || true
     rm -f "$web/index.php" "$web/.htaccess" "$web/robots.txt" || true
     rm -rf "$web/build" "$web/assets" || true
+    chmod 755 "$web" || true
     echo 'Original web landing page restored after a deployment error.' >&2
   fi
 }
@@ -73,6 +74,7 @@ php artisan route:list --json > /dev/null
 # Keep Hostinger's configured document root and only publish public/ files.
 activated=1
 cp -a "$root/current/public/." "$web/"
+chmod 755 "$web"
 cp "$root/current/infrastructure/hostinger/hml-index.php" "$web/index.php"
 cat >> "$web/.htaccess" <<'HTACCESS'
 
