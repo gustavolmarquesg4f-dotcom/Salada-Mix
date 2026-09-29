@@ -1,0 +1,145 @@
+name: Hostinger HML - ativar Laravel instalado
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hostinger-hml-activate.yml
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: salada-hml-first-deploy
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: homologacao
+    env:
+      HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+      HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+      HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+      HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+      GH_TOKEN: ${{ github.token }}
+      HML_DOMAIN: ivory-rook-276202.hostingersite.com
+    steps:
+      - name: Restringir main e conferir identidade SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for name in HML_SSH_HOST HML_SSH_PORT HML_SSH_USER HML_SSH_PRIVATE_KEY HML_SSH_KNOWN_HOSTS; do test -n "${!name}"; done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HML_SSH_PRIVATE_KEY" > "$HOME/.ssh/hml_key"
+          printf '%s\n' "$HML_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/hml_key" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/hml_key" > /dev/null
+      - name: Aguardar CI e Sonar verdes do commit exato
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 35); do
+            runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&event=push&per_page=100")"
+            quality="$(jq -r '[.workflow_runs[] | select(.name == "Qualidade Salada Mix")] | first | .conclusion // "pending"' <<< "$runs")"
+            sonar="$(jq -r '[.workflow_runs[] | select(.name == "SonarQube Cloud")] | first | .conclusion // "pending"' <<< "$runs")"
+            echo "Quality: $quality; SonarQube: $sonar"
+            if [[ "$quality" == success && "$sonar" == success ]]; then break; fi
+            case "$quality/$sonar" in
+              *failure*|*cancelled*|*timed_out*|*action_required*)
+                echo "::error::Verificacoes da main falharam. Nenhum deploy."
+                exit 1 ;;
+            esac
+            [[ "$attempt" != 35 ]] || { echo "::error::Timeout CI/Sonar"; exit 1; }
+            sleep 20
+          done
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Criar provas estaticas e PHP no diretorio da HML
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" 'bash -s' <<'REMOTE'
+          set -eu
+          web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
+          test "$(stat -c %a "$web")" = 755
+          test -f "$web/default.php"
+          test ! -e "$web/index.php"
+          test ! -e "$web/__sm_routecheck.txt"
+          test ! -e "$web/__sm_phpcheck.php"
+          printf 'SALADA_STATIC_OK\n' > "$web/__sm_routecheck.txt"
+          printf '%s\n' '<?php echo "SALADA_PHP_OK";' > "$web/__sm_phpcheck.php"
+          chmod 644 "$web/__sm_routecheck.txt" "$web/__sm_phpcheck.php"
+          REMOTE
+      - name: Validar leitura HTTP e execucao PHP em cada IP do dominio
+        id: preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          ips="$(getent ahostsv4 "$HML_DOMAIN" | awk '{print $1}' | sort -u)"
+          test -n "$ips"
+          while read -r ip; do
+            [[ -n "$ip" ]] || continue
+            for spec in '__sm_routecheck.txt SALADA_STATIC_OK' '__sm_phpcheck.php SALADA_PHP_OK'; do
+              read -r path marker <<< "$spec"
+              content="$(curl -fsS --connect-timeout 8 --max-time 15 \
+                --resolve "$HML_DOMAIN:443:$ip" "https://$HML_DOMAIN/$path")"
+              [[ "$content" == "$marker" ]] || { echo "::error::Webroot ou PHP nao corresponde ao destino $ip/$path"; exit 1; }
+              echo "HTTP origin/IP $ip, $path: OK"
+            done
+          done <<< "$ips"
+      - name: Remover provas temporarias
+        if: always()
+        shell: bash
+        run: |
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+            'web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; rm -f "$web/__sm_routecheck.txt" "$web/__sm_phpcheck.php"'
+      - name: Enviar ativador de release para diretorio privado
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -F /dev/null -B -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -P "$HML_SSH_PORT" \
+            infrastructure/hostinger/activate-installed.sh \
+            "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/activate-installed.sh"
+      - name: Ativar somente os arquivos publicos do Laravel ja instalado
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+            'bash "$HOME/apps/salada-mix-hml/incoming/activate-installed.sh"'
+      - name: Validar HTTPS, pagina, autenticacao e ausencia de segredos
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://$HML_DOMAIN"
+          if ! (
+            curl -fsS --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/up" > /dev/null &&
+            curl -fsS --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/" -o "$RUNNER_TEMP/hml-home.html" &&
+            grep -q 'Salada Mix' "$RUNNER_TEMP/hml-home.html" &&
+            curl -fsS --connect-timeout 10 --max-time 30 "$base/entrar" > /dev/null &&
+            curl -fsS --connect-timeout 10 --max-time 30 "$base/assets/salada/salada-mix-logo.svg" > /dev/null &&
+            curl -fsS "$base/robots.txt" | grep -q '^Disallow: /' &&
+            [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/.env")" != 200 ]]
+          ); then
+            echo "::error::Smoke HTTP da HML reprovado; executando rollback apenas do webroot."
+            ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+              'bash "$HOME/apps/salada-mix-hml/incoming/rollback-first.sh"'
+            exit 1
+          fi
+          echo "HML Laravel OK: $base"
