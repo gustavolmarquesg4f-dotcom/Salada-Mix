@@ -19,6 +19,7 @@ use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\Seller\SellerDashboardController;
 use App\Http\Controllers\Seller\SellerOnboardingController;
 use App\Http\Controllers\Seller\ShippingOriginController;
+use App\Http\Controllers\Seller\SellerTeamController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -93,6 +94,10 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/vendedor/{seller}/painel', [SellerDashboardController::class, 'show'])
         ->middleware('seller.member')->name('seller.dashboard');
     Route::prefix('vendedor/{seller}')->name('seller.')->middleware('seller.member')->group(function (): void {
+        Route::get('/equipe', [SellerTeamController::class, 'index'])->name('team.index');
+        Route::post('/equipe/convites', [SellerTeamController::class, 'invite'])->middleware('throttle:6,1')->name('team.invite');
+        Route::delete('/equipe/convites/{invitation}', [SellerTeamController::class, 'cancel'])->name('team.cancel');
+        Route::delete('/equipe/membros/{membership}', [SellerTeamController::class, 'remove'])->name('team.remove');
         Route::get('/origens', [ShippingOriginController::class, 'index'])->name('origins.index');
         Route::post('/origens', [ShippingOriginController::class, 'store'])->name('origins.store');
         Route::delete('/origens/{origin}', [ShippingOriginController::class, 'destroy'])->name('origins.destroy');
@@ -100,6 +105,8 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::get('/ofertas/nova', [SellerOfferController::class, 'create'])->name('offers.create');
         Route::post('/ofertas', [SellerOfferController::class, 'store'])->name('offers.store');
     });
+    Route::get('/convites/{invitation}/{token}', [SellerTeamController::class, 'showInvitation'])->name('seller.team.accept.show');
+    Route::post('/convites/{invitation}/{token}', [SellerTeamController::class, 'accept'])->name('seller.team.accept');
     Route::prefix('admin')->name('admin.')->middleware(['can:review-sellers', 'admin.mfa'])->group(function (): void {
         Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
         Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
