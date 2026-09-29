@@ -110,4 +110,44 @@ class SellerTeamInvitationTest extends TestCase
             ->assertNotFound();
         $this->assertDatabaseHas('seller_memberships', ['id' => $membership->id, 'status' => 'active']);
     }
+
+    public function test_owner_can_view_team_and_duplicate_invites_are_rejected(): void
+    {
+        Notification::fake();
+        $owner = User::factory()->create();
+        $seller = $this->seller($owner);
+        $this->actingAs($owner)->get(route('seller.team.index', $seller))
+            ->assertOk()->assertSee('Equipe');
+        $this->post(route('seller.team.invite', $seller), [
+            'email' => 'member@example.test', 'role' => 'support',
+        ])->assertRedirect();
+        $this->post(route('seller.team.invite', $seller), [
+            'email' => 'member@example.test', 'role' => 'support',
+        ])->assertSessionHasErrors('email');
+        $this->assertSame(1, DB::table('seller_invitations')->where('seller_id', $seller->id)->count());
+    }
+
+    public function test_invalid_token_is_rejected_and_owner_can_revoke_another_member(): void
+    {
+        Notification::fake();
+        $owner = User::factory()->create();
+        $member = User::factory()->create(['email' => 'member@example.test']);
+        $seller = $this->seller($owner);
+        $membership = SellerMembership::query()->create([
+            'seller_id' => $seller->id, 'user_id' => $member->id,
+            'role' => 'support', 'status' => 'active',
+        ]);
+        $this->actingAs($owner)->post(route('seller.team.invite', $seller), [
+            'email' => 'another@example.test', 'role' => 'operations',
+        ])->assertRedirect();
+        $invitation = DB::table('seller_invitations')->where('seller_id', $seller->id)->firstOrFail();
+        $this->actingAs($member)->get(route('seller.team.accept.show', [
+            'invitation' => $invitation->id, 'token' => 'invalid',
+        ]))->assertNotFound();
+        $this->actingAs($owner)->delete(route('seller.team.remove', [$seller, $membership]))
+            ->assertRedirect();
+        $this->assertDatabaseHas('seller_memberships', [
+            'id' => $membership->id, 'status' => 'revoked',
+        ]);
+    }
 }
