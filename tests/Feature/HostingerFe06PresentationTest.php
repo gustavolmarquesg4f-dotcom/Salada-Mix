@@ -13,10 +13,16 @@ class HostingerFe06PresentationTest extends TestCase
         try {
             app()->detectEnvironment(fn (): string => 'staging');
 
-            $this->get('/')->assertOk()
-                ->assertSee('PRÉVIA VISUAL FE-06', false)
-                ->assertSee('<base href="/fe06/">', false)
-                ->assertSee('assets/salada-checkout.css', false);
+            $response = $this->get('/')->assertOk();
+            // BinaryFileResponse streams bytes; TestResponse's buffered body is empty.
+            $this->assertInstanceOf(
+                \Symfony\Component\HttpFoundation\BinaryFileResponse::class,
+                $response->baseResponse
+            );
+            $this->assertSame(
+                realpath(public_path('fe06/index.html')),
+                realpath($response->baseResponse->getFile()->getPathname())
+            );
         } finally {
             app()->detectEnvironment(fn (): string => $original);
         }
