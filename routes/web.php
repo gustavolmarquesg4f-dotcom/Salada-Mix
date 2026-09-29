@@ -24,7 +24,18 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [CatalogController::class, 'home'])->name('home');
+// HML presents the approved FE-06 visual reference byte-for-byte (except its base path).
+// Live Laravel routes remain available; the commercial production home stays dynamic.
+Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
+    if (app()->environment('staging')) {
+        return response()->file(public_path('fe06/index.html'), [
+            'Content-Type' => 'text/html; charset=UTF-8',
+            'Cache-Control' => 'no-store, max-age=0',
+        ]);
+    }
+
+    return app(CatalogController::class)->home($catalog);
+})->name('home');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
