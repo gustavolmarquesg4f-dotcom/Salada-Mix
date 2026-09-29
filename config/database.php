@@ -3,6 +3,16 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+// A staging-only base64 representation keeps generated passwords parseable by dotenv.
+// Base64 is NOT encryption; the .env remains private and mode 0600.
+$encodedPassword = env('DB_PASSWORD_B64');
+$dbPassword = $encodedPassword === null
+    ? env('DB_PASSWORD', '')
+    : base64_decode((string) $encodedPassword, true);
+if ($dbPassword === false) {
+    throw new RuntimeException('Invalid DB_PASSWORD_B64 value.');
+}
+
 return [
 
     /*
@@ -51,7 +61,7 @@ return [
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => $dbPassword,
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
@@ -71,7 +81,7 @@ return [
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => $dbPassword,
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
             'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
