@@ -128,14 +128,21 @@ jobs:
         run: |
           set -euo pipefail
           base="https://$HML_DOMAIN"
+          fresh="?deploy_check=$GITHUB_RUN_ID"
+          # Stale negative cache may retain the old 404 after filesystem repair.
+          # Check unique URLs first; a real Laravel failure still rolls back.
           if ! (
-            curl -fsS --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/up" > /dev/null &&
-            curl -fsS --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/" -o "$RUNNER_TEMP/hml-home.html" &&
+            echo 'Validando Laravel /up sem cache anterior' &&
+            curl -fsS -H 'Cache-Control: no-cache' --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/up$fresh" > /dev/null &&
+            echo 'Validando home sem cache anterior' &&
+            curl -fsS -H 'Cache-Control: no-cache' --retry 3 --retry-delay 3 --retry-all-errors --connect-timeout 10 --max-time 30 "$base/$fresh" -o "$RUNNER_TEMP/hml-home.html" &&
             grep -q 'Salada Mix' "$RUNNER_TEMP/hml-home.html" &&
-            curl -fsS --connect-timeout 10 --max-time 30 "$base/entrar" > /dev/null &&
-            curl -fsS --connect-timeout 10 --max-time 30 "$base/assets/salada/salada-mix-logo.svg" > /dev/null &&
-            curl -fsS "$base/robots.txt" | grep -q '^Disallow: /' &&
-            [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/.env")" != 200 ]]
+            echo 'Validando login' &&
+            curl -fsS -H 'Cache-Control: no-cache' --connect-timeout 10 --max-time 30 "$base/entrar$fresh" > /dev/null &&
+            echo 'Validando logo publico' &&
+            curl -fsS --connect-timeout 10 --max-time 30 "$base/assets/salada/salada-mix-logo.svg$fresh" > /dev/null &&
+            curl -fsS "$base/robots.txt$fresh" | grep -q '^Disallow: /' &&
+            [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/.env$fresh")" != 200 ]]
           ); then
             echo "::error::Smoke HTTP da HML reprovado; executando rollback apenas do webroot."
             ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
@@ -144,4 +151,10 @@ jobs:
               'bash "$HOME/apps/salada-mix-hml/incoming/rollback-first.sh"'
             exit 1
           fi
-          echo "HML Laravel OK: $base"
+          canonical_up="$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "$base/up" || true)"
+          canonical_home="$(curl -sS -o /dev/null -w '%{http_code}' --connect-timeout 10 --max-time 20 "$base/" || true)"
+          echo "Canonical /up: HTTP $canonical_up; canonical /: HTTP $canonical_home"
+          if [[ "$canonical_up" != 200 || "$canonical_home" != 200 ]]; then
+            echo "::warning::Laravel origin passed, but canonical URLs may have cached 404/403. Clear Hostinger web/CDN cache."
+          fi
+          echo "HML Laravel origin OK: $base"
