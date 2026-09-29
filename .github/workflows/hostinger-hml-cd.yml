@@ -80,6 +80,9 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
           test -s vendor/autoload.php && test -s public/build/manifest.json && test ! -e .env
+          test -s public/fe06/index.html && test -s public/fe06/assets/app.js
+          grep -q '<base href="/fe06/">' public/fe06/index.html
+          cmp preview/assets/app.js public/fe06/assets/app.js
           tar -czf "$RUNNER_TEMP/release-$GITHUB_SHA.tar.gz" \
             --exclude='./.git' --exclude='./.github' --exclude='./node_modules' \
             --exclude='./tests' --exclude='./preview' --exclude='./coverage' \
@@ -132,6 +135,11 @@ jobs:
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/up$fresh" -o "$RUNNER_TEMP/up.html" || return 1
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/$fresh" -o "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Salada Mix' "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'PRÉVIA VISUAL FE-06' "$RUNNER_TEMP/home.html" || return 1
+            curl -fsS -H 'Cache-Control: no-cache' "$base/fe06/index.html$fresh" -o "$RUNNER_TEMP/fe06.html" || return 1
+            grep -q 'PRÉVIA VISUAL FE-06' "$RUNNER_TEMP/fe06.html" || return 1
+            curl -fsS "$base/fe06/assets/app.js$fresh" -o "$RUNNER_TEMP/fe06-app.js" || return 1
+            cmp preview/assets/app.js "$RUNNER_TEMP/fe06-app.js" || return 1
             curl -fsS "$base/entrar$fresh" -o /dev/null || return 1
             curl -fsS "$base/assets/salada/salada-mix-logo.svg$fresh" -o /dev/null || return 1
             curl -fsS "$base/robots.txt$fresh" -o "$RUNNER_TEMP/robots.txt" || return 1
