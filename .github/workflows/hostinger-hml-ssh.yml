@@ -1,0 +1,73 @@
+name: Hostinger HML - validar SSH (somente leitura)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-hml-ssh
+  cancel-in-progress: false
+
+jobs:
+  ssh-check:
+    name: Validar acesso à hospedagem HML
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: homologacao
+    steps:
+      - name: Restringir execução à main
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::O diagnóstico SSH só pode ser executado a partir da main."
+          exit 1
+
+      - name: Validar parâmetros e segredos
+        shell: bash
+        env:
+          HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+          HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+          HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+          HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+          HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          for name in HML_SSH_HOST HML_SSH_PORT HML_SSH_USER HML_SSH_PRIVATE_KEY HML_SSH_KNOWN_HOSTS; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error title=Configuração incompleta::O secret ${name} não está cadastrado."
+              exit 1
+            fi
+          done
+          if [[ ! "$HML_SSH_PORT" =~ ^[0-9]+$ ]]; then
+            echo "::error::Porta SSH inválida."
+            exit 1
+          fi
+
+      - name: Preparar identidade e host verificado
+        shell: bash
+        env:
+          HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+          HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HML_SSH_PRIVATE_KEY" > "$HOME/.ssh/salada_hml_deploy"
+          printf '%s\n' "$HML_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/salada_hml_deploy" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/salada_hml_deploy" > /dev/null
+
+      - name: Testar somente leitura no ambiente HML
+        shell: bash
+        env:
+          HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+          HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+          HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -o BatchMode=yes -o ConnectTimeout=20 \
+            -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/salada_hml_deploy" -p "$HML_SSH_PORT" \
+            "$HML_SSH_USER@$HML_SSH_HOST" \
+            'set -eu; printf "SSH HML: OK\n"; php -v | head -n 1; composer --version; git --version; test -d "$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; printf "Diretorio HML: OK\n"'
