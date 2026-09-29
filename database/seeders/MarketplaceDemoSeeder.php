@@ -22,8 +22,22 @@ class MarketplaceDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! app()->environment('local', 'testing') || config('marketplace.checkout_enabled')) {
-            throw new RuntimeException('Dados fictícios são permitidos apenas em ambiente local/teste com checkout desligado.');
+        $staging = app()->environment('staging')
+            && parse_url((string) config('app.url'), PHP_URL_HOST) === 'ivory-rook-276202.hostingersite.com';
+        if ((! app()->environment('local', 'testing') && ! $staging)
+            || config('marketplace.checkout_enabled')
+            || config('marketplace.order_drafts_enabled')
+            || config('marketplace.payments_provider') !== 'none') {
+            throw new RuntimeException('Seeder DEMO exige ambiente local/teste ou HML específica e recursos comerciais desligados.');
+        }
+
+        // A homologação demonstrativa nunca deve receber registros comerciais reais.
+        if ($staging && (
+            DB::table('sellers')->whereNotIn('cnpj', ['00000000000000', '00000000000001', '00000000000002'])->exists()
+            || DB::table('products')->where('slug', 'not like', 'demo-%')->exists()
+            || DB::table('orders')->exists()
+        )) {
+            throw new RuntimeException('HML contém dados não demonstrativos; seeding bloqueado sem modificar registros.');
         }
 
         $this->call(CatalogCategorySeeder::class);
