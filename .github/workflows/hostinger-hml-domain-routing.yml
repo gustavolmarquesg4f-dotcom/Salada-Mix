@@ -1,0 +1,108 @@
+name: Hostinger HML - verificar mapeamento do dominio
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hostinger-hml-domain-routing.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salada-hml-domain-routing
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Diagnostico HTTP sem alterar a aplicacao
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: homologacao
+    env:
+      HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+      HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+      HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+      HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+      HML_DOMAIN: ivory-rook-276202.hostingersite.com
+    steps:
+      - name: Validar acesso e estabelecer SSH com host conhecido
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for name in HML_SSH_HOST HML_SSH_PORT HML_SSH_USER HML_SSH_PRIVATE_KEY HML_SSH_KNOWN_HOSTS; do test -n "${!name}"; done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HML_SSH_PRIVATE_KEY" > "$HOME/.ssh/hml_key"
+          printf '%s\n' "$HML_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/hml_key" "$HOME/.ssh/known_hosts"
+
+      - name: Preparar arquivo de teste somente no webroot HML
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" 'bash -s' <<'REMOTE'
+          set -eu
+          web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
+          test -d "$web"
+          test -f "$web/default.php"
+          test ! -e "$web/index.php"
+          test ! -e "$web/__salada_hml_routecheck.txt"
+          printf 'SALADA_HML_ROUTE_CHECK\n' > "$web/__salada_hml_routecheck.txt"
+          chmod 644 "$web/__salada_hml_routecheck.txt"
+          printf 'HML document root: %s\n' "$(readlink -f "$web")"
+          stat -c 'Web directory: mode=%a owner=%U' "$web"
+          stat -c 'Probe file: mode=%a owner=%U' "$web/__salada_hml_routecheck.txt"
+          test -f "$HOME/apps/salada-mix-hml/current/artisan" && echo 'Laravel private current: present'
+          test -f "$HOME/apps/salada-mix-hml/shared/.env" && echo 'Private env: present'
+          REMOTE
+
+      - name: Inspecionar DNS e respostas HTTP de rota real
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Domain: $HML_DOMAIN"
+          echo 'DNS A records:'
+          getent ahostsv4 "$HML_DOMAIN" | awk '{print $1}' | sort -u || true
+          for path in / /default.php /__salada_hml_routecheck.txt; do
+            printf 'Normal %s => ' "$path"
+            curl -sS --connect-timeout 8 --max-time 15 -o "$RUNNER_TEMP/response" \
+              -w 'HTTP %{http_code}, remote IP %{remote_ip}, content type %{content_type}\n' \
+              "https://$HML_DOMAIN$path" || echo 'Normal request failed'
+            if [[ "$path" == /__salada_hml_routecheck.txt ]]; then
+              if grep -qx 'SALADA_HML_ROUTE_CHECK' "$RUNNER_TEMP/response"; then
+                echo 'Normal origin path: MATCH'
+              else
+                echo 'Normal origin path: MISMATCH'
+              fi
+            fi
+          done
+          if [[ "$HML_SSH_HOST" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            for path in / /default.php /__salada_hml_routecheck.txt; do
+              printf 'Forced host/IP %s => ' "$path"
+              curl -sS --connect-timeout 8 --max-time 15 \
+                --resolve "$HML_DOMAIN:443:$HML_SSH_HOST" -o "$RUNNER_TEMP/forced-response" \
+                -w 'HTTP %{http_code}, remote IP %{remote_ip}, content type %{content_type}\n' \
+                "https://$HML_DOMAIN$path" || echo 'Forced origin request failed'
+              if [[ "$path" == /__salada_hml_routecheck.txt ]]; then
+                if grep -qx 'SALADA_HML_ROUTE_CHECK' "$RUNNER_TEMP/forced-response"; then
+                  echo 'Forced host/IP origin path: MATCH'
+                else
+                  echo 'Forced host/IP origin path: MISMATCH'
+                fi
+              fi
+            done
+          fi
+
+      - name: Remover arquivo de teste
+        if: always()
+        shell: bash
+        run: |
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+            'rm -f "$HOME/domains/ivory-rook-276202.hostingersite.com/public_html/__salada_hml_routecheck.txt"'
