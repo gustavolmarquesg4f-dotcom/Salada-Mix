@@ -79,6 +79,16 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run build
+      - name: Simular release reproducivel da Hostinger
+        run: |
+          test -s composer.lock
+          test -s package-lock.json
+          composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts --optimize-autoloader
+          npm ci --no-audit --no-fund
+          npm run build
+          test -s vendor/autoload.php
+          test -s public/build/manifest.json
+
 
   mariadb:
     name: MariaDB 11.8 - migracoes, rollback e testes
