@@ -1,0 +1,84 @@
+name: Hostinger HML - diagnosticar roteamento
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hostinger-hml-diagnose.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salada-hml-diagnose
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    environment: homologacao
+    env:
+      HOST: ${{ secrets.HML_SSH_HOST }}
+      PORT: ${{ secrets.HML_SSH_PORT }}
+      USER: ${{ secrets.HML_SSH_USER }}
+      KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      KNOWN: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Checar branch e abrir conexao autenticada
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for var in HOST PORT USER KEY KNOWN; do test -n "${!var}"; done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$KEY" > "$HOME/.ssh/salada_hml"
+          printf '%s\n' "$KNOWN" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/salada_hml" "$HOME/.ssh/known_hosts"
+
+      - name: Verificar estado privado e criar probes temporarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o IdentitiesOnly=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/salada_hml" -p "$PORT" "$USER@$HOST" \
+            'set -eu;
+              root="$HOME/apps/salada-mix-hml";
+              web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html";
+              test -d "$root/current" && echo "Private app: present";
+              test -f "$web/default.php" && echo "Original page: restored";
+              test ! -e "$web/index.php";
+              test ! -e "$web/.htaccess";
+              test ! -e "$web/__hml_static_probe.txt";
+              test ! -e "$web/__hml_php_probe.php";
+              printf "HML_STATIC_OK\n" > "$web/__hml_static_probe.txt";
+              printf "%s\n" '"'"'<?php echo "HML_PHP_OK:".PHP_VERSION_ID;'"'"' > "$web/__hml_php_probe.php";
+              printf "%s\n" "# HML_TEMPORARY_PROBE" "RewriteEngine On" "RewriteRule ^__hml_rewrite_probe$ __hml_static_probe.txt [L]" > "$web/.htaccess";
+              cd "$root/current";
+              php artisan route:list --path=up --no-ansi;
+            '
+
+      - name: Identificar resposta HTTP do dominio
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://ivory-rook-276202.hostingersite.com"
+          for path in / /default.php /__hml_static_probe.txt /__hml_php_probe.php /__hml_rewrite_probe /up /index.php/up; do
+            code="$(curl -sS -o "$RUNNER_TEMP/response" -w '%{http_code}' --connect-timeout 10 --max-time 20 "$base$path")" || code="network-error"
+            bytes="$(wc -c < "$RUNNER_TEMP/response" 2>/dev/null || printf 0)"
+            echo "$path => HTTP $code, bytes $bytes"
+          done
+          echo "Probe body: $(curl -fsS --max-time 20 "$base/__hml_static_probe.txt" 2>/dev/null || true)"
+          echo "PHP probe: $(curl -fsS --max-time 20 "$base/__hml_php_probe.php" 2>/dev/null || true)"
+          echo "Rewrite probe: $(curl -fsS --max-time 20 "$base/__hml_rewrite_probe" 2>/dev/null || true)"
+
+      - name: Apagar probes do diretorio publico
+        if: always()
+        shell: bash
+        run: |
+          ssh -F /dev/null -T -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o IdentitiesOnly=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/salada_hml" -p "$PORT" "$USER@$HOST" \
+            'web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; rm -f "$web/__hml_static_probe.txt" "$web/__hml_php_probe.php"; if grep -q "^# HML_TEMPORARY_PROBE$" "$web/.htaccess" 2>/dev/null; then rm -f "$web/.htaccess"; fi'
