@@ -35,8 +35,8 @@ jobs:
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
-      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: gustavolmarquesg4f-ponto-com
+      SONAR_PROJECT_KEY: gustavolmarquesg4f-dotcom_Salada-Mix
       APP_ENV: testing
       APP_DEBUG: false
       DB_CONNECTION: mysql
@@ -61,7 +61,7 @@ jobs:
           missing=0
           for var in SONAR_TOKEN SONAR_ORGANIZATION SONAR_PROJECT_KEY; do
             if [[ -z "${!var}" ]]; then
-              echo "::error title=SonarQube não configurado::$var está ausente. Configure secret e variables conforme docs/runbooks/sonarqube-cloud.md."
+              echo "::error title=SonarQube não configurado::$var está ausente. Confira o token e os identificadores públicos em .github/workflows/sonarqube.yml."
               missing=1
             fi
           done
