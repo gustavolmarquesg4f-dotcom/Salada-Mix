@@ -29,7 +29,13 @@ final class DemoMedia {
         'eletrodomesticos'=>'photo-1495474472287-4d71bcdd2085',
     ];
     public static function enabled(): bool {
-        return app()->environment('local', 'testing') && ! config('marketplace.checkout_enabled', false);
+        $isolatedHml = app()->environment('staging')
+            && parse_url((string) config('app.url'), PHP_URL_HOST) === 'ivory-rook-276202.hostingersite.com';
+
+        return (app()->environment('local', 'testing') || $isolatedHml)
+            && ! config('marketplace.checkout_enabled', false)
+            && ! config('marketplace.order_drafts_enabled', false)
+            && config('marketplace.payments_provider') === 'none';
     }
     public static function product(SellerOffer $offer): ?string {
         if (! self::enabled() || ! str_starts_with($offer->product->slug, 'demo-')) return null;
