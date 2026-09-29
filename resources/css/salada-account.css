@@ -1,0 +1,98 @@
+/* FE-04: Customer authentication, addresses and account experience.
+   White first, jade navigation/CTAs, coral reserved for tiny accents. */
+.sm-auth-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.86fr);max-width:1120px;min-height:570px;margin:18px auto 28px;background:#fff;border:1px solid var(--sm-line);border-radius:22px;overflow:hidden;box-shadow:0 16px 46px rgba(17,63,44,.065)}
+.sm-auth-card{padding:36px clamp(24px,4.4vw,56px) 39px}
+.sm-auth-back{display:inline-block;color:var(--sm-jade);font-size:12px;font-weight:850;margin-bottom:28px}
+.sm-auth-back:hover{text-decoration:underline}
+.sm-auth-card h1{font-size:clamp(29px,3vw,37px);font-weight:900;letter-spacing:-.04em;line-height:1.13;margin:8px 0 9px}
+.sm-auth-subtitle{font-size:14px;color:var(--sm-muted);line-height:1.6;margin-bottom:24px}
+.sm-auth-form{display:flex;flex-direction:column;gap:8px}
+.sm-auth-form>label,.sm-account-form>label,.sm-address-form>label{font-size:12px;font-weight:800;color:#263d32;margin-top:11px}
+.sm-auth-form input,.sm-account-form input,.sm-account-form select{width:100%;min-height:46px;border:1px solid #c7d6ce;border-radius:10px;background:white;color:var(--sm-ink);padding:11px 13px;outline:none;min-width:0}
+.sm-auth-form input:focus,.sm-account-form input:focus{border-color:var(--sm-jade);box-shadow:0 0 0 3px #12694e1c}
+.sm-auth-form input[aria-invalid=true]{border-color:#b44d3c}
+.sm-field-error{color:#9c382e;font-size:11px;line-height:1.45}
+.sm-input-top{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:11px}
+.sm-input-top label{font-size:12px;font-weight:800}
+.sm-input-top a,.sm-auth-foot a{font-size:12px;color:var(--sm-jade);font-weight:850}
+.sm-input-top a:hover,.sm-auth-foot a:hover{text-decoration:underline}
+.sm-auth-submit{margin-top:19px;width:100%;border:0;cursor:pointer}
+.sm-auth-divider{display:flex;align-items:center;gap:12px;color:var(--sm-muted);text-transform:uppercase;font-size:10px;letter-spacing:.08em;font-weight:850;margin:24px 0 15px}
+.sm-auth-divider::before,.sm-auth-divider::after{content:'';height:1px;background:var(--sm-line);flex:1}
+.sm-sso-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px}
+.sm-sso-button{display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 12px;min-height:45px;border:1px solid #cbd9d0;border-radius:10px;font-size:12px;font-weight:850}
+.sm-sso-button:hover{border-color:var(--sm-jade);background:#f0f8f2;color:var(--sm-jade)}
+.sm-sso-mark{display:grid;place-items:center;width:23px;height:23px;background:#edf7f0;border-radius:50%;font-size:12px;color:var(--sm-jade)}
+.sm-auth-foot{font-size:13px;color:var(--sm-muted);text-align:center;margin-top:24px}
+.sm-form-help{font-size:11px;line-height:1.6;color:var(--sm-muted);margin:8px 0}
+.sm-auth-email{padding:13px 15px;font-weight:800;color:var(--sm-jade);background:#eff8f2;border:1px solid #c9e4d3;border-radius:10px;overflow-wrap:anywhere}
+.sm-auth-link-button{color:var(--sm-jade);font-size:13px;font-weight:850;cursor:pointer}
+.sm-auth-link-button:hover{text-decoration:underline}
+.sm-auth-aside{position:relative;display:flex;align-items:center;overflow:hidden;background:radial-gradient(circle at 75% 12%,#dceba6 0%,transparent 34%),linear-gradient(155deg,#e7f5e6 0%,#c9e9d5 65%,#f9f3e9 100%);padding:42px}
+.sm-auth-aside-content{position:relative;z-index:2;max-width:380px}
+.sm-auth-aside-content img{width:212px;height:auto;display:block;margin-bottom:45px}
+.sm-auth-overline{font-size:11px;font-weight:900;letter-spacing:.1em;color:var(--sm-jade);text-transform:uppercase}
+.sm-auth-aside-content h2{font-size:clamp(32px,3vw,46px);font-weight:900;line-height:1.07;letter-spacing:-.045em;margin:16px 0 13px;color:var(--sm-deep)}
+.sm-auth-aside-content>p{font-size:14px;color:#335e47;line-height:1.7}
+.sm-auth-bubbles{display:flex;flex-wrap:wrap;gap:9px;margin:25px 0}
+.sm-auth-bubbles span{border:1px solid #ffffffb0;border-radius:40px;padding:9px 13px;background:#ffffffb8;color:var(--sm-deep);font-size:11px;font-weight:850}
+.sm-auth-aside-content .sm-auth-small{font-size:11px;margin-top:35px}
+.sm-auth-aside-orbit{position:absolute;width:330px;height:330px;border:50px solid #ffffff26;border-radius:50%;bottom:-160px;right:-105px}
+.sm-account-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:14px 0 18px}
+.sm-account-heading h1{font-weight:900;line-height:1.1;letter-spacing:-.04em;font-size:clamp(29px,3.3vw,39px);margin:8px 0}
+.sm-account-heading p{font-size:14px;color:var(--sm-muted)}
+.sm-account-avatar{width:67px;height:67px;display:grid;place-items:center;border-radius:20px;background:var(--sm-mint);color:var(--sm-jade);font-size:30px;font-weight:900;flex-shrink:0}
+.sm-account-notice{padding:14px 16px;background:#fff9e9;color:#644b23;border:1px solid #efdfb9;font-size:12px;line-height:1.6;border-radius:12px;margin-bottom:21px}
+.sm-account-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px;align-items:start}
+.sm-account-nav{display:flex;flex-direction:column;gap:4px;padding:13px;border:1px solid var(--sm-line);border-radius:15px;background:#fff;position:sticky;top:16px}
+.sm-account-nav a,.sm-account-nav button{display:block;width:100%;text-align:left;padding:12px 13px;border-radius:9px;color:var(--sm-muted);font-size:13px;font-weight:750}
+.sm-account-nav a:hover,.sm-account-nav button:hover{background:var(--sm-mint);color:var(--sm-jade)}
+.sm-account-nav a[aria-current]{background:var(--sm-mint);color:var(--sm-jade);font-weight:850}
+.sm-account-nav form{border-top:1px solid var(--sm-line);padding-top:5px;margin-top:6px}
+.sm-account-nav button{cursor:pointer}
+.sm-account-panels{display:flex;flex-direction:column;gap:20px;min-width:0}
+.sm-account-panel{border:1px solid var(--sm-line);border-radius:16px;background:#fff;padding:24px;min-width:0;box-shadow:0 5px 18px #102e1c08}
+.sm-account-panel h2{font-size:21px;font-weight:900;letter-spacing:-.02em}
+.sm-account-panel h3{font-size:16px;font-weight:850;margin:19px 0 4px}
+.sm-account-panel>p,.sm-account-panel .sm-panel-top+p{font-size:13px;line-height:1.65;color:var(--sm-muted);margin:9px 0 15px}
+.sm-panel-top{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:12px}
+.sm-account-chip{display:inline-flex;align-items:center;padding:5px 9px;background:#e6f5e9;color:#216343;font-size:10px;border-radius:40px;font-weight:850;white-space:nowrap}
+.sm-account-form{display:flex;flex-direction:column;gap:8px;max-width:580px}
+.sm-account-form label span{font-weight:500;color:var(--sm-muted);font-size:11px}
+.sm-account-form button{align-self:flex-start;border:0;margin-top:13px;cursor:pointer}
+.sm-account-form button:disabled,.sm-account-panel button:disabled{opacity:.54;cursor:not-allowed}
+.sm-bff-feedback{margin-top:12px;padding:11px 13px;border:1px solid #c3dbc9;background:#eaf8ef;color:#21573b;border-radius:9px;font-size:12px;line-height:1.5}
+.sm-bff-feedback.is-error{background:#fff0eb;border-color:#edc0b4;color:#853e32}
+.sm-linked-accounts{display:flex;flex-direction:column;gap:8px}
+.sm-linked-account{border:1px solid var(--sm-line);padding:12px;display:flex;gap:12px;justify-content:space-between;align-items:center;border-radius:11px}
+.sm-linked-account strong{font-size:13px;display:block}
+.sm-linked-account small{font-size:11px;color:var(--sm-muted);display:block;margin-top:4px;overflow-wrap:anywhere}
+.sm-provider-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
+.sm-session-list{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.sm-session-row{border:1px solid var(--sm-line);border-radius:11px;padding:12px;font-size:12px}
+.sm-session-row strong{display:block;color:var(--sm-deep);margin-bottom:5px}
+.sm-session-row span{display:block;color:var(--sm-muted);overflow-wrap:anywhere}
+.sm-address-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.sm-address-item{border:1px solid var(--sm-line);padding:17px;border-radius:11px;margin-top:12px}
+.sm-address-item>div{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.sm-address-item strong{font-size:14px}
+.sm-address-item p{font-size:12px;line-height:1.75;color:var(--sm-muted);margin-top:8px}
+.sm-destructive{color:#9b3428;font-size:12px;font-weight:800;cursor:pointer;margin-top:12px}
+.sm-destructive:hover{text-decoration:underline}
+.sm-account-empty{font-size:13px;color:var(--sm-muted);line-height:1.7;margin-top:15px}
+.sm-account-empty a{color:var(--sm-jade);font-weight:800}
+.sm-address-form{max-width:none}
+.sm-form-split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sm-form-split>div{min-width:0}
+.sm-form-split label{font-size:12px;font-weight:800;display:block;margin:12px 0 6px}
+.sm-form-check{display:flex;align-items:center;gap:8px;font-weight:600!important}
+.sm-form-check input{width:auto;min-height:auto}
+.sm-address-back{margin:21px 0}
+.sm-address-back a{font-size:13px;font-weight:800;color:var(--sm-jade)}
+.sm-summary-list{max-width:930px;display:flex;flex-direction:column;gap:14px}
+.sm-summary-line,.sm-summary-total{display:flex;align-items:center;justify-content:space-between;gap:18px;font-size:13px;padding:12px 0;border-bottom:1px solid var(--sm-line)}
+.sm-summary-total{font-size:17px;font-weight:850;border-bottom:0}
+.sm-summary-note{font-size:12px;color:#8b672e;margin-top:12px}
+@media(max-width:850px){.sm-auth-layout{grid-template-columns:1fr;max-width:570px}.sm-auth-aside{display:none}.sm-account-layout{grid-template-columns:1fr}.sm-account-nav{position:static;display:flex;flex-direction:row;overflow-x:auto}.sm-account-nav a,.sm-account-nav button{white-space:nowrap}.sm-account-nav form{border:0;padding:0;margin:0}.sm-address-layout{grid-template-columns:1fr}}
+@media(max-width:500px){.sm-auth-layout{margin:0 auto 20px;border-radius:14px}.sm-auth-card{padding:25px 18px 31px}.sm-account-panel{padding:17px}.sm-account-heading{align-items:start}.sm-account-avatar{width:46px;height:46px;font-size:22px;border-radius:13px}.sm-form-split{grid-template-columns:1fr}.sm-auth-card h1{font-size:29px}}
+@media(prefers-reduced-motion:reduce){.sm-auth-layout *{scroll-behavior:auto}}

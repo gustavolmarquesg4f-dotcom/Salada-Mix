@@ -6,35 +6,79 @@
     $identities = $user->socialIdentities()->orderBy('provider')->get();
     $providers = collect(config('sso.providers', []))->filter(fn ($provider) => (bool) ($provider['enabled'] ?? false));
 @endphp
-<h1 class="text-3xl font-black">Minha conta</h1>
-<p class="mt-3 text-slate-600">Olá, {{ $user->name }}. Seu e-mail verificado: {{ $user->email }}.</p>
-<p class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">O checkout financeiro ainda não está disponível. Você já pode cadastrar endereços e conferir os itens da sacola por vendedor.</p>
-
-<section class="mt-6 rounded-2xl border bg-white p-6">
-    <h2 class="text-xl font-black">Login e segurança</h2>
-    <p class="mt-2 text-sm text-slate-600">Senha: {{ $user->password_login_enabled ? 'habilitada' : 'ainda não definida' }}.</p>
-    <div class="mt-4 space-y-3">
-        @forelse ($identities as $identity)
-            <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
-                <div><strong>{{ config("sso.providers.{$identity->provider}.label", ucfirst($identity->provider)) }}</strong><p class="text-xs text-slate-500">{{ $identity->provider_email }}</p></div>
-                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Conectado</span>
+<nav class="sm-breadcrumb" aria-label="Caminho de navegação"><a href="{{ route('home') }}">Início</a><span>/</span><span aria-current="page">Minha conta</span></nav>
+<div class="sm-account-heading">
+    <div><span class="sm-eyebrow">Seu espaço no Salada Mix</span><h1>Olá, {{ $user->name }}!</h1><p>Organize seus dados e acompanhe suas preferências em um só lugar.</p></div>
+    <span class="sm-account-avatar" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 1)) }}</span>
+</div>
+<div class="sm-account-notice" role="status"><strong>Loja em preparação:</strong> carrinho e resumo são apenas consulta; o pagamento real ainda não está habilitado.</div>
+<div class="sm-account-layout">
+    <nav class="sm-account-nav" aria-label="Minha conta">
+        <a href="#dados" aria-current="page">Meus dados</a>
+        <a href="{{ route('buyer.addresses.index') }}">Endereços</a>
+        <a href="{{ route('buyer.checkout.preview') }}">Resumo da sacola</a>
+        <a href="#seguranca">Login e segurança</a>
+        <a href="#sessoes">Dispositivos conectados</a>
+        @can('review-sellers')<a href="{{ route('security.mfa.show') }}">Segurança administrativa</a>@endcan
+        <form action="{{ route('logout') }}" method="post">@csrf<button type="submit">Sair da conta</button></form>
+    </nav>
+    <div class="sm-account-panels">
+        <section class="sm-account-panel" id="dados" aria-labelledby="sm-account-data-title">
+            <div class="sm-panel-top"><div><span class="sm-eyebrow">Dados pessoais</span><h2 id="sm-account-data-title">Minhas informações</h2></div><span class="sm-account-chip">{{ $user->hasVerifiedEmail() ? 'E-mail verificado' : 'Verificação pendente' }}</span></div>
+            <p>Para alterar seu e-mail, confirme a senha atual ou faça uma autenticação SSO recente. O novo endereço precisará de verificação.</p>
+            <form class="sm-account-form" data-sm-bff data-method="PATCH" data-next-on-email="{{ route('verification.notice') }}" data-initial-email="{{ $user->email }}" data-url="{{ route('bff.account.update') }}">
+                <label for="profile-name">Nome completo</label>
+                <input id="profile-name" name="name" value="{{ $user->name }}" maxlength="160" autocomplete="name" required>
+                <label for="profile-email">E-mail</label>
+                <input id="profile-email" name="email" value="{{ $user->email }}" type="email" maxlength="255" autocomplete="email" required>
+                <label for="profile-confirm">Senha atual <span>(necessária para alterar e-mail por senha)</span></label>
+                <input id="profile-confirm" name="current_password" type="password" autocomplete="current-password" placeholder="Opcional quando apenas o nome muda">
+                <button class="sm-btn sm-btn-primary" type="submit" disabled>Salvar alterações</button>
+                <p class="sm-form-help">O formulário utiliza sua sessão segura no mesmo domínio. Habilite JavaScript para gerenciar seus dados.</p>
+                <div class="sm-bff-feedback" role="status" aria-live="polite" hidden></div>
+            </form>
+        </section>
+        <section class="sm-account-panel" id="seguranca" aria-labelledby="sm-account-security-title">
+            <div class="sm-panel-top"><div><span class="sm-eyebrow">Proteja seu acesso</span><h2 id="sm-account-security-title">Login e segurança</h2></div><span class="sm-account-chip">Sua conta</span></div>
+            <p>Senha: <strong>{{ $user->password_login_enabled ? 'habilitada' : 'ainda não definida' }}</strong>. Nunca compartilhe códigos ou senhas.</p>
+            <div class="sm-linked-accounts">
+                @forelse($identities as $identity)
+                    <div class="sm-linked-account"><div><strong>{{ config("sso.providers.{$identity->provider}.label", ucfirst($identity->provider)) }}</strong><small>{{ $identity->provider_email }}</small></div><span class="sm-account-chip">Conectado</span></div>
+                @empty
+                    <p>Nenhum provedor externo conectado.</p>
+                @endforelse
             </div>
-        @empty
-            <p class="text-sm text-slate-500">Nenhum provedor externo conectado.</p>
-        @endforelse
-    </div>
-    @if ($providers->isNotEmpty())
-        <div class="mt-4 flex flex-wrap gap-3">
-            @foreach ($providers as $id => $provider)
-                @if (! $identities->contains('provider', $id))
-                    <a href="{{ route('sso.redirect', $id) }}" class="rounded-xl border px-4 py-2 text-sm font-bold text-teal-700">Conectar {{ $provider['label'] ?? ucfirst($id) }}</a>
+            @if($providers->isNotEmpty())
+                <div class="sm-provider-actions">
+                    @foreach($providers as $id => $provider)
+                        @if(!$identities->contains('provider', $id))
+                            <a class="sm-btn sm-btn-secondary" href="{{ route('sso.redirect', $id) }}">Conectar {{ $provider['label'] ?? ucfirst($id) }}</a>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+            <form class="sm-account-form" data-sm-bff data-method="PUT" data-url="{{ $user->password_login_enabled ? route('bff.account.password') : route('bff.auth.password.establish') }}">
+                <h3>{{ $user->password_login_enabled ? 'Trocar senha' : 'Criar senha para esta conta' }}</h3>
+                @if($user->password_login_enabled)
+                    <label for="security-current">Senha atual</label><input id="security-current" name="current_password" type="password" autocomplete="current-password" required>
+                @else
+                    <p class="sm-form-help">Para criar senha em uma conta SSO, autentique-se novamente pelo provedor conectado antes de prosseguir.</p>
                 @endif
-            @endforeach
-        </div>
-    @endif
-    <p class="mt-4 text-xs text-slate-500">Desconectar provedores e definir senha para contas SSO são operações protegidas pelo BFF, com reautenticação recente.</p>
-</section>
-
-<div class="mt-6 flex flex-wrap gap-3"><a href="{{ route('buyer.addresses.index') }}" class="rounded-xl bg-violet-700 px-5 py-3 font-bold text-white">Meus endereços</a><a href="{{ route('buyer.checkout.preview') }}" class="rounded-xl border px-5 py-3 font-bold">Resumo da sacola</a></div>
+                <label for="security-new">Nova senha</label><input id="security-new" name="password" type="password" autocomplete="new-password" required>
+                <label for="security-confirm">Confirme a nova senha</label><input id="security-confirm" name="password_confirmation" type="password" autocomplete="new-password" required>
+                <button class="sm-btn sm-btn-primary" type="submit" disabled>{{ $user->password_login_enabled ? 'Atualizar senha' : 'Definir minha senha' }}</button>
+                <div class="sm-bff-feedback" role="status" aria-live="polite" hidden></div>
+            </form>
+        </section>
+        <section class="sm-account-panel" id="sessoes" aria-labelledby="sm-sessions-title">
+            <div class="sm-panel-top"><div><span class="sm-eyebrow">Controle de acesso</span><h2 id="sm-sessions-title">Dispositivos conectados</h2></div></div>
+            <p>Consulte as sessões da sua conta. O gerenciamento requer sessões armazenadas no banco de dados.</p>
+            <button type="button" class="sm-btn sm-btn-secondary" data-sm-session-load data-url="{{ route('bff.account.sessions') }}" disabled>Consultar dispositivos</button>
+            <div class="sm-bff-feedback" id="sm-session-feedback" role="status" aria-live="polite" hidden></div>
+            <div id="sm-session-list" class="sm-session-list"></div>
+            <p class="sm-form-help">Para encerrar esta sessão, utilize “Sair da conta” no menu lateral.</p>
+        </section>
+    </div>
+</div>
+<noscript><p class="sm-notice error">Para alterar os dados desta conta, habilite JavaScript. A navegação e o acesso às páginas de endereço continuam disponíveis.</p></noscript>
 @endsection
-

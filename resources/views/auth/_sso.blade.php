@@ -1,19 +1,15 @@
 @php
     $providers = collect(config('sso.providers', []))->filter(fn ($provider) => (bool) ($provider['enabled'] ?? false));
 @endphp
-
-@if ($providers->isNotEmpty())
-    <div class="space-y-3">
-        <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            <span class="h-px flex-1 bg-slate-200"></span><span>ou continue com</span><span class="h-px flex-1 bg-slate-200"></span>
-        </div>
+@if($providers->isNotEmpty())
+    <div class="sm-auth-divider"><span>Ou continue com</span></div>
+    <div class="sm-sso-options">
         @foreach ($providers as $id => $provider)
-            <a href="{{ route('sso.redirect', $id) }}"
-               class="flex w-full items-center justify-center rounded-xl border bg-white p-3 font-bold text-slate-700 hover:border-teal-600 hover:text-teal-700">
-                {{ $provider['label'] ?? ucfirst($id) }}
+            <a href="{{ route('sso.redirect', $id) }}" class="sm-sso-button">
+                <span class="sm-sso-mark" aria-hidden="true">{{ strtoupper(substr($id, 0, 1)) }}</span>
+                Continuar com {{ $provider['label'] ?? ucfirst($id) }}
             </a>
         @endforeach
-        <p class="text-xs text-slate-500">O Salada Mix não armazena o token OAuth do provedor após identificar sua conta.</p>
     </div>
+    <p class="sm-form-help">A disponibilidade das opções depende das integrações habilitadas. O Salada Mix não mantém os tokens OAuth de acesso do provedor após identificar sua conta.</p>
 @endif
-
