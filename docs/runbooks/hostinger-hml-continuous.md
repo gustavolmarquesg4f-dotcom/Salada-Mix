@@ -25,3 +25,7 @@ O objetivo desta pipeline é homologar aplicação e interface. `APP_ENV=staging
 Os workflows antigos `hostinger-hml-first-deploy.yml` e `hostinger-hml-activate.yml` são históricos de uso único; não os reexecute sobre a aplicação já publicada. Diante de erro de pipeline, primeiro leia o job. Se o dump faltar ou a base não for compatível, mantenha a versão anterior e corrija a causa antes de novo deploy. Não apague `current`, `shared` ou a base HML.
 
 As entregas ainda draft (checkout/logística) ou PRs antigos de convites só entram em `main` após revisão e checks; a pipeline não deve publicar trabalho não aprovado.
+
+## Diagnóstico e regressão de cache (29/09/2026)
+
+A primeira tentativa criou diretórios 700/arquivos 600 e retornou 403; o release deve usar diretórios privados 750, arquivos de código 640 e `.env` 600. A segunda mostrou HTTP 500 porque `config:cache` havia sido gerado antes de mover `releases/SHA` para `current`: caminhos de log e cache de arquivo apontavam para a pasta antiga. A partir de agora `config:cache` e `view:cache` são gerados somente **depois** da troca para `current`; o Quality workflow verifica a ordem.
