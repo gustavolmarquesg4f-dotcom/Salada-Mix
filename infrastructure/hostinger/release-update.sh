@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-umask 077
+umask 027
 root="$HOME/apps/salada-mix-hml"
 web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
 current="$root/current"
@@ -30,6 +30,12 @@ tar -xzf "$root/incoming/release-$sha.tar.gz" -C "$stage" --no-same-owner
 cp -p "$shared/.env" "$stage/.env"; chmod 600 "$stage/.env"
 mkdir -p "$stage/bootstrap/cache" "$stage/storage/framework/cache/data" "$stage/storage/framework/sessions" "$stage/storage/framework/views" "$stage/storage/logs"
 chmod -R u+rwX "$stage/bootstrap/cache" "$stage/storage"
+# Hostinger Apache/PHP must traverse/read the private release via account group.
+# Tar extraction under umask 077 created mode 700/600 and returned HTTP 403.
+find "$stage" -type d -exec chmod 750 {} +
+find "$stage" -type f -exec chmod 640 {} +
+chmod 600 "$stage/.env"
+chmod 750 "$root" "$shared" "$root/releases"
 cd "$stage"
 php artisan package:discover --no-ansi
 php artisan config:clear --no-ansi
