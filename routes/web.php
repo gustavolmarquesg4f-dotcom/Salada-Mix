@@ -36,6 +36,9 @@ Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
 
     return app(CatalogController::class)->home($catalog);
 })->name('home');
+// The functional Laravel storefront is available alongside the FE-06 presentation.
+// No demo payment, synthetic order submission or unsafe impersonation routes are exposed.
+Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
