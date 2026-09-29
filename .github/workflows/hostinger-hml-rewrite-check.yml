@@ -1,0 +1,93 @@
+name: Hostinger HML - diagnosticar index e rewrite
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hostinger-hml-rewrite-check.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: salada-hml-domain-routing
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: homologacao
+    env:
+      HOST: ${{ secrets.HML_SSH_HOST }}
+      PORT: ${{ secrets.HML_SSH_PORT }}
+      USER: ${{ secrets.HML_SSH_USER }}
+      KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      KNOWN: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+      DOMAIN: ivory-rook-276202.hostingersite.com
+    steps:
+      - name: SSH apenas para homologacao
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for v in HOST PORT USER KEY KNOWN; do test -n "${!v}"; done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$KEY" > "$HOME/.ssh/key"
+          printf '%s\n' "$KNOWN" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/key" "$HOME/.ssh/known_hosts"
+      - name: Criar index e rewrite de diagnostico reversiveis
+        id: create
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/key" -p "$PORT" "$USER@$HOST" 'bash -s' <<'REMOTE'
+          set -eu
+          web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
+          test -f "$web/default.php"
+          test ! -e "$web/index.php"
+          test ! -e "$web/.htaccess"
+          test ! -e "$web/__sm_rewrite_static.txt"
+          test "$(stat -c %a "$web")" = 755
+          printf '%s\n' '<?php echo "SALADA_INDEX_OK";' > "$web/index.php"
+          printf 'SALADA_STATIC_OK\n' > "$web/__sm_rewrite_static.txt"
+          cp "$HOME/apps/salada-mix-hml/current/public/.htaccess" "$web/.htaccess"
+          printf '\n# SALADA_HML_REWRITE_PROBE\nDirectoryIndex index.php\n' >> "$web/.htaccess"
+          chmod 644 "$web/index.php" "$web/__sm_rewrite_static.txt" "$web/.htaccess"
+          REMOTE
+      - name: Conferir static, PHP e roteamento nos IPs da HML
+        shell: bash
+        run: |
+          set -euo pipefail
+          ips="$(getent ahostsv4 "$DOMAIN" | awk '{print $1}' | sort -u)"
+          test -n "$ips"
+          while read -r ip; do
+            [[ -n "$ip" ]] || continue
+            for path in /__sm_rewrite_static.txt /index.php /__sm_unique_rewrite /up /; do
+              case "$path" in
+                /__sm_rewrite_static.txt) marker=SALADA_STATIC_OK ;;
+                *) marker=SALADA_INDEX_OK ;;
+              esac
+              code="$(curl -sS --connect-timeout 8 --max-time 15 \
+                --resolve "$DOMAIN:443:$ip" -o "$RUNNER_TEMP/response" \
+                -w '%{http_code}' "https://$DOMAIN$path?probe=$GITHUB_RUN_ID")" || code=NETWORK_ERROR
+              if grep -qx "$marker" "$RUNNER_TEMP/response" 2>/dev/null; then match=MATCH; else match=MISMATCH; fi
+              echo "IP $ip $path => HTTP $code, $match"
+            done
+          done <<< "$ips"
+      - name: Remover somente os arquivos de diagnostico
+        if: always()
+        shell: bash
+        run: |
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/key" -p "$PORT" "$USER@$HOST" 'bash -s' <<'REMOTE'
+          set -eu
+          web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"
+          if grep -q 'SALADA_INDEX_OK' "$web/index.php" 2>/dev/null; then rm -f "$web/index.php"; fi
+          if grep -q 'SALADA_HML_REWRITE_PROBE' "$web/.htaccess" 2>/dev/null; then rm -f "$web/.htaccess"; fi
+          if grep -qx SALADA_STATIC_OK "$web/__sm_rewrite_static.txt" 2>/dev/null; then rm -f "$web/__sm_rewrite_static.txt"; fi
+          REMOTE
