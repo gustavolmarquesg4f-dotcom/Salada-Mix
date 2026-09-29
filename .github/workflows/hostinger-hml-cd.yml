@@ -136,11 +136,14 @@ jobs:
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/$fresh" -o "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Salada Mix' "$RUNNER_TEMP/home.html" || return 1
             grep -q 'PRÉVIA VISUAL FE-06' "$RUNNER_TEMP/home.html" || return 1
-            curl -fsS "$base/loja$fresh" -o "$RUNNER_TEMP/live-catalog.html" || return 1
-            grep -q 'Fone Bluetooth sem fio (DEMO)' "$RUNNER_TEMP/live-catalog.html" || return 1
-            grep -q 'sm-demo-image' "$RUNNER_TEMP/live-catalog.html" || return 1
-            curl -fsS "$base/buscar?q=vitamina$fresh" -o "$RUNNER_TEMP/demo-search.html" || return 1
-            grep -q 'Sérum facial vitamina C (DEMO)' "$RUNNER_TEMP/demo-search.html" || return 1
+            echo 'SMOKE: functional DB-backed catalog /loja'
+            curl -fsS "$base/loja$fresh" -o "$RUNNER_TEMP/live-catalog.html" || { echo "::error::HML /loja unavailable"; return 1; }
+            grep -q '(DEMO)' "$RUNNER_TEMP/live-catalog.html" || { echo "::error::HML /loja has no demo product"; return 1; }
+            grep -q 'sm-demo-image' "$RUNNER_TEMP/live-catalog.html" || { echo "::error::HML /loja lacks demo photos"; return 1; }
+            echo 'SMOKE: DB-backed search /buscar'
+            curl -fsS "$base/buscar?q=vitamina&deploy_check=$GITHUB_RUN_ID" -o "$RUNNER_TEMP/demo-search.html" || { echo "::error::HML /buscar unavailable"; return 1; }
+            grep -q 'Sérum facial vitamina C (DEMO)' "$RUNNER_TEMP/demo-search.html" || { echo "::error::HML /buscar missed synthetic serum"; return 1; }
+            echo 'SMOKE: dynamic catalog and search passed'
             curl -fsS -H 'Cache-Control: no-cache' "$base/fe06/index.html$fresh" -o "$RUNNER_TEMP/fe06.html" || return 1
             grep -q 'PRÉVIA VISUAL FE-06' "$RUNNER_TEMP/fe06.html" || return 1
             curl -fsS "$base/fe06/assets/app.js$fresh" -o "$RUNNER_TEMP/fe06-app.js" || return 1
