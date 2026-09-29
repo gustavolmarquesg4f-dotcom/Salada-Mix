@@ -3,6 +3,7 @@
 @import './salada-catalog.css';
 @import './salada-visual-demo.css';
 @import './salada-account.css';
+@import './salada-commerce.css';
 
 @source '../views/**/*.blade.php';
 @source '../../app/**/*.php';

@@ -35,6 +35,10 @@ final class DemoMedia {
         if (! self::enabled() || ! str_starts_with($offer->product->slug, 'demo-')) return null;
         return isset(self::PHOTOS[$offer->product->slug]) ? self::url(self::PHOTOS[$offer->product->slug], 640) : null;
     }
+    public static function productSlug(string $slug): ?string {
+        if (! self::enabled() || ! str_starts_with($slug, 'demo-') || ! isset(self::PHOTOS[$slug])) return null;
+        return self::url(self::PHOTOS[$slug], 320);
+    }
     public static function category(string $slug): ?string {
         return self::enabled() && isset(self::CATEGORIES[$slug]) ? self::url(self::CATEGORIES[$slug], 240) : null;
     }

@@ -16,4 +16,5 @@
             <p class="sm-product-hint">Ver detalhes <span aria-hidden="true">→</span></p>
         </div>
     </a>
+    <x-salada.commerce-actions :offer="$offer" />
 </article>

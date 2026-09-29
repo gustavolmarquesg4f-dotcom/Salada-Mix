@@ -26,6 +26,7 @@
         <p class="sm-detail-price">R$ {{ number_format($offer->price_cents / 100, 2, ',', '.') }}</p>
         <p class="sm-detail-stock">Disponível para consulta · {{ max(0, ($offer->stock?->quantity_on_hand ?? 0) - ($offer->stock?->quantity_reserved ?? 0)) }} unidades cadastradas</p>
         <div class="sm-notice info"><strong>O checkout está desativado.</strong> Estamos preparando pagamentos e logística para compras entre diferentes vendedores.</div>
+        <div class="sm-detail-buy-actions"><x-salada.commerce-actions :offer="$offer" compact /></div>
         <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.category', $offer->product->category) }}">Mais neste departamento →</a>
     </div>
     <section class="sm-detail-description" aria-labelledby="sm-detail-description-title">
