@@ -73,3 +73,61 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run build
+
+  mariadb:
+    name: MariaDB 11.8 - migracoes, rollback e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_DATABASE: salada_mix
+          MARIADB_USER: salada_mix
+          MARIADB_PASSWORD: ci-only-password
+          MARIADB_ROOT_PASSWORD: ci-only-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+    env:
+      APP_ENV: testing
+      APP_DEBUG: false
+      DB_CONNECTION: mariadb
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: salada_mix
+      DB_USERNAME: salada_mix
+      DB_PASSWORD: ci-only-password
+      DB_URL: ''
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      MARKETPLACE_CHECKOUT_ENABLED: false
+      MARKETPLACE_ORDER_DRAFTS_ENABLED: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, intl, zip, dom, fileinfo
+          coverage: none
+          tools: composer:v2
+      - name: Instalar dependencias PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Preparar ambiente de teste
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Confirmar driver e migrar no MariaDB
+        run: |
+          php -r 'require "vendor/autoload.php"; $app=require "bootstrap/app.php"; $app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); if (Illuminate\\Support\\Facades\\DB::getDriverName() !== "mariadb") { fwrite(STDERR, "Driver nao e MariaDB.\\n"); exit(2); }'
+          php artisan migrate --force
+          php artisan migrate:rollback --step=1 --force
+          php artisan migrate --force
+      - name: Verificar integridade SQL e testes
+        run: |
+          php artisan test --filter=StockInvariantConstraintTest
+          php artisan test
