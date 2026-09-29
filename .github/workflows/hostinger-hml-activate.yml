@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - .github/workflows/hostinger-hml-activate.yml
+      - infrastructure/hostinger/activate-installed.sh
 
 permissions:
   contents: read
