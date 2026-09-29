@@ -97,6 +97,11 @@ rm -rf "$stage/storage"; ln -s "$shared/storage" "$stage/storage"
 cd "$stage"
 php artisan migrate --force --no-interaction --no-ansi
 php artisan migrate:status --no-ansi >/dev/null
+# Seed only the isolated, non-commercial HML after backup; the seeder refuses
+# checkout/payment flags and refuses to mix synthetic with genuine merchant/order data.
+php artisan db:seed --class=MarketplaceDemoSeeder --force --no-ansi
+php artisan tinker --execute="echo 'DEMO_DB_OK sellers='.\\App\\Models\\Seller::where('trade_name', 'like', '%(DEMO)')->count().' products='.\\App\\Models\\Product::where('slug', 'like', 'demo-%')->count();" --no-ansi
+
 # Do not cache absolute storage/log paths until the release lives at /current.
 php artisan route:list --json >/dev/null
 printf '%s\n' "$sha" "$oldsha" "$prev" "$backup" > "$root/.pending-release"
