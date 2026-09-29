@@ -1,0 +1,166 @@
+name: Hostinger HML - deploy continuo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: salada-hml-first-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Publicar Laravel e frontend na homologacao
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: homologacao
+    env:
+      HML_SSH_HOST: ${{ secrets.HML_SSH_HOST }}
+      HML_SSH_PORT: ${{ secrets.HML_SSH_PORT }}
+      HML_SSH_USER: ${{ secrets.HML_SSH_USER }}
+      HML_SSH_PRIVATE_KEY: ${{ secrets.HML_SSH_PRIVATE_KEY }}
+      HML_SSH_KNOWN_HOSTS: ${{ secrets.HML_SSH_KNOWN_HOSTS }}
+      GH_TOKEN: ${{ github.token }}
+      HML_DOMAIN: ivory-rook-276202.hostingersite.com
+    steps:
+      - name: Conferir branch e secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == refs/heads/main ]]
+          for name in HML_SSH_HOST HML_SSH_PORT HML_SSH_USER HML_SSH_PRIVATE_KEY HML_SSH_KNOWN_HOSTS; do
+            [[ -n "${!name}" ]] || { echo "::error::Secret $name ausente"; exit 1; }
+          done
+          [[ "$HML_SSH_PORT" =~ ^[0-9]+$ ]]
+
+      - name: Bloquear deploy sem Quality e Sonar aprovados no commit exato
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 45); do
+            runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&event=push&per_page=100")"
+            quality="$(jq -r '[.workflow_runs[] | select(.name == "Qualidade Salada Mix")] | first | .conclusion // "pending"' <<< "$runs")"
+            sonar="$(jq -r '[.workflow_runs[] | select(.name == "SonarQube Cloud")] | first | .conclusion // "pending"' <<< "$runs")"
+            echo "Quality=$quality; Sonar=$sonar"
+            [[ "$quality" != success || "$sonar" != success ]] || break
+            [[ ! "$quality/$sonar" =~ failure|cancelled|timed_out|action_required ]] || { echo "::error::Falha nos checks, deploy bloqueado"; exit 1; }
+            [[ "$i" != 45 ]] || { echo "::error::Timeout dos checks"; exit 1; }
+            sleep 20
+          done
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, intl, zip, dom, fileinfo
+          coverage: none
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Compilar pacote travado sem dados sensiveis
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s composer.lock && test -s package-lock.json
+          bash -n infrastructure/hostinger/release-update.sh
+          bash -n infrastructure/hostinger/rollback-update.sh
+          bash -n infrastructure/hostinger/confirm-update.sh
+          composer validate --strict --no-check-publish
+          composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts --optimize-autoloader
+          npm ci --no-audit --no-fund
+          npm run build
+          test -s vendor/autoload.php && test -s public/build/manifest.json && test ! -e .env
+          tar -czf "$RUNNER_TEMP/release-$GITHUB_SHA.tar.gz" \
+            --exclude='./.git' --exclude='./.github' --exclude='./node_modules' \
+            --exclude='./tests' --exclude='./preview' --exclude='./coverage' \
+            --exclude='./.env' --exclude='./.env.*' --exclude='./.scannerwork' \
+            -C "$GITHUB_WORKSPACE" .
+
+      - name: Abrir conexao SSH segura
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$HML_SSH_PRIVATE_KEY" > "$HOME/.ssh/hml_key"
+          printf '%s\n' "$HML_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/hml_key" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/hml_key" >/dev/null
+
+      - name: Enviar pacote e scripts somente ao diretorio privado da HML
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -F /dev/null -B -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -P "$HML_SSH_PORT" \
+            "$RUNNER_TEMP/release-$GITHUB_SHA.tar.gz" \
+            "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/release-$GITHUB_SHA.tar.gz"
+          scp -F /dev/null -B -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -P "$HML_SSH_PORT" \
+            infrastructure/hostinger/release-update.sh \
+            infrastructure/hostinger/rollback-update.sh \
+            infrastructure/hostinger/confirm-update.sh \
+            "$HML_SSH_USER@$HML_SSH_HOST:apps/salada-mix-hml/incoming/"
+
+      - name: Fazer backup e ativar release
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+            "bash \"\$HOME/apps/salada-mix-hml/incoming/release-update.sh\" '$GITHUB_SHA' '$GITHUB_RUN_ID'"
+
+      - name: Validar release publica ou executar rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://$HML_DOMAIN"
+          fresh="?deploy_check=$GITHUB_RUN_ID"
+          smoke() {
+            curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/up$fresh" -o "$RUNNER_TEMP/up.html" || return 1
+            curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/$fresh" -o "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'Salada Mix' "$RUNNER_TEMP/home.html" || return 1
+            curl -fsS "$base/entrar$fresh" -o /dev/null || return 1
+            curl -fsS "$base/assets/salada/salada-mix-logo.svg$fresh" -o /dev/null || return 1
+            curl -fsS "$base/robots.txt$fresh" -o "$RUNNER_TEMP/robots.txt" || return 1
+            grep -q '^Disallow: /' "$RUNNER_TEMP/robots.txt" || return 1
+            asset="$(jq -r '[.[] | select(.file != null) | .file][0] // empty' public/build/manifest.json)"
+            [[ -n "$asset" ]] || return 1
+            curl -fsS "$base/build/$asset$fresh" -o /dev/null || return 1
+            for path in /.env /vendor/autoload.php /storage/logs/laravel.log; do
+              code="$(curl -sS -o /dev/null -w '%{http_code}' "$base$path$fresh")" || return 1
+              [[ "$code" != 200 ]] || return 1
+            done
+            [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/")" == 200 ]] || return 1
+            [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/up")" == 200 ]] || return 1
+          }
+          if ! smoke; then
+            echo "::error::HML smoke falhou; restaurando release anterior."
+            ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+              "bash \"\$HOME/apps/salada-mix-hml/incoming/rollback-update.sh\" '$GITHUB_SHA' '$GITHUB_RUN_ID'"
+            exit 1
+          fi
+
+      - name: Confirmar SHA no servidor apos smoke aprovado
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+            "bash \"\$HOME/apps/salada-mix-hml/incoming/confirm-update.sh\" '$GITHUB_SHA' '$GITHUB_RUN_ID'"
+          echo "DEPLOY_OK SHA=$GITHUB_SHA URL=https://$HML_DOMAIN"

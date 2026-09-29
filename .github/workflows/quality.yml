@@ -73,6 +73,9 @@ jobs:
           php -l infrastructure/hostinger/hml-index.php
           bash -n infrastructure/hostinger/first-deploy.sh
           bash -n infrastructure/hostinger/rollback-first.sh
+          bash -n infrastructure/hostinger/release-update.sh
+          bash -n infrastructure/hostinger/rollback-update.sh
+          bash -n infrastructure/hostinger/confirm-update.sh
       - name: Verificar rotas
         run: php artisan route:list
       - name: Build frontend
