@@ -137,7 +137,24 @@ jobs:
             curl -fsS "$base/robots.txt" | grep -q '^Disallow: /' &&
             [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/.env")" != 200 ]]
           ); then
-            echo "::error::Smoke HTTP da HML reprovado; executando rollback apenas do webroot."
+            echo "::error::Smoke HTTP da HML reprovado; verificando origem e rotas antes do rollback."
+            for path in / /index.php /up /index.php/up /entrar /robots.txt /assets/salada/salada-mix-logo.svg; do
+              code="$(curl -sS --connect-timeout 8 --max-time 15 -o /dev/null -w '%{http_code}' "$base$path?diagnostic=$GITHUB_RUN_ID")" || code=NETWORK_ERROR
+              echo "Diagnostico HML $path => HTTP $code"
+            done
+            ips="$(getent ahostsv4 "$HML_DOMAIN" | awk '{print $1}' | sort -u)"
+            while read -r ip; do
+              [[ -n "$ip" ]] || continue
+              for path in /index.php /up; do
+                code="$(curl -sS --connect-timeout 8 --max-time 15 --resolve "$HML_DOMAIN:443:$ip" -o /dev/null -w '%{http_code}' "$base$path?diagnostic=$GITHUB_RUN_ID")" || code=NETWORK_ERROR
+                echo "Origem HML IP $ip $path => HTTP $code"
+              done
+            done <<< "$ips"
+            ssh -F /dev/null -T -o BatchMode=yes -o ConnectTimeout=20 -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+              -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
+              'set -eu; web="$HOME/domains/ivory-rook-276202.hostingersite.com/public_html"; test -f "$web/index.php" && echo "Public index: present"; test -f "$web/.htaccess" && echo "Rewrite file: present"; test -f "$HOME/apps/salada-mix-hml/current/vendor/autoload.php" && echo "Private autoload: present"; cd "$HOME/apps/salada-mix-hml/current"; php artisan route:list --path=up --no-ansi | tail -n 3' || true
+            echo "::error::Executando rollback apenas do webroot."
             ssh -F /dev/null -T -o BatchMode=yes -o IdentitiesOnly=yes \
               -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
               -i "$HOME/.ssh/hml_key" -p "$HML_SSH_PORT" "$HML_SSH_USER@$HML_SSH_HOST" \
