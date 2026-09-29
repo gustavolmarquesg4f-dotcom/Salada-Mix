@@ -62,7 +62,10 @@ cp -a "$root/current/public/." "$web/"
 # cp -a SOURCE/. DEST/ also preserves SOURCE directory mode on DEST. The
 # release was extracted under umask 027, so public may be mode 750; Apache
 # cannot traverse that webroot. Restore only this HML document root to 755.
-chmod 755 "$web"
+# Archive extraction under umask 027 leaves nested public asset directories
+# as 750 and files as 640. Open only the HML webroot for static reads.
+find "$web" -type d -exec chmod 755 {} +
+find "$web" -type f -exec chmod 644 {} +
 cp "$root/current/infrastructure/hostinger/hml-index.php" "$web/index.php"
 cat >> "$web/.htaccess" <<'HTACCESS'
 

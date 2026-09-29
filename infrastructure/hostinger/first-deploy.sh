@@ -74,7 +74,10 @@ php artisan route:list --json > /dev/null
 # Keep Hostinger's configured document root and only publish public/ files.
 activated=1
 cp -a "$root/current/public/." "$web/"
-chmod 755 "$web"
+# Archive extraction under umask 027 leaves nested public asset directories
+# as 750 and files as 640. Open only the HML webroot for static reads.
+find "$web" -type d -exec chmod 755 {} +
+find "$web" -type f -exec chmod 644 {} +
 cp "$root/current/infrastructure/hostinger/hml-index.php" "$web/index.php"
 cat >> "$web/.htaccess" <<'HTACCESS'
 
