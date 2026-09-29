@@ -67,12 +67,28 @@ jobs:
         run: php artisan migrate --force
       - name: Testes automatizados
         run: php artisan test
+      - name: Verificar sintaxe dos scripts privados de implantação
+        run: |
+          php -l infrastructure/hostinger/prepare-env.php
+          php -l infrastructure/hostinger/hml-index.php
+          bash -n infrastructure/hostinger/first-deploy.sh
+          bash -n infrastructure/hostinger/rollback-first.sh
       - name: Verificar rotas
         run: php artisan route:list
       - name: Build frontend
         run: |
           npm install --no-audit --no-fund
           npm run build
+      - name: Simular release reproducivel da Hostinger
+        run: |
+          test -s composer.lock
+          test -s package-lock.json
+          composer install --no-dev --no-interaction --prefer-dist --no-progress --no-scripts --optimize-autoloader
+          npm ci --no-audit --no-fund
+          npm run build
+          test -s vendor/autoload.php
+          test -s public/build/manifest.json
+
 
   mariadb:
     name: MariaDB 11.8 - migracoes, rollback e testes
