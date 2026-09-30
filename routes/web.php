@@ -10,6 +10,7 @@ use App\Http\Controllers\Buyer\ShoppingPageController;
 use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
+use App\Http\Controllers\Storefront\DemoHubController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -39,6 +40,7 @@ Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
 // The functional Laravel storefront is available alongside the FE-06 presentation.
 // No demo payment, synthetic order submission or unsafe impersonation routes are exposed.
 Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live');
+Route::get('/demo', DemoHubController::class)->middleware('throttle:api-public')->name('storefront.demo');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
