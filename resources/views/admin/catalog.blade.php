@@ -2,6 +2,7 @@
 @section('title', 'Moderação de produtos — Salada Mix')
 @section('content')
 <h1 class="text-3xl font-black">Moderação do catálogo</h1>
+<a class="sm-btn sm-btn-secondary" href="{{ route('admin.manage') }}">Gerenciar produtos e departamentos →</a>
 <p class="mt-3 text-slate-600">Revisão do produto e da oferta. A empresa também precisa estar comercialmente ativa para aparecer na vitrine.</p>
 <div class="mt-7 space-y-4">
 @forelse ($offers as $offer)
@@ -10,6 +11,7 @@
         <p class="mt-2 text-sm text-slate-600">{{ $offer->seller->trade_name }} · CNPJ {{ $offer->seller->cnpj }} · Status da empresa: {{ $offer->seller->status }}</p>
         <p class="mt-2 text-sm text-slate-600">SKU {{ $offer->sku }} · Categoria {{ $offer->product->category->name }} · R$ {{ number_format($offer->price_cents / 100, 2, ',', '.') }} · Quantidade {{ $offer->stock?->quantity_on_hand ?? 0 }}</p>
         <p class="mt-3 whitespace-pre-line text-slate-700">{{ $offer->product->description }}</p>
+        @foreach($offer->product->media as $image)<img src="{{ route('media.show', $image) }}" alt="{{ $image->alt }}" width="120" height="120" class="inline-block rounded-lg">@endforeach
         <div class="mt-5 flex flex-wrap gap-3">
             <form action="{{ route('admin.catalog.approve', $offer) }}" method="post">@csrf<button class="rounded-xl bg-teal-700 px-5 py-2 font-bold text-white">Aprovar oferta</button></form>
             <form action="{{ route('admin.catalog.reject', $offer) }}" method="post" class="flex flex-wrap gap-2">
