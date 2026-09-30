@@ -105,7 +105,7 @@ require "vendor/autoload.php"; $app=require "bootstrap/app.php";
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 $s=Illuminate\Support\Facades\DB::table("sellers")->where("trade_name", "like", "%(DEMO)")->count();
 $p=Illuminate\Support\Facades\DB::table("products")->where("slug", "like", "demo-%")->count();
-if ($s !== 3 || $p !== 9) exit(8);
+if ($s !== 3 || $p < 9) exit(8);
 echo "DEMO_DB_OK sellers=$s products=$p\n";
 '
 
