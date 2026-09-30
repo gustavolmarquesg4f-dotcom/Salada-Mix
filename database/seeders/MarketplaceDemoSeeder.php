@@ -103,6 +103,17 @@ class MarketplaceDemoSeeder extends Seeder
                     ['role' => 'owner', 'status' => 'active']
                 );
 
+                if (! DB::table('shipping_origins')->where('seller_id', $seller->id)->exists()) {
+                    DB::table('shipping_origins')->insert([
+                        'id' => (string) Str::ulid(), 'seller_id' => $seller->id,
+                        'label' => 'Origem fictícia (DEMO)', 'postal_code' => '70000000',
+                        'street' => 'Rua de Demonstração', 'number' => '100',
+                        'neighborhood' => 'Bairro Fictício', 'city' => 'Cidade de Teste',
+                        'state' => 'DF', 'is_default' => true, 'is_active' => true,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                }
+
                 foreach ($shop['products'] as [$key, $categorySlug, $name, $price, $quantity]) {
                     $category = Category::query()->where('slug', $categorySlug)->firstOrFail();
                     $product = Product::query()->firstOrCreate(
