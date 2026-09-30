@@ -13,6 +13,7 @@ use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\DemoHubController;
 use App\Http\Controllers\Storefront\DemoJourneyController;
 use App\Http\Controllers\Storefront\DemoProductRedirectController;
+use App\Http\Controllers\Storefront\DemoRoleController;
 use App\Http\Controllers\Storefront\ProductMediaController;
 use App\Http\Controllers\Admin\CatalogManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -47,6 +48,7 @@ Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live')
 Route::get('/midia/{media}', [ProductMediaController::class, 'show'])->name('media.show');
 Route::get('/demo', DemoHubController::class)->middleware('throttle:api-public')->name('storefront.demo');
 Route::redirect('/demo/guia', '/demo')->name('demo.index');
+Route::get('/demo/painel/{role}', DemoRoleController::class)->middleware('throttle:api-public')->name('demo.role');
 Route::get('/demo/ofertas/{key}', DemoProductRedirectController::class)
     ->middleware('throttle:api-public')->name('demo.product');
 Route::post('/demo/comprador', [DemoJourneyController::class, 'start'])
