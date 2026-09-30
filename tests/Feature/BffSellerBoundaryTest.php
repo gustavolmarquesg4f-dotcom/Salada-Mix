@@ -56,6 +56,7 @@ class BffSellerBoundaryTest extends TestCase
         $payload = [
             'category_id' => $category->id, 'name' => 'Produto fictício',
             'sku' => 'SKU-1', 'price_cents' => 4990, 'stock_quantity' => 3,
+            'weight_grams' => 200, 'length_cm' => 12, 'width_cm' => 8, 'height_cm' => 6,
             'seller_id' => $other->id,
         ];
 
