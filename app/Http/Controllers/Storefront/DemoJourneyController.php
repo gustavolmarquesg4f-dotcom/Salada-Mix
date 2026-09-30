@@ -23,6 +23,8 @@ final class DemoJourneyController extends Controller
             return redirect()->route('demo.checkout');
         }
 
+        abort_if($request->user(), 403, 'Para testar como comprador, utilize uma sessão sem login real.');
+
         $user = DB::transaction(function (): User {
             $user = User::query()->create([
                 'name' => 'Comprador de demonstração',
