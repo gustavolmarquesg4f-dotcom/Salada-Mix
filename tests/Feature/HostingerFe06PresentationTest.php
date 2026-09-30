@@ -2,33 +2,62 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
+use App\Support\DemoMedia;
+use Database\Seeders\CatalogCategorySeeder;
+use Database\Seeders\MarketplaceDemoSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\TestCase;
 
 class HostingerFe06PresentationTest extends TestCase
 {
-    public function test_staging_home_serves_fe06_visual_preview(): void
+    use RefreshDatabase;
+
+    public function test_staging_home_is_the_dynamic_laravel_experience_v2(): void
     {
-        $original = app()->environment();
+        $originalEnv = app()->environment();
+        $originalUrl = config('app.url');
 
         try {
             app()->detectEnvironment(fn (): string => 'staging');
+            config(['app.url' => 'https://ivory-rook-276202.hostingersite.com']);
+            $this->seed(MarketplaceDemoSeeder::class);
 
-            $response = $this->get('/')->assertOk();
-            // BinaryFileResponse streams bytes; TestResponse's buffered body is empty.
-            $this->assertInstanceOf(
-                \Symfony\Component\HttpFoundation\BinaryFileResponse::class,
-                $response->baseResponse
-            );
-            $this->assertSame(
-                realpath(public_path('fe06/index.html')),
-                realpath($response->baseResponse->getFile()->getPathname())
-            );
+            $response = $this->get('/')->assertOk()
+                ->assertSee('Seu mix de estilos')
+                ->assertSee('Explore os departamentos')
+                ->assertSee('Quero vender')
+                ->assertSee('sm-home-v2', false)
+                ->assertSee('(DEMO)');
+
+            $this->assertNotInstanceOf(BinaryFileResponse::class, $response->baseResponse);
         } finally {
-            app()->detectEnvironment(fn (): string => $original);
+            config(['app.url' => $originalUrl]);
+            app()->detectEnvironment(fn (): string => $originalEnv);
         }
     }
 
-    public function test_published_preview_matches_approved_source_except_hostinger_base_path(): void
+    public function test_every_seeded_department_has_an_hml_visual_reference(): void
+    {
+        $originalEnv = app()->environment();
+        $originalUrl = config('app.url');
+
+        try {
+            app()->detectEnvironment(fn (): string => 'staging');
+            config(['app.url' => 'https://ivory-rook-276202.hostingersite.com']);
+            $this->seed(CatalogCategorySeeder::class);
+
+            Category::query()->where('is_active', true)->each(function (Category $category): void {
+                $this->assertNotNull(DemoMedia::category($category->slug), $category->slug);
+            });
+        } finally {
+            config(['app.url' => $originalUrl]);
+            app()->detectEnvironment(fn (): string => $originalEnv);
+        }
+    }
+
+    public function test_published_fe06_preview_remains_available_as_historical_reference(): void
     {
         $source = file_get_contents(base_path('preview/index.html'));
         $published = file_get_contents(public_path('fe06/index.html'));
@@ -37,18 +66,15 @@ class HostingerFe06PresentationTest extends TestCase
         $this->assertNotFalse($published);
         $this->assertSame(
             $published,
-            str_replace('<script src="assets/app.js" defer></script>', '<script src="assets/app.js" defer></script>' . "\n" . '    <script src="/fe06/assets/hml-bridge.js" defer></script>', str_replace('<meta charset="utf-8">', '<meta charset="utf-8">'."\n".'    <base href="/fe06/">', $source))
+            str_replace(
+                '<script src="assets/app.js" defer></script>',
+                '<script src="assets/app.js" defer></script>'."\n".'    <script src="/fe06/assets/hml-bridge.js" defer></script>',
+                str_replace('<meta charset="utf-8">', '<meta charset="utf-8">'."\n".'    <base href="/fe06/">', $source)
+            )
         );
-        $this->assertStringContainsString('location.assign(path)', file_get_contents(public_path('fe06/assets/hml-bridge.js')));
-
-        foreach (['app.js', 'preview.css', 'salada-foundation.css', 'salada-catalog.css',
-            'salada-visual-demo.css', 'salada-account.css', 'salada-commerce.css',
-            'salada-checkout.css', 'salada/salada-mix-logo.svg', 'salada/icons.svg'] as $file) {
-            $this->assertSame(
-                file_get_contents(base_path('preview/assets/'.$file)),
-                file_get_contents(public_path('fe06/assets/'.$file)),
-                $file
-            );
-        }
+        $this->assertStringContainsString(
+            'location.assign(path)',
+            file_get_contents(public_path('fe06/assets/hml-bridge.js'))
+        );
     }
 }

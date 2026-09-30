@@ -30,20 +30,9 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// HML presents the approved FE-06 visual reference byte-for-byte (except its base path).
-// Live Laravel routes remain available; the commercial production home stays dynamic.
-Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
-    if (app()->environment('staging')) {
-        return response()->file(public_path('fe06/index.html'), [
-            'Content-Type' => 'text/html; charset=UTF-8',
-            'Cache-Control' => 'no-store, max-age=0',
-        ]);
-    }
-
-    return app(CatalogController::class)->home($catalog);
-})->name('home');
-// The functional Laravel storefront is available alongside the FE-06 presentation.
-// No demo payment, synthetic order submission or unsafe impersonation routes are exposed.
+// A mesma home Laravel dinâmica é usada na HML e na futura produção.
+// A FE-06 estática permanece em /fe06 apenas como referência histórica de design.
+Route::get('/', [CatalogController::class, 'home'])->name('home');
 Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live');
 Route::get('/midia/{media}', [ProductMediaController::class, 'show'])->name('media.show');
 Route::get('/demo', DemoHubController::class)->middleware('throttle:api-public')->name('storefront.demo');
