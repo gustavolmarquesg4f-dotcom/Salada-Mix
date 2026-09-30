@@ -1,8 +1,9 @@
 @php($uploadedImage = $offer->product->media->first())
 @php($demoImage = $uploadedImage ? null : \App\Support\DemoMedia::product($offer))
-<article class="sm-product-card">
+<article class="sm-product-card sm-product-card-v2">
     <a href="{{ route('storefront.offer', $offer) }}" class="sm-product-link" aria-label="Ver oferta: {{ $offer->product->name }}">
         <div class="sm-product-visual {{ ($demoImage || $uploadedImage) ? 'sm-product-photo' : '' }}">
+            <span class="sm-card-category">{{ $offer->product->category->name }}</span>
             @if($uploadedImage)
                 <img class="sm-demo-image" src="{{ route('media.show', $uploadedImage) }}" alt="{{ $uploadedImage->alt }}" loading="lazy" width="480" height="480">
             @elseif($demoImage)
@@ -16,7 +17,7 @@
             <p class="sm-product-seller">{{ $offer->seller->trade_name }}</p>
             <h3 class="sm-product-name">{{ $offer->product->name }}</h3>
             <p class="sm-product-price">R$ {{ number_format($offer->price_cents / 100, 2, ',', '.') }}</p>
-            <p class="sm-product-hint">Ver detalhes <span aria-hidden="true">→</span></p>
+            <p class="sm-product-hint">Ver detalhes e disponibilidade <span aria-hidden="true">→</span></p>
         </div>
     </a>
     <x-salada.commerce-actions :offer="$offer" />

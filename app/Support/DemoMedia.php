@@ -1,7 +1,7 @@
 <?php
 namespace App\Support;
 use App\Models\SellerOffer;
-/** Illustrative photos only for the local, non-commercial DEMO seeder. */
+/** Illustrative photos only for local/testing and the isolated non-commercial HML. */
 final class DemoMedia {
     private const PHOTOS = [
         'demo-tech-fone'=>'photo-1505740420928-5e560c06d30e',
@@ -19,14 +19,19 @@ final class DemoMedia {
         'beauty'=>'photo-1596462502278-27bfdc403348',
         'technology'=>'photo-1505740420928-5e560c06d30e',
         'home'=>'photo-1493663284031-b7e3aefcae8c',
+        'pet'=>'photo-1552053831-71594a27632d',
     ];
     private const CATEGORIES = [
         'beleza-e-cuidados'=>'photo-1596462502278-27bfdc403348',
-        'moda-e-acessorios'=>'photo-1547949003-9792a18a2601',
         'tecnologia-e-informatica'=>'photo-1505740420928-5e560c06d30e',
+        'moda-e-acessorios'=>'photo-1547949003-9792a18a2601',
         'casa-e-decoracao'=>'photo-1493663284031-b7e3aefcae8c',
+        'games'=>'photo-1493711662062-fa541adb3fc8',
         'infantil-e-brinquedos'=>'photo-1558060370-d644479cb6f7',
         'eletrodomesticos'=>'photo-1495474472287-4d71bcdd2085',
+        'esporte-e-lazer'=>'photo-1517836357463-d25dfeac3438',
+        'papelaria'=>'photo-1455390582262-044cdead277a',
+        'pet-shop'=>'photo-1552053831-71594a27632d',
     ];
     public static function enabled(): bool {
         $isolatedHml = app()->environment('staging')
@@ -39,19 +44,19 @@ final class DemoMedia {
     }
     public static function product(SellerOffer $offer): ?string {
         if (! self::enabled() || ! str_starts_with($offer->product->slug, 'demo-')) return null;
-        return isset(self::PHOTOS[$offer->product->slug]) ? self::url(self::PHOTOS[$offer->product->slug], 640) : null;
+        return isset(self::PHOTOS[$offer->product->slug]) ? self::url(self::PHOTOS[$offer->product->slug], 720) : null;
     }
     public static function productSlug(string $slug): ?string {
         if (! self::enabled() || ! str_starts_with($slug, 'demo-') || ! isset(self::PHOTOS[$slug])) return null;
-        return self::url(self::PHOTOS[$slug], 320);
+        return self::url(self::PHOTOS[$slug], 360);
     }
     public static function category(string $slug): ?string {
-        return self::enabled() && isset(self::CATEGORIES[$slug]) ? self::url(self::CATEGORIES[$slug], 240) : null;
+        return self::enabled() && isset(self::CATEGORIES[$slug]) ? self::url(self::CATEGORIES[$slug], 360) : null;
     }
     public static function banner(string $key): ?string {
-        return self::enabled() && isset(self::BANNERS[$key]) ? self::url(self::BANNERS[$key], $key === 'hero' ? 1100 : 700) : null;
+        return self::enabled() && isset(self::BANNERS[$key]) ? self::url(self::BANNERS[$key], $key === 'hero' ? 1200 : 720) : null;
     }
     private static function url(string $photoId, int $width): string {
-        return 'https://images.unsplash.com/'.$photoId.'?auto=format&fit=crop&w='.$width.'&q=80';
+        return 'https://images.unsplash.com/'.$photoId.'?auto=format&fit=crop&w='.$width.'&q=82';
     }
 }
