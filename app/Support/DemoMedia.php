@@ -25,7 +25,7 @@ final class DemoMedia {
         'beleza-e-cuidados'=>'photo-1596462502278-27bfdc403348',
         'tecnologia-e-informatica'=>'photo-1505740420928-5e560c06d30e',
         'moda-e-acessorios'=>'photo-1547949003-9792a18a2601',
-        'casa-e-decoracao'=>'photo-1493663284031-b7e3aefcae8c',
+        'casa-e-decoracao'=>'photo-1507473885765-e6ed057f782c',
         'games'=>'photo-1493711662062-fa541adb3fc8',
         'infantil-e-brinquedos'=>'photo-1558060370-d644479cb6f7',
         'eletrodomesticos'=>'photo-1495474472287-4d71bcdd2085',
