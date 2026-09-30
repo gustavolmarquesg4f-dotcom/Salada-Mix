@@ -11,6 +11,11 @@ use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\DemoHubController;
+use App\Http\Controllers\Storefront\DemoJourneyController;
+use App\Http\Controllers\Storefront\DemoProductRedirectController;
+use App\Http\Controllers\Storefront\DemoRoleController;
+use App\Http\Controllers\Storefront\ProductMediaController;
+use App\Http\Controllers\Admin\CatalogManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -40,7 +45,14 @@ Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
 // The functional Laravel storefront is available alongside the FE-06 presentation.
 // No demo payment, synthetic order submission or unsafe impersonation routes are exposed.
 Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live');
+Route::get('/midia/{media}', [ProductMediaController::class, 'show'])->name('media.show');
 Route::get('/demo', DemoHubController::class)->middleware('throttle:api-public')->name('storefront.demo');
+Route::redirect('/demo/guia', '/demo')->name('demo.index');
+Route::get('/demo/painel/{role}', DemoRoleController::class)->middleware('throttle:api-public')->name('demo.role');
+Route::get('/demo/ofertas/{key}', DemoProductRedirectController::class)
+    ->middleware('throttle:api-public')->name('demo.product');
+Route::post('/demo/comprador', [DemoJourneyController::class, 'start'])
+    ->middleware('throttle:5,60')->name('demo.start');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
@@ -119,11 +131,18 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::delete('/origens/{origin}', [ShippingOriginController::class, 'destroy'])->name('origins.destroy');
         Route::get('/ofertas', [SellerOfferController::class, 'index'])->name('offers.index');
         Route::get('/ofertas/nova', [SellerOfferController::class, 'create'])->name('offers.create');
+        Route::post('/ofertas/{offer}/midias', [ProductMediaController::class, 'sellerStore'])->middleware('throttle:10,1')->name('offers.media.store');
         Route::post('/ofertas', [SellerOfferController::class, 'store'])->name('offers.store');
     });
     Route::get('/convites/{invitation}/{token}', [SellerTeamController::class, 'showInvitation'])->name('seller.team.accept.show');
     Route::post('/convites/{invitation}/{token}', [SellerTeamController::class, 'accept'])->name('seller.team.accept');
     Route::prefix('admin')->name('admin.')->middleware(['can:review-sellers', 'admin.mfa'])->group(function (): void {
+        Route::get('/gerenciar', [CatalogManagementController::class, 'index'])->name('manage');
+        Route::post('/departamentos', [CatalogManagementController::class, 'category'])->name('categories.store');
+        Route::post('/departamentos/{category}/alternar', [CatalogManagementController::class, 'toggle'])->name('categories.toggle');
+        Route::post('/produtos', [CatalogManagementController::class, 'store'])->name('offers.admin.store');
+        Route::post('/produtos/{offer}/despublicar', [CatalogManagementController::class, 'unpublish'])->name('offers.unpublish');
+        Route::post('/produtos/{offer}/midias', [ProductMediaController::class, 'adminStore'])->middleware('throttle:10,1')->name('offers.media.store');
         Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
         Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
         Route::post('/catalogo/{offer}/rejeitar', [CatalogModerationController::class, 'reject'])->name('catalog.reject');
@@ -133,6 +152,15 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     });
 });
 
+
+// Synthetic orders are isolated from the commercial orders/payment/stock tables.
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->prefix('demo')->name('demo.')->group(function (): void {
+    Route::get('/checkout', [DemoJourneyController::class, 'checkout'])->name('checkout');
+    Route::post('/pedidos', [DemoJourneyController::class, 'create'])->middleware('throttle:10,1')->name('create');
+    Route::get('/pedidos', [DemoJourneyController::class, 'index'])->name('orders');
+    Route::get('/pedidos/{order}', [DemoJourneyController::class, 'show'])->name('order');
+    Route::post('/pedidos/{order}/etapa', [DemoJourneyController::class, 'transition'])->middleware('throttle:10,1')->name('transition');
+});
 
 // Same-origin BFF shares Laravel web sessions and CSRF middleware.
 require __DIR__.'/bff.php';

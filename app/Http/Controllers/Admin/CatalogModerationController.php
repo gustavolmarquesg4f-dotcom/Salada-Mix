@@ -14,7 +14,7 @@ class CatalogModerationController extends Controller
     public function index(): View
     {
         $offers = SellerOffer::query()
-            ->with(['seller', 'product.category', 'stock'])
+            ->with(['seller', 'product.category', 'product.media', 'stock'])
             ->where('review_status', 'pending')
             ->latest()->paginate(20);
 

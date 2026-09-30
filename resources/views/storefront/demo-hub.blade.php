@@ -12,6 +12,15 @@
         <div class="sm-preview-stat"><strong>{{ $categories }}</strong><span>departamentos ativos</span></div>
     </div>
     <div class="sm-preview-actions mt-6">
+        @if(!auth()->check())
+        <form method="post" action="{{ route('demo.start') }}">@csrf<button class="sm-btn sm-btn-primary" type="submit">Entrar como comprador fictício — sem senha</button></form>
+        @elseif((string) session('salada_demo_user_id') === (string) auth()->id())
+        <a class="sm-btn sm-btn-primary" href="{{ route('demo.checkout') }}">Abrir checkout de demonstração</a>
+        <a class="sm-btn sm-btn-secondary" href="{{ route('demo.orders') }}">Acompanhar pedidos DEMO</a>
+        @else
+        <p>Você está conectado a uma conta real. Para abrir uma sessão de comprador sintético, encerre a sessão atual.</p>
+        @endif
+        <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Explorar e adicionar produtos</a>
         <a class="sm-btn sm-btn-primary" href="{{ route('storefront.live') }}">Explorar vitrine conectada ao banco</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Busca e filtros reais</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('register') }}">Criar conta de teste</a>
@@ -21,6 +30,7 @@
 </section>
 <section class="sm-preview-panel mt-6">
     <h2 class="text-2xl font-bold">Jornadas com backend</h2>
+    <div class="sm-preview-actions mt-3"><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'comprador') }}">Visão de comprador</a><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'vendedor') }}">Visão de vendedor</a><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'admin') }}">Visão administrativa</a></div>
     <p>Ao autenticar uma conta de teste e verificar seu e-mail, sacola, favoritos e endereços utilizam a sessão protegida e o banco de dados. A gestão de vendedor exige vínculo com a empresa; a administração exige perfil autorizado e MFA.</p>
     <div class="sm-preview-actions mt-4">
         <a class="sm-btn sm-btn-secondary" href="{{ route('buyer.cart.page') }}">Minha sacola</a>
@@ -31,5 +41,5 @@
         <a class="sm-btn sm-btn-secondary" href="{{ route('admin.sellers.index') }}">Administração protegida</a>
     </div>
 </section>
-<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> frete integrado, pagamentos, pedidos comerciais e pós-venda ainda não estão homologados. Nenhuma compra ou cobrança real é executada. Não utilize informações pessoais reais nesta demonstração.</div>
+<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> pedidos, frete, pagamento e pós-venda podem ser percorridos na simulação isolada. Nenhuma compra ou cobrança real é executada. Não utilize informações pessoais reais nesta demonstração.</div>
 @endsection

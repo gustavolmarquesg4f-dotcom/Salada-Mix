@@ -15,7 +15,7 @@ class SellerOfferController extends Controller
 {
     public function index(Seller $seller): View
     {
-        $offers = $seller->offers()->with(['product.category', 'stock'])->latest()->paginate(20);
+        $offers = $seller->offers()->with(['product.category', 'product.media', 'stock'])->latest()->paginate(20);
 
         return view('seller.offers.index', compact('seller', 'offers'));
     }

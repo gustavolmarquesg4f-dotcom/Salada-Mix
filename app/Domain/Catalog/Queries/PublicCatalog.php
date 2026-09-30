@@ -14,7 +14,7 @@ class PublicCatalog
     public function visibleOffers(): Builder
     {
         return SellerOffer::query()
-            ->with(['seller:id,trade_name,status', 'product.category', 'stock'])
+            ->with(['seller:id,trade_name,status', 'product.category', 'product.media', 'stock'])
             ->where('review_status', 'approved')
             ->whereHas('seller', fn (Builder $query) => $query->where('status', 'active'))
             ->whereHas('product', fn (Builder $query) => $query

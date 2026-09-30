@@ -73,7 +73,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, intl, zip, dom, fileinfo
+          extensions: mbstring, pdo_mysql, pdo_sqlite, sqlite3, intl, zip, dom, fileinfo, gd
           coverage: pcov
           tools: composer:v2
       - name: Instalar dependências

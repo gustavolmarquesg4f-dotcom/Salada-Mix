@@ -25,6 +25,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function media(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)->orderBy('position')->orderBy('id');
+    }
+
     public function offers(): HasMany
     {
         return $this->hasMany(SellerOffer::class);
