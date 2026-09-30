@@ -118,7 +118,7 @@ final class CatalogManagementController extends Controller
             'category_id' => ['required', Rule::exists('categories', 'id')->where('is_active', true)],
             'name' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'price_cents' => ['required', 'integer', 'min:1', 'max:999999999999'],
+            'price' => ['required', 'string', 'regex:/^\d{1,9}([,.]\d{1,2})?$/'],
             'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
             'weight_grams' => ['required', 'integer', 'min:1', 'max:100000'],
             'length_cm' => ['required', 'integer', 'min:1', 'max:300'],
