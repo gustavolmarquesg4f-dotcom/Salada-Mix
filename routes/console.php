@@ -12,3 +12,4 @@ Artisan::command('inspire', function () {
 
 // Requires `php artisan schedule:run` every minute on the VPS.
 Schedule::command('marketplace:expire-reservations')->everyMinute()->withoutOverlapping();
+Schedule::command('marketplace:expire-hml-sandbox')->everyMinute()->withoutOverlapping();

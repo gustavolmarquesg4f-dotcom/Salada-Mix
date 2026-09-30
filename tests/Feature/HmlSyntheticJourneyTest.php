@@ -179,6 +179,52 @@ class HmlSyntheticJourneyTest extends TestCase
         ]);
     }
 
+    public function test_expired_sandbox_reservation_is_released_by_maintenance_command(): void
+    {
+        [, $offer, $quote] = $this->startBuyerWithProduct(2);
+        $this->postWithToken('/demo/pedidos', [
+            'idempotency_key' => 'ORDER-'.str_repeat('e', 28),
+            'quotes' => [$offer->seller_id => $quote->id],
+        ])->assertRedirect();
+
+        $order = DB::table('demo_orders')->first();
+        DB::table('demo_orders')->where('id', $order->id)->update(['expires_at' => now()->subMinute()]);
+        DB::table('demo_stock_reservations')->where('demo_order_id', $order->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $this->artisan('marketplace:expire-hml-sandbox', ['--limit' => 10])->assertSuccessful();
+
+        $this->assertDatabaseHas('demo_orders', ['id' => $order->id, 'status' => 'expired_demo']);
+        $this->assertDatabaseHas('demo_stock_reservations', [
+            'demo_order_id' => $order->id, 'status' => 'expired',
+        ]);
+        $this->assertDatabaseHas('stock_levels', [
+            'offer_id' => $offer->id, 'quantity_on_hand' => 16, 'quantity_reserved' => 0,
+        ]);
+    }
+
+    public function test_sandbox_expiry_command_is_safe_outside_the_hml_environment(): void
+    {
+        app()->detectEnvironment(fn (): string => 'production');
+
+        $this->artisan('marketplace:expire-hml-sandbox')
+            ->expectsOutput('HML sandbox não está habilitada neste ambiente.')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('demo_orders', 0);
+    }
+
+    public function test_sandbox_expiry_command_rejects_invalid_batch_limit(): void
+    {
+        $this->seed(MarketplaceDemoSeeder::class);
+
+        $this->artisan('marketplace:expire-hml-sandbox', ['--limit' => 0])
+            ->expectsOutput('O limite deve estar entre 1 e 200.')
+            ->assertExitCode(\Symfony\Component\Console\Command\Command::INVALID);
+
+        $this->assertDatabaseCount('demo_orders', 0);
+    }
+
     public function test_real_authenticated_account_cannot_be_replaced_or_use_synthetic_purchase(): void
     {
         $real = User::factory()->create();
