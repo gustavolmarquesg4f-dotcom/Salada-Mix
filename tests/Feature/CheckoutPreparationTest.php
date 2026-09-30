@@ -26,9 +26,9 @@ class CheckoutPreparationTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('buyer.checkout.prepare'))
             ->assertOk()
-            ->assertSee('Prepare seu pedido')
+            ->assertSee('Frete e entrega do seu mix')
             ->assertSee('Cadastre um endereço')
-            ->assertSee('Finalizar compra indisponível');
+            ->assertSee('Pagamento real desativado');
 
         $this->getJson(route('bff.checkout.preparation'))->assertOk()
             ->assertJsonPath('readiness.can_place_order', false)
