@@ -93,6 +93,28 @@ class HmlSyntheticJourneyTest extends TestCase
         $this->assertDatabaseHas('customer_addresses', ['user_id' => $user->id, 'postal_code' => '70000000']);
     }
 
+    public function test_regular_account_checkout_shows_hml_sandbox_shipping_without_creating_order(): void
+    {
+        [$user] = $this->startBuyerWithProduct(1);
+
+        $this->get(route('buyer.account'))->assertOk()
+            ->assertSee('Resumo da conta')
+            ->assertSee('Frete SANDBOX')
+            ->assertSee('HML SANDBOX');
+
+        $this->get(route('buyer.checkout.prepare'))->assertOk()
+            ->assertSee('HOMOLOGAÇÃO · FRETE SANDBOX')
+            ->assertSee('Sandbox Econômico')
+            ->assertSee('Sandbox Expresso')
+            ->assertSee('Total estimado SANDBOX')
+            ->assertSee('Pagamento real desativado')
+            ->assertDontSee('Comprar agora');
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('suborders', 0);
+        $this->assertSame($user->id, auth()->id());
+    }
+
     public function test_shipping_quote_reservation_payment_and_post_sale_use_real_hml_ledger_without_external_effects(): void
     {
         [$user, $offer, $quote] = $this->startBuyerWithProduct(2);
