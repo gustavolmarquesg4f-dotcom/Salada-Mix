@@ -20,6 +20,9 @@ class HmlSyntheticJourneyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // The full same-session journey intentionally exceeds a shared per-IP limit in CI.
+        // Authorization, sessions and CSRF remain enabled; only rate limiting is isolated.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
         $this->previousEnv = app()->environment();
         $this->previousUrl = (string) config('app.url');
         app()->detectEnvironment(fn (): string => 'staging');
