@@ -36,8 +36,8 @@ class HostingerFe06PresentationTest extends TestCase
         $this->assertNotFalse($source);
         $this->assertNotFalse($published);
         $this->assertSame(
-            str_replace('<meta charset="utf-8">', '<meta charset="utf-8">'."\n".'    <base href="/fe06/">', $source),
-            str_replace('<script src="assets/app.js" defer></script>', '<script src="assets/app.js" defer></script>' . "\n" . '    <script src="/fe06/assets/hml-bridge.js" defer></script>', $published)
+            $published,
+            str_replace('<script src="assets/app.js" defer></script>', '<script src="assets/app.js" defer></script>' . "\n" . '    <script src="/fe06/assets/hml-bridge.js" defer></script>', str_replace('<meta charset="utf-8">', '<meta charset="utf-8">'."\n".'    <base href="/fe06/">', $source))
         );
         $this->assertStringContainsString('location.assign(path)', file_get_contents(public_path('fe06/assets/hml-bridge.js')));
 
