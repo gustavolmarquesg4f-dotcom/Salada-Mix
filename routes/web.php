@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\CatalogModerationController;
 use App\Http\Controllers\Seller\SellerOfferController;
 use App\Http\Controllers\Storefront\CatalogController;
 use App\Http\Controllers\Storefront\DemoHubController;
+use App\Http\Controllers\Storefront\DemoJourneyController;
+use App\Http\Controllers\Storefront\DemoProductRedirectController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\MfaController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -41,6 +43,11 @@ Route::get('/', function (\App\Domain\Catalog\Queries\PublicCatalog $catalog) {
 // No demo payment, synthetic order submission or unsafe impersonation routes are exposed.
 Route::get('/loja', [CatalogController::class, 'home'])->name('storefront.live');
 Route::get('/demo', DemoHubController::class)->middleware('throttle:api-public')->name('storefront.demo');
+Route::redirect('/demo/guia', '/demo')->name('demo.index');
+Route::get('/demo/ofertas/{key}', DemoProductRedirectController::class)
+    ->middleware('throttle:api-public')->name('demo.product');
+Route::post('/demo/comprador', [DemoJourneyController::class, 'start'])
+    ->middleware('throttle:5,60')->name('demo.start');
 Route::get('/buscar', [CatalogController::class, 'search'])->name('storefront.search');
 Route::get('/categorias/{category:slug}', [CatalogController::class, 'category'])->name('storefront.category');
 Route::get('/ofertas/{offer}', [CatalogController::class, 'show'])->name('storefront.offer');
@@ -133,6 +140,15 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     });
 });
 
+
+// Synthetic orders are isolated from the commercial orders/payment/stock tables.
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->prefix('demo')->name('demo.')->group(function (): void {
+    Route::get('/checkout', [DemoJourneyController::class, 'checkout'])->name('checkout');
+    Route::post('/pedidos', [DemoJourneyController::class, 'create'])->middleware('throttle:10,1')->name('create');
+    Route::get('/pedidos', [DemoJourneyController::class, 'index'])->name('orders');
+    Route::get('/pedidos/{order}', [DemoJourneyController::class, 'show'])->name('order');
+    Route::post('/pedidos/{order}/etapa', [DemoJourneyController::class, 'transition'])->middleware('throttle:10,1')->name('transition');
+});
 
 // Same-origin BFF shares Laravel web sessions and CSRF middleware.
 require __DIR__.'/bff.php';
