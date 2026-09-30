@@ -12,6 +12,15 @@
         <div class="sm-preview-stat"><strong>{{ $categories }}</strong><span>departamentos ativos</span></div>
     </div>
     <div class="sm-preview-actions mt-6">
+        @if(!auth()->check())
+        <form method="post" action="{{ route('demo.start') }}">@csrf<button class="sm-btn sm-btn-primary" type="submit">Entrar como comprador fictício — sem senha</button></form>
+        @elseif((string) session('salada_demo_user_id') === (string) auth()->id())
+        <a class="sm-btn sm-btn-primary" href="{{ route('demo.checkout') }}">Abrir checkout de demonstração</a>
+        <a class="sm-btn sm-btn-secondary" href="{{ route('demo.orders') }}">Acompanhar pedidos DEMO</a>
+        @else
+        <p>Você está conectado a uma conta real. Para abrir uma sessão de comprador sintético, encerre a sessão atual.</p>
+        @endif
+        <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Explorar e adicionar produtos</a>
         <a class="sm-btn sm-btn-primary" href="{{ route('storefront.live') }}">Explorar vitrine conectada ao banco</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Busca e filtros reais</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('register') }}">Criar conta de teste</a>
@@ -31,5 +40,5 @@
         <a class="sm-btn sm-btn-secondary" href="{{ route('admin.sellers.index') }}">Administração protegida</a>
     </div>
 </section>
-<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> frete integrado, pagamentos, pedidos comerciais e pós-venda ainda não estão homologados. Nenhuma compra ou cobrança real é executada. Não utilize informações pessoais reais nesta demonstração.</div>
+<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> pedidos, frete, pagamento e pós-venda podem ser percorridos na simulação isolada. Nenhuma compra ou cobrança real é executada. Não utilize informações pessoais reais nesta demonstração.</div>
 @endsection
