@@ -1,7 +1,8 @@
 @extends('layouts.app')
 @section('title', $offer->product->name.' — Salada Mix')
 @section('content')
-@php($demoImage = \App\Support\DemoMedia::product($offer))
+@php($uploadedImage = $offer->product->media->first())
+@php($demoImage = $uploadedImage ? null : \App\Support\DemoMedia::product($offer))
 @if($demoImage)<div class="sm-demo-label"><strong>PRODUTO DE DEMONSTRAÇÃO</strong><span>Imagem ilustrativa e dados sintéticos. Não disponível para compra.</span></div>@endif
 <nav class="sm-breadcrumb" aria-label="Caminho de navegação">
     <a href="{{ route('home') }}">Início</a><span aria-hidden="true">/</span>
@@ -10,7 +11,10 @@
 </nav>
 <article class="sm-detail sm-detail-premium">
     <div class="sm-detail-gallery">
-        @if($demoImage)
+        @if($uploadedImage)
+            <img class="sm-detail-image" src="{{ route('media.show', $uploadedImage) }}" alt="{{ $uploadedImage->alt }}" width="720" height="720">
+            <p>Foto cadastrada pelo vendedor.</p>
+        @elseif($demoImage)
             <img class="sm-detail-image" src="{{ $demoImage }}" alt="Imagem ilustrativa do produto {{ $offer->product->name }}" width="720" height="720" referrerpolicy="no-referrer">
             <p>Imagem meramente ilustrativa, vinculada apenas ao catálogo sintético.</p>
         @else
