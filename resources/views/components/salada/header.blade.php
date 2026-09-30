@@ -22,6 +22,8 @@
                     @can('review-sellers')
                         <a href="{{ route('admin.sellers.index') }}">Empresas</a>
                         <a href="{{ route('admin.catalog.index') }}">Moderação</a>
+            <a href="{{ route('admin.manage') }}">Gerenciar catálogo</a>
+                        <a href="{{ route('admin.manage') }}">Gerenciar catálogo</a>
                     @endcan
                 @else
                     <a href="{{ route('login') }}">Entrar</a>
