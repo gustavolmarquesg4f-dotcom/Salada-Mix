@@ -140,13 +140,13 @@ jobs:
             grep -q 'Salada Mix' "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Seu mix de estilos' "$RUNNER_TEMP/home.html" || return 1
             grep -q 'sm-home-v3' "$RUNNER_TEMP/home.html" || return 1
-            grep -q 'data-home-revision="v4-desktop-fix"' "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'data-home-revision="v5-category-fallback"' "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Nossos departamentos' "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Quero vender' "$RUNNER_TEMP/home.html" || return 1
             # A HML só pode ficar verde se a URL normal (sem cache-buster) já servir a mesma home.
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/" -o "$RUNNER_TEMP/home-plain.html" || return 1
             grep -q 'sm-home-v3' "$RUNNER_TEMP/home-plain.html" || { echo "::error::HML / sem query ainda serve uma home anterior"; return 1; }
-            grep -q 'data-home-revision="v4-desktop-fix"' "$RUNNER_TEMP/home-plain.html" || { echo "::error::HML / sem query nao contem a revisao v4"; return 1; }
+            grep -q 'data-home-revision="v5-category-fallback"' "$RUNNER_TEMP/home-plain.html" || { echo "::error::HML / sem query nao contem a revisao v4"; return 1; }
             grep -q 'Nossos departamentos' "$RUNNER_TEMP/home-plain.html" || { echo "::error::HML / sem query nao contem a home v3"; return 1; }
             echo 'SMOKE: URL publica normal ja serve a home v3'
             curl -fsS "$base/demo$fresh" -o "$RUNNER_TEMP/demo.html" || return 1
