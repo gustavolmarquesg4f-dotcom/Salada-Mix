@@ -11,7 +11,53 @@
     <div><span class="sm-eyebrow">Seu espaço no Salada Mix</span><h1>Olá, {{ $user->name }}!</h1><p>Organize seus dados e acompanhe suas preferências em um só lugar.</p></div>
     <span class="sm-account-avatar" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user->name, 0, 1)) }}</span>
 </div>
-<div class="sm-account-notice" role="status"><strong>Loja em preparação:</strong> carrinho e resumo são apenas consulta; o pagamento real ainda não está habilitado.</div>
+<div class="sm-account-notice" role="status">
+    @if($hmlSandbox)
+        <strong>Homologação ativa:</strong> sua conta, endereços, sacola e frete SANDBOX podem ser testados normalmente. Nenhuma cobrança ou transportadora real é acionada.
+    @else
+        <strong>Loja em preparação:</strong> carrinho e resumo são apenas consulta; o pagamento real ainda não está habilitado.
+    @endif
+</div>
+
+<section class="sm-account-overview" aria-labelledby="sm-account-overview-title">
+    <div class="sm-account-overview-head">
+        <div><span class="sm-eyebrow">Visão rápida</span><h2 id="sm-account-overview-title">Resumo da conta</h2></div>
+        @if($hmlSandbox)<span class="sm-account-chip">HML SANDBOX</span>@endif
+    </div>
+    <div class="sm-account-overview-grid">
+        <a class="sm-account-overview-card" href="{{ route('buyer.addresses.index') }}">
+            <span class="sm-account-overview-icon"><x-salada.icon name="pin" size="22" /></span>
+            <strong>{{ $accountSummary['addresses'] }}</strong>
+            <span>{{ $accountSummary['addresses'] === 1 ? 'endereço salvo' : 'endereços salvos' }}</span>
+            <small>Gerenciar entrega →</small>
+        </a>
+        <a class="sm-account-overview-card" href="{{ route('buyer.cart.page') }}">
+            <span class="sm-account-overview-icon"><x-salada.icon name="cart" size="22" /></span>
+            <strong>{{ $accountSummary['cart_items'] }}</strong>
+            <span>{{ $accountSummary['cart_items'] === 1 ? 'item na sacola' : 'itens na sacola' }}</span>
+            <small>Subtotal R$ {{ number_format($accountSummary['cart_subtotal_cents'] / 100, 2, ',', '.') }} →</small>
+        </a>
+        <a class="sm-account-overview-card" href="{{ route('buyer.wishlist.page') }}">
+            <span class="sm-account-overview-icon"><x-salada.icon name="grid" size="22" /></span>
+            <strong>{{ $accountSummary['wishlist_items'] }}</strong>
+            <span>{{ $accountSummary['wishlist_items'] === 1 ? 'favorito salvo' : 'favoritos salvos' }}</span>
+            <small>Ver favoritos →</small>
+        </a>
+        <a class="sm-account-overview-card sm-account-overview-shipping" href="{{ route('buyer.checkout.prepare') }}">
+            <span class="sm-account-overview-icon"><x-salada.icon name="truck" size="22" /></span>
+            <strong>{{ $hmlSandbox ? 'Frete SANDBOX' : 'Frete e entrega' }}</strong>
+            <span>{{ $hmlSandbox ? 'Cotação por CEP, peso e loja' : 'Preparar endereço e entrega' }}</span>
+            <small>{{ $hmlSandbox ? 'Calcular na HML →' : 'Preparar compra →' }}</small>
+        </a>
+    </div>
+    @if($isDemoBuyer)
+        <div class="sm-account-demo-shortcut">
+            <div><strong>Você está usando um comprador de demonstração.</strong><span>Pedidos, pagamento e pós-venda SANDBOX ficam isolados da operação real.</span></div>
+            <a class="sm-btn sm-btn-secondary" href="{{ route('demo.orders') }}">Meus pedidos SANDBOX →</a>
+        </div>
+    @endif
+</section>
+
 <div class="sm-account-layout">
     <nav class="sm-account-nav" aria-label="Minha conta">
         <a href="#dados" aria-current="page">Meus dados</a>
