@@ -44,6 +44,8 @@ class CreateSellerOffer
                 'name' => $data['name'],
                 'slug' => $slug,
                 'description' => $data['description'] ?? null,
+                'weight_grams' => $data['weight_grams'], 'length_cm' => $data['length_cm'],
+                'width_cm' => $data['width_cm'], 'height_cm' => $data['height_cm'],
                 'review_status' => 'pending',
             ]);
 

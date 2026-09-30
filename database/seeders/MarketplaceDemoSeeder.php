@@ -48,9 +48,9 @@ class MarketplaceDemoSeeder extends Seeder
                 'cnpj' => '00000000000000',
                 'name' => 'MixTech (DEMO)',
                 'products' => [
-                    ['tech-fone', 'tecnologia-e-informatica', 'Fone Bluetooth sem fio (DEMO)', 12990, 16],
-                    ['tech-mouse', 'tecnologia-e-informatica', 'Mouse ergonômico sem fio (DEMO)', 6990, 14],
-                    ['tech-camera', 'tecnologia-e-informatica', 'Câmera compacta (DEMO)', 34900, 8],
+                    ['tech-fone', 'tecnologia-e-informatica', 'Fone Bluetooth sem fio (DEMO)', 12990, 16, 300, 20, 15, 8],
+                    ['tech-mouse', 'tecnologia-e-informatica', 'Mouse ergonômico sem fio (DEMO)', 6990, 14, 180, 14, 9, 5],
+                    ['tech-camera', 'tecnologia-e-informatica', 'Câmera compacta (DEMO)', 34900, 8, 450, 14, 10, 8],
                 ],
             ],
             [
@@ -58,9 +58,9 @@ class MarketplaceDemoSeeder extends Seeder
                 'cnpj' => '00000000000001',
                 'name' => 'BelleStore (DEMO)',
                 'products' => [
-                    ['belle-serum', 'beleza-e-cuidados', 'Sérum facial vitamina C (DEMO)', 4990, 18],
-                    ['belle-maquiagem', 'beleza-e-cuidados', 'Kit de maquiagem (DEMO)', 7990, 10],
-                    ['belle-perfume', 'beleza-e-cuidados', 'Perfume floral 50 ml (DEMO)', 13990, 12],
+                    ['belle-serum', 'beleza-e-cuidados', 'Sérum facial vitamina C (DEMO)', 4990, 18, 120, 12, 5, 5],
+                    ['belle-maquiagem', 'beleza-e-cuidados', 'Kit de maquiagem (DEMO)', 7990, 10, 350, 22, 16, 6],
+                    ['belle-perfume', 'beleza-e-cuidados', 'Perfume floral 50 ml (DEMO)', 13990, 12, 250, 14, 8, 5],
                 ],
             ],
             [
@@ -68,9 +68,9 @@ class MarketplaceDemoSeeder extends Seeder
                 'cnpj' => '00000000000002',
                 'name' => 'MixCasa (DEMO)',
                 'products' => [
-                    ['home-cafe', 'casa-e-decoracao', 'Cafeteira de vidro 600 ml (DEMO)', 7850, 20],
-                    ['home-light', 'casa-e-decoracao', 'Luminária de mesa (DEMO)', 10490, 15],
-                    ['home-bag', 'moda-e-acessorios', 'Bolsa transversal ajustável (DEMO)', 8990, 9],
+                    ['home-cafe', 'casa-e-decoracao', 'Cafeteira de vidro 600 ml (DEMO)', 7850, 20, 650, 18, 14, 18],
+                    ['home-light', 'casa-e-decoracao', 'Luminária de mesa (DEMO)', 10490, 15, 900, 30, 20, 15],
+                    ['home-bag', 'moda-e-acessorios', 'Bolsa transversal ajustável (DEMO)', 8990, 9, 400, 28, 22, 8],
                 ],
             ],
         ];
@@ -114,7 +114,7 @@ class MarketplaceDemoSeeder extends Seeder
                     ]);
                 }
 
-                foreach ($shop['products'] as [$key, $categorySlug, $name, $price, $quantity]) {
+                foreach ($shop['products'] as [$key, $categorySlug, $name, $price, $quantity, $weight, $length, $width, $height]) {
                     $category = Category::query()->where('slug', $categorySlug)->firstOrFail();
                     $product = Product::query()->firstOrCreate(
                         ['slug' => 'demo-'.$key],
@@ -123,6 +123,8 @@ class MarketplaceDemoSeeder extends Seeder
                             'created_by_seller_id' => $seller->id,
                             'name' => $name,
                             'description' => 'Produto fictício para validação visual do Salada Mix. Não disponível para compra.',
+                            'weight_grams' => $weight, 'length_cm' => $length,
+                            'width_cm' => $width, 'height_cm' => $height,
                             'review_status' => 'approved',
                             'reviewed_at' => now(),
                         ]
@@ -130,6 +132,12 @@ class MarketplaceDemoSeeder extends Seeder
 
                     if ($product->created_by_seller_id !== $seller->id) {
                         throw new RuntimeException('Conflito de propriedade de produto fictício.');
+                    }
+                    if (! $product->weight_grams || ! $product->length_cm || ! $product->width_cm || ! $product->height_cm) {
+                        $product->update([
+                            'weight_grams' => $weight, 'length_cm' => $length,
+                            'width_cm' => $width, 'height_cm' => $height,
+                        ]);
                     }
 
                     $offer = SellerOffer::query()->firstOrCreate(

@@ -12,12 +12,16 @@ class Product extends Model
     use HasUlids;
 
     protected $fillable = [
-        'category_id', 'created_by_seller_id', 'name', 'slug', 'description', 'review_status',
+        'category_id', 'created_by_seller_id', 'name', 'slug', 'description',
+        'weight_grams', 'length_cm', 'width_cm', 'height_cm', 'review_status',
     ];
 
     protected function casts(): array
     {
-        return ['reviewed_at' => 'datetime'];
+        return [
+            'weight_grams' => 'integer', 'length_cm' => 'integer', 'width_cm' => 'integer', 'height_cm' => 'integer',
+            'reviewed_at' => 'datetime',
+        ];
     }
 
     public function category(): BelongsTo

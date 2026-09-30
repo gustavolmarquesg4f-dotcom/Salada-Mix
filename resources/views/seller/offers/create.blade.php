@@ -17,7 +17,13 @@
     <label class="block text-sm font-semibold">SKU <input name="sku" required maxlength="80" pattern="[A-Za-z0-9._-]+" value="{{ old('sku') }}" class="mt-1 w-full rounded-lg border p-3"></label>
     <label class="block text-sm font-semibold">Preço em centavos (ex.: 12990 = R$ 129,90) <input name="price_cents" type="number" min="1" step="1" required value="{{ old('price_cents') }}" class="mt-1 w-full rounded-lg border p-3"></label>
     <label class="block text-sm font-semibold">Quantidade inicial <input name="stock_quantity" type="number" min="0" step="1" required value="{{ old('stock_quantity', 0) }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <p class="text-xs text-slate-500">Mídias, variações e dimensões serão habilitadas na etapa de catálogo avançado. Esse cadastro ainda não aceita pedidos.</p>
+    <fieldset class="grid grid-cols-2 gap-4 rounded-xl border p-4"><legend class="px-2 font-semibold">Peso e dimensões para frete</legend>
+        <label>Peso (g)<input name="weight_grams" type="number" min="1" max="100000" required value="{{ old('weight_grams') }}" class="mt-1 w-full rounded-lg border p-3"></label>
+        <label>Comprimento (cm)<input name="length_cm" type="number" min="1" max="300" required value="{{ old('length_cm') }}" class="mt-1 w-full rounded-lg border p-3"></label>
+        <label>Largura (cm)<input name="width_cm" type="number" min="1" max="300" required value="{{ old('width_cm') }}" class="mt-1 w-full rounded-lg border p-3"></label>
+        <label>Altura (cm)<input name="height_cm" type="number" min="1" max="300" required value="{{ old('height_cm') }}" class="mt-1 w-full rounded-lg border p-3"></label>
+    </fieldset>
+    <p class="text-xs text-slate-500">Esses dados alimentam a cotação logística. O anúncio continua sujeito à moderação e o checkout comercial permanece desligado.</p>
     <button type="submit" class="rounded-xl bg-teal-700 px-6 py-3 font-bold text-white">Enviar para análise</button>
 </form>
 @endsection

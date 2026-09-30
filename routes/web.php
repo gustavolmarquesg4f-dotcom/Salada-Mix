@@ -141,8 +141,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::post('/departamentos', [CatalogManagementController::class, 'category'])->name('categories.store');
         Route::post('/departamentos/{category}/alternar', [CatalogManagementController::class, 'toggle'])->name('categories.toggle');
         Route::post('/produtos', [CatalogManagementController::class, 'store'])->name('offers.admin.store');
+        Route::patch('/produtos/{offer}', [CatalogManagementController::class, 'update'])->name('offers.admin.update');
         Route::post('/produtos/{offer}/despublicar', [CatalogManagementController::class, 'unpublish'])->name('offers.unpublish');
         Route::post('/produtos/{offer}/midias', [ProductMediaController::class, 'adminStore'])->middleware('throttle:10,1')->name('offers.media.store');
+        Route::post('/produtos/{offer}/midias/{media}/capa', [ProductMediaController::class, 'adminCover'])->name('offers.media.cover');
+        Route::delete('/produtos/{offer}/midias/{media}', [ProductMediaController::class, 'adminDestroy'])->name('offers.media.destroy');
         Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
         Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
         Route::post('/catalogo/{offer}/rejeitar', [CatalogModerationController::class, 'reject'])->name('catalog.reject');
@@ -153,12 +156,13 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 });
 
 
-// Synthetic orders are isolated from the commercial orders/payment/stock tables.
+// HML-only sandbox: synthetic orders use isolated order/payment tables while exercising the DEMO stock ledger.
 Route::middleware(['auth', 'verified', 'throttle:60,1'])->prefix('demo')->name('demo.')->group(function (): void {
     Route::get('/checkout', [DemoJourneyController::class, 'checkout'])->name('checkout');
     Route::post('/pedidos', [DemoJourneyController::class, 'create'])->middleware('throttle:10,1')->name('create');
     Route::get('/pedidos', [DemoJourneyController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [DemoJourneyController::class, 'show'])->name('order');
+    Route::post('/pedidos/{order}/pagamento', [DemoJourneyController::class, 'payment'])->middleware('throttle:10,1')->name('payment');
     Route::post('/pedidos/{order}/etapa', [DemoJourneyController::class, 'transition'])->middleware('throttle:10,1')->name('transition');
 });
 

@@ -69,8 +69,12 @@ final class CatalogManagementController extends Controller
             'name' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
             'sku' => ['required', 'string', 'max:80', 'regex:/^[A-Za-z0-9._-]+$/'],
-            'price_cents' => ['required', 'integer', 'min:1', 'max:999999999999'],
+            'price' => ['required', 'string', 'regex:/^\d{1,9}([,.]\d{1,2})?$/'],
             'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'weight_grams' => ['required', 'integer', 'min:1', 'max:100000'],
+            'length_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'width_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'height_cm' => ['required', 'integer', 'min:1', 'max:300'],
         ]);
         if (HmlDemo::enabled()) {
             abort_unless(Seller::query()->whereKey($data['seller_id'])
@@ -86,11 +90,14 @@ final class CatalogManagementController extends Controller
                 'category_id' => $data['category_id'], 'created_by_seller_id' => $data['seller_id'],
                 'name' => $data['name'],
                 'slug' => (HmlDemo::enabled() ? 'demo-admin-' : '').(Str::slug($data['name']) ?: 'produto').'-'.Str::lower((string) Str::ulid()),
-                'description' => $data['description'] ?? null, 'review_status' => 'pending',
+                'description' => $data['description'] ?? null,
+                'weight_grams' => $data['weight_grams'], 'length_cm' => $data['length_cm'],
+                'width_cm' => $data['width_cm'], 'height_cm' => $data['height_cm'],
+                'review_status' => 'pending',
             ]);
             $offer = SellerOffer::query()->create([
                 'seller_id' => $data['seller_id'], 'product_id' => $product->id,
-                'sku' => $sku, 'price_cents' => $data['price_cents'],
+                'sku' => $sku, 'price_cents' => $this->priceToCents($data['price']),
                 'currency' => 'BRL', 'review_status' => 'pending',
             ]);
             StockLevel::query()->create([
@@ -103,6 +110,62 @@ final class CatalogManagementController extends Controller
             ]);
         }, 3);
         return redirect()->route('admin.manage')->with('status', 'Oferta cadastrada como rascunho para revisão.');
+    }
+
+    public function update(Request $request, SellerOffer $offer): RedirectResponse
+    {
+        $data = $request->validate([
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('is_active', true)],
+            'name' => ['required', 'string', 'max:180'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'price' => ['required', 'string', 'regex:/^\d{1,9}([,.]\d{1,2})?$/'],
+            'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'weight_grams' => ['required', 'integer', 'min:1', 'max:100000'],
+            'length_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'width_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'height_cm' => ['required', 'integer', 'min:1', 'max:300'],
+        ]);
+
+        DB::transaction(function () use ($request, $offer, $data): void {
+            $locked = SellerOffer::query()->with(['product', 'stock'])->lockForUpdate()->findOrFail($offer->id);
+            $stock = StockLevel::query()->where('offer_id', $locked->id)->lockForUpdate()->firstOrFail();
+            if ((int) $data['stock_quantity'] < (int) $stock->quantity_reserved) {
+                throw ValidationException::withMessages([
+                    'stock_quantity' => 'O estoque físico não pode ficar abaixo da quantidade reservada.',
+                ]);
+            }
+
+            $previousStock = (int) $stock->quantity_on_hand;
+            $locked->product->update([
+                'category_id' => $data['category_id'], 'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+                'weight_grams' => $data['weight_grams'], 'length_cm' => $data['length_cm'],
+                'width_cm' => $data['width_cm'], 'height_cm' => $data['height_cm'],
+                'review_status' => 'pending', 'reviewed_by' => null, 'reviewed_at' => null,
+            ]);
+            $locked->update([
+                'price_cents' => $this->priceToCents($data['price']), 'review_status' => 'pending',
+                'reviewed_by' => null, 'reviewed_at' => null,
+            ]);
+            $stock->update(['quantity_on_hand' => $data['stock_quantity']]);
+
+            $delta = (int) $data['stock_quantity'] - $previousStock;
+            if ($delta !== 0) {
+                DB::table('inventory_movements')->insert([
+                    'id' => (string) Str::ulid(), 'offer_id' => $locked->id,
+                    'seller_id' => $locked->seller_id, 'actor_user_id' => $request->user()->id,
+                    'quantity_delta' => $delta, 'reason' => 'admin_adjustment', 'created_at' => now(),
+                ]);
+            }
+
+            AuditLog::query()->create([
+                'actor_user_id' => $request->user()->id, 'seller_id' => $locked->seller_id,
+                'action' => 'catalog.offer.admin.updated',
+                'metadata' => ['offer_id' => $locked->id, 'stock_delta' => $delta],
+            ]);
+        }, 3);
+
+        return back()->with('status', 'Produto atualizado e devolvido à fila de revisão.');
     }
 
     public function unpublish(Request $request, SellerOffer $offer): RedirectResponse
@@ -121,4 +184,16 @@ final class CatalogManagementController extends Controller
         }, 3);
         return back()->with('status', 'Oferta retirada da vitrine e enviada para revisão.');
     }
+    private function priceToCents(string $value): int
+    {
+        $normalized = str_replace(',', '.', trim($value));
+        [$whole, $decimal] = array_pad(explode('.', $normalized, 2), 2, '');
+        $cents = ((int) $whole * 100) + (int) str_pad(substr($decimal, 0, 2), 2, '0');
+        if ($cents < 1 || $cents > 999999999999) {
+            throw ValidationException::withMessages(['price' => 'Preço fora do intervalo permitido.']);
+        }
+
+        return $cents;
+    }
+
 }

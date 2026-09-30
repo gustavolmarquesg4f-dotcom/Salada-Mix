@@ -41,5 +41,5 @@
         <a class="sm-btn sm-btn-secondary" href="{{ route('admin.sellers.index') }}">Administração protegida</a>
     </div>
 </section>
-<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> pedidos, frete, pagamento e pós-venda podem ser percorridos na simulação isolada. Nenhuma compra ou cobrança real é executada. Não utilize informações pessoais reais nesta demonstração.</div>
+<div class="sm-notice info mt-6" role="status"><strong>Limite desta versão:</strong> frete SANDBOX usa peso/dimensões, o checkout reserva estoque DEMO de forma transacional e o pagamento SANDBOX testa aprovação/recusa. Nenhuma compra ou cobrança real é executada; nenhuma transportadora ou venda comercial é acionada. Não utilize informações pessoais reais nesta demonstração.</div>
 @endsection
