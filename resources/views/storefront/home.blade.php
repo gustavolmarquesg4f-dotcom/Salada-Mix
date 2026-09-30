@@ -7,7 +7,7 @@
 @php($beauty = $categories->firstWhere('slug','beleza-e-cuidados'))
 @php($fashion = $categories->firstWhere('slug','moda-e-acessorios'))
 
-<section class="sm-home-v3" aria-labelledby="sm-home-v3-title">
+<section class="sm-home-v3" data-home-revision="v4-desktop-fix" aria-labelledby="sm-home-v3-title">
     <div class="sm-home-v3-copy">
         <span class="sm-home-kicker">MAIS VARIEDADE, MAIS VOCÊ</span>
         <h1 id="sm-home-v3-title">Seu mix de estilos <em>em um só lugar.</em></h1>
@@ -26,7 +26,7 @@
     <div class="sm-home-v3-visual" aria-label="Inspirações de departamentos">
         <a class="sm-home-v3-primary" href="{{ $fashion ? route('storefront.category',$fashion) : route('storefront.search') }}">
             @if($hero = \App\Support\DemoMedia::banner('hero'))
-                <img src="{{ $hero }}" alt="Imagem ilustrativa de moda e estilo" fetchpriority="high" width="720" height="620" referrerpolicy="no-referrer">
+                <img src="{{ $hero }}" alt="Imagem ilustrativa de moda e estilo" fetchpriority="high" width="720" height="620" referrerpolicy="no-referrer" onerror="this.style.display='none'">
             @else
                 <span class="sm-home-v3-fallback"><img src="{{ asset('assets/salada/salada-mix-simbolo.svg') }}" alt="" width="150" height="150"></span>
             @endif
@@ -35,15 +35,15 @@
 
         <div class="sm-home-v3-side">
             <a class="sm-home-v3-mini sm-home-v3-tech" href="{{ $tech ? route('storefront.category',$tech) : route('storefront.search') }}">
-                @if($img=\App\Support\DemoMedia::banner('technology'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                @if($img=\App\Support\DemoMedia::banner('technology'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer" onerror="this.style.display='none'">@endif
                 <span><strong>Tecnologia</strong><small>Inovação para sua rotina</small></span><b aria-hidden="true">→</b>
             </a>
             <a class="sm-home-v3-mini sm-home-v3-house" href="{{ $homeCat ? route('storefront.category',$homeCat) : route('storefront.search') }}">
-                @if($img=\App\Support\DemoMedia::banner('home'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                @if($img=\App\Support\DemoMedia::banner('home'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer" onerror="this.style.display='none'">@endif
                 <span><strong>Casa e Decoração</strong><small>Seu espaço, seu jeito</small></span><b aria-hidden="true">→</b>
             </a>
             <a class="sm-home-v3-mini sm-home-v3-beauty" href="{{ $beauty ? route('storefront.category',$beauty) : route('storefront.search') }}">
-                @if($img=\App\Support\DemoMedia::banner('beauty'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                @if($img=\App\Support\DemoMedia::banner('beauty'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer" onerror="this.style.display='none'">@endif
                 <span><strong>Beleza e Cuidados</strong><small>Bem-estar para o dia a dia</small></span><b aria-hidden="true">→</b>
             </a>
         </div>
@@ -60,7 +60,7 @@
             <a class="sm-category-item-v3" href="{{ route('storefront.category', $category) }}">
                 <span class="sm-category-picture-v3">
                     @if($thumb = \App\Support\DemoMedia::category($category->slug))
-                        <img src="{{ $thumb }}" alt="" loading="lazy" width="180" height="180" referrerpolicy="no-referrer">
+                        <img src="{{ $thumb }}" alt="" loading="lazy" width="180" height="180" referrerpolicy="no-referrer" onerror="this.style.display='none'">
                     @else
                         <x-salada.icon name="grid" size="27" />
                     @endif
