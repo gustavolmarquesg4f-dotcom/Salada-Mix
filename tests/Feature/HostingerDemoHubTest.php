@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class HostingerDemoHubTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_demo_hub_is_hidden_outside_the_specific_safe_staging_environment(): void
     {
         $this->get('/demo')->assertNotFound();
