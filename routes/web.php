@@ -141,8 +141,11 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::post('/departamentos', [CatalogManagementController::class, 'category'])->name('categories.store');
         Route::post('/departamentos/{category}/alternar', [CatalogManagementController::class, 'toggle'])->name('categories.toggle');
         Route::post('/produtos', [CatalogManagementController::class, 'store'])->name('offers.admin.store');
+        Route::patch('/produtos/{offer}', [CatalogManagementController::class, 'update'])->name('offers.admin.update');
         Route::post('/produtos/{offer}/despublicar', [CatalogManagementController::class, 'unpublish'])->name('offers.unpublish');
         Route::post('/produtos/{offer}/midias', [ProductMediaController::class, 'adminStore'])->middleware('throttle:10,1')->name('offers.media.store');
+        Route::post('/produtos/{offer}/midias/{media}/capa', [ProductMediaController::class, 'adminCover'])->name('offers.media.cover');
+        Route::delete('/produtos/{offer}/midias/{media}', [ProductMediaController::class, 'adminDestroy'])->name('offers.media.destroy');
         Route::get('/catalogo', [CatalogModerationController::class, 'index'])->name('catalog.index');
         Route::post('/catalogo/{offer}/aprovar', [CatalogModerationController::class, 'approve'])->name('catalog.approve');
         Route::post('/catalogo/{offer}/rejeitar', [CatalogModerationController::class, 'reject'])->name('catalog.reject');

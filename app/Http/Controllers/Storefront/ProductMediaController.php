@@ -51,6 +51,62 @@ final class ProductMediaController extends Controller
         return back()->with('status', 'Foto cadastrada no produto.');
     }
 
+    public function adminCover(Request $request, SellerOffer $offer, ProductMedia $media): RedirectResponse
+    {
+        abort_unless($request->user()?->platform_role === 'admin', 403);
+        abort_unless($media->product_id === $offer->product_id && $media->seller_id === $offer->seller_id, 404);
+
+        DB::transaction(function () use ($request, $offer, $media): void {
+            $rows = ProductMedia::query()->where('product_id', $offer->product_id)
+                ->orderBy('position')->orderBy('id')->lockForUpdate()->get();
+            $ordered = $rows->sortBy(fn (ProductMedia $row): int => $row->id === $media->id ? -1 : $row->position)->values();
+            foreach ($ordered as $position => $row) {
+                if ((int) $row->position !== $position) {
+                    $row->update(['position' => $position]);
+                }
+            }
+            DB::table('audit_logs')->insert([
+                'id' => (string) Str::ulid(), 'actor_user_id' => $request->user()->id,
+                'seller_id' => $offer->seller_id, 'action' => 'catalog.media.cover_changed',
+                'metadata' => json_encode(['product_id' => $offer->product_id, 'media_id' => $media->id], JSON_THROW_ON_ERROR),
+                'created_at' => now(),
+            ]);
+        }, 3);
+
+        return back()->with('status', 'Imagem definida como capa.');
+    }
+
+    public function adminDestroy(Request $request, SellerOffer $offer, ProductMedia $media): RedirectResponse
+    {
+        abort_unless($request->user()?->platform_role === 'admin', 403);
+        abort_unless($media->product_id === $offer->product_id && $media->seller_id === $offer->seller_id, 404);
+
+        DB::transaction(function () use ($request, $offer, $media): void {
+            $locked = ProductMedia::query()->whereKey($media->id)->lockForUpdate()->firstOrFail();
+            $path = $locked->path;
+            $locked->delete();
+
+            $remaining = ProductMedia::query()->where('product_id', $offer->product_id)
+                ->orderBy('position')->orderBy('id')->get();
+            foreach ($remaining as $position => $row) {
+                if ((int) $row->position !== $position) {
+                    $row->update(['position' => $position]);
+                }
+            }
+
+            DB::table('audit_logs')->insert([
+                'id' => (string) Str::ulid(), 'actor_user_id' => $request->user()->id,
+                'seller_id' => $offer->seller_id, 'action' => 'catalog.media.deleted',
+                'metadata' => json_encode(['product_id' => $offer->product_id, 'media_id' => $media->id], JSON_THROW_ON_ERROR),
+                'created_at' => now(),
+            ]);
+
+            Storage::disk('local')->delete($path);
+        }, 3);
+
+        return back()->with('status', 'Imagem removida e galeria reorganizada.');
+    }
+
     private function save(Request $request, SellerOffer $offer): void
     {
         $data = $request->validate([
