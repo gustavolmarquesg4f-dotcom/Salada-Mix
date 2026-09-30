@@ -2,69 +2,70 @@
 @section('title', 'Salada Mix — Seu mix de estilos em um só lugar')
 @section('content')
 @php($demoVisuals = \App\Support\DemoMedia::enabled())
-@if($demoVisuals)
-    <div class="sm-demo-label sm-demo-label-v2" role="status"><strong>HOMOLOGAÇÃO VISUAL + FUNCIONAL</strong><span>Fotos e produtos DEMO. Frete e pagamento desta HML usam SANDBOX identificado.</span><a href="{{ route('storefront.demo') }}">Testar jornada completa →</a></div>
-@endif
+@php($tech = $categories->firstWhere('slug','tecnologia-e-informatica'))
+@php($homeCat = $categories->firstWhere('slug','casa-e-decoracao'))
+@php($beauty = $categories->firstWhere('slug','beleza-e-cuidados'))
+@php($fashion = $categories->firstWhere('slug','moda-e-acessorios'))
 
-<section class="sm-home-v2" aria-labelledby="sm-home-v2-title">
-    <div class="sm-home-v2-copy">
+<section class="sm-home-v3" aria-labelledby="sm-home-v3-title">
+    <div class="sm-home-v3-copy">
         <span class="sm-home-kicker">MAIS VARIEDADE, MAIS VOCÊ</span>
-        <h1 id="sm-home-v2-title">Seu mix de estilos <em>em um só lugar.</em></h1>
-        <p>Moda, tecnologia, casa, beleza, brinquedos e muito mais. Descubra produtos de diferentes lojas com uma experiência simples e organizada.</p>
-        <div class="sm-home-v2-actions">
+        <h1 id="sm-home-v3-title">Seu mix de estilos <em>em um só lugar.</em></h1>
+        <p>Moda, tecnologia, casa, beleza, brinquedos e muito mais. Descubra produtos de diferentes lojas em uma experiência simples, organizada e feita para você explorar.</p>
+        <div class="sm-home-v3-actions">
             <a class="sm-btn sm-btn-primary sm-btn-lg" href="{{ route('storefront.search') }}">Explorar produtos <span aria-hidden="true">→</span></a>
-            <a class="sm-btn sm-btn-secondary sm-btn-lg" href="#departamentos">Ver departamentos</a>
+            <a class="sm-btn sm-btn-secondary sm-btn-lg" href="{{ route('seller.apply') }}">Quero vender</a>
         </div>
-        <div class="sm-home-trust" aria-label="Diferenciais">
-            <span><x-salada.icon name="grid" size="20" /><b>Muitas categorias</b><small>Um catálogo para diferentes estilos</small></span>
-            <span><x-salada.icon name="shield" size="20" /><b>Conta protegida</b><small>Acesso e dados controlados</small></span>
-            <span><x-salada.icon name="truck" size="20" /><b>Multi-lojas</b><small>Logística organizada por vendedor</small></span>
+        <div class="sm-home-v3-benefits" aria-label="Diferenciais">
+            <span><x-salada.icon name="grid" size="20" /><span><b>Diversas lojas</b><small>em um só lugar</small></span></span>
+            <span><x-salada.icon name="shield" size="20" /><span><b>Conta protegida</b><small>acessos controlados</small></span></span>
+            <span><x-salada.icon name="truck" size="20" /><span><b>Compra multi-lojas</b><small>logística por vendedor</small></span></span>
         </div>
     </div>
 
-    <div class="sm-home-v2-mosaic" aria-label="Inspirações do Salada Mix">
-        <div class="sm-home-feature-photo">
+    <div class="sm-home-v3-visual" aria-label="Inspirações de departamentos">
+        <a class="sm-home-v3-primary" href="{{ $fashion ? route('storefront.category',$fashion) : route('storefront.search') }}">
             @if($hero = \App\Support\DemoMedia::banner('hero'))
-                <img src="{{ $hero }}" alt="Imagem ilustrativa de estilo e compras" fetchpriority="high" width="720" height="610" referrerpolicy="no-referrer">
+                <img src="{{ $hero }}" alt="Imagem ilustrativa de moda e estilo" fetchpriority="high" width="720" height="620" referrerpolicy="no-referrer">
             @else
-                <img src="{{ asset('assets/salada/salada-mix-simbolo.svg') }}" alt="" width="190" height="190">
+                <span class="sm-home-v3-fallback"><img src="{{ asset('assets/salada/salada-mix-simbolo.svg') }}" alt="" width="150" height="150"></span>
             @endif
-            <span class="sm-hand-note">Mais variedade<br>para o seu dia a dia ♡</span>
+            <span class="sm-home-v3-primary-copy"><small>MODA</small><strong>Estilo para todos os momentos</strong><b aria-hidden="true">→</b></span>
+        </a>
+
+        <div class="sm-home-v3-side">
+            <a class="sm-home-v3-mini sm-home-v3-tech" href="{{ $tech ? route('storefront.category',$tech) : route('storefront.search') }}">
+                @if($img=\App\Support\DemoMedia::banner('technology'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                <span><strong>Tecnologia</strong><small>Inovação para sua rotina</small></span><b aria-hidden="true">→</b>
+            </a>
+            <a class="sm-home-v3-mini sm-home-v3-house" href="{{ $homeCat ? route('storefront.category',$homeCat) : route('storefront.search') }}">
+                @if($img=\App\Support\DemoMedia::banner('home'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                <span><strong>Casa e Decoração</strong><small>Seu espaço, seu jeito</small></span><b aria-hidden="true">→</b>
+            </a>
+            <a class="sm-home-v3-mini sm-home-v3-beauty" href="{{ $beauty ? route('storefront.category',$beauty) : route('storefront.search') }}">
+                @if($img=\App\Support\DemoMedia::banner('beauty'))<img src="{{ $img }}" alt="" width="480" height="260" referrerpolicy="no-referrer">@endif
+                <span><strong>Beleza e Cuidados</strong><small>Bem-estar para o dia a dia</small></span><b aria-hidden="true">→</b>
+            </a>
         </div>
-        @php($tech = $categories->firstWhere('slug','tecnologia-e-informatica'))
-        @php($homeCat = $categories->firstWhere('slug','casa-e-decoracao'))
-        @php($beauty = $categories->firstWhere('slug','beleza-e-cuidados'))
-        <a class="sm-home-mini sm-home-mini-coral" href="{{ $tech ? route('storefront.category',$tech) : route('storefront.search') }}">
-            @if($img=\App\Support\DemoMedia::banner('technology'))<img src="{{ $img }}" alt="" width="360" height="240" referrerpolicy="no-referrer">@endif
-            <span><strong>Tecnologia</strong><small>Para facilitar sua rotina →</small></span>
-        </a>
-        <a class="sm-home-mini sm-home-mini-home" href="{{ $homeCat ? route('storefront.category',$homeCat) : route('storefront.search') }}">
-            @if($img=\App\Support\DemoMedia::banner('home'))<img src="{{ $img }}" alt="" width="360" height="240" referrerpolicy="no-referrer">@endif
-            <span><strong>Casa e Decoração</strong><small>Seu espaço, seu jeito →</small></span>
-        </a>
-        <a class="sm-home-mini sm-home-mini-beauty" href="{{ $beauty ? route('storefront.category',$beauty) : route('storefront.search') }}">
-            @if($img=\App\Support\DemoMedia::banner('beauty'))<img src="{{ $img }}" alt="" width="360" height="240" referrerpolicy="no-referrer">@endif
-            <span><strong>Beleza e Cuidados</strong><small>Encontre seu estilo →</small></span>
-        </a>
     </div>
 </section>
 
-<section id="departamentos" class="sm-home-section sm-department-section" aria-labelledby="departamentos-titulo">
+<section id="departamentos" class="sm-home-section sm-category-section-v3" aria-labelledby="departamentos-titulo">
     <div class="sm-section-heading sm-section-heading-v2">
-        <div><span class="sm-eyebrow">Encontre seu estilo</span><h2 id="departamentos-titulo">Explore os departamentos</h2><p>Atalhos rápidos para navegar pelo seu mix.</p></div>
-        <a href="{{ route('storefront.search') }}">Ver todos os departamentos →</a>
+        <div><span class="sm-eyebrow">Encontre seu estilo</span><h2 id="departamentos-titulo">Nossos departamentos</h2><p>Navegue rapidamente pelo que combina com você.</p></div>
+        <a href="{{ route('storefront.search') }}">Ver todos →</a>
     </div>
-    <div class="sm-department-strip">
+    <div class="sm-category-rail-v3">
         @forelse ($categories as $category)
-            <a class="sm-department-card" href="{{ route('storefront.category', $category) }}">
-                <span class="sm-department-picture">
+            <a class="sm-category-item-v3" href="{{ route('storefront.category', $category) }}">
+                <span class="sm-category-picture-v3">
                     @if($thumb = \App\Support\DemoMedia::category($category->slug))
                         <img src="{{ $thumb }}" alt="" loading="lazy" width="180" height="180" referrerpolicy="no-referrer">
                     @else
-                        <x-salada.icon name="grid" size="28" />
+                        <x-salada.icon name="grid" size="27" />
                     @endif
                 </span>
-                <span><strong>{{ $category->name }}</strong><small>Explorar →</small></span>
+                <strong>{{ $category->name }}</strong>
             </a>
         @empty
             <p class="sm-empty">Os departamentos estarão disponíveis em breve.</p>
@@ -72,13 +73,13 @@
     </div>
 </section>
 
-<section id="ofertas" class="sm-home-section sm-featured-section" aria-labelledby="ofertas-titulo">
+<section id="ofertas" class="sm-home-section sm-featured-section sm-featured-v3" aria-labelledby="ofertas-titulo">
     <div class="sm-section-heading sm-section-heading-v2">
-        <div><span class="sm-eyebrow">Produtos para descobrir</span><h2 id="ofertas-titulo">Destaques do seu mix</h2><p>Ofertas publicadas por lojas habilitadas no catálogo.</p></div>
-        <a href="{{ route('storefront.search') }}">Ver catálogo completo →</a>
+        <div><span class="sm-eyebrow">Produtos para descobrir</span><h2 id="ofertas-titulo">Destaques do seu mix</h2><p>Produtos publicados por lojas habilitadas no catálogo.</p></div>
+        <a href="{{ route('storefront.search') }}">Ver todos os produtos →</a>
     </div>
     @if($demoVisuals)<p class="sm-demo-footnote">Conteúdo sintético de homologação. Sem descontos, avaliações ou promessas comerciais fictícias.</p>@endif
-    <div class="sm-offer-grid sm-offer-grid-home">
+    <div class="sm-offer-grid sm-offer-grid-home sm-offer-grid-v3">
         @forelse ($offers as $offer)
             @include('storefront._offer-card', ['offer' => $offer])
         @empty
