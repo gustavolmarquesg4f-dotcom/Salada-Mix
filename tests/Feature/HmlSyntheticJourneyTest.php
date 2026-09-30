@@ -203,6 +203,28 @@ class HmlSyntheticJourneyTest extends TestCase
         ]);
     }
 
+    public function test_sandbox_expiry_command_is_safe_outside_the_hml_environment(): void
+    {
+        app()->detectEnvironment(fn (): string => 'production');
+
+        $this->artisan('marketplace:expire-hml-sandbox')
+            ->expectsOutput('HML sandbox não está habilitada neste ambiente.')
+            ->assertSuccessful();
+
+        $this->assertDatabaseCount('demo_orders', 0);
+    }
+
+    public function test_sandbox_expiry_command_rejects_invalid_batch_limit(): void
+    {
+        $this->seed(MarketplaceDemoSeeder::class);
+
+        $this->artisan('marketplace:expire-hml-sandbox', ['--limit' => 0])
+            ->expectsOutput('O limite deve estar entre 1 e 200.')
+            ->assertExitCode(\Symfony\Component\Console\Command\Command::INVALID);
+
+        $this->assertDatabaseCount('demo_orders', 0);
+    }
+
     public function test_real_authenticated_account_cannot_be_replaced_or_use_synthetic_purchase(): void
     {
         $real = User::factory()->create();
