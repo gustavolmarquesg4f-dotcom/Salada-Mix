@@ -19,7 +19,8 @@ class FrontendFoundationTest extends TestCase
             ->assertSee('Departamentos')
             ->assertSee('Quero vender')
             ->assertSee('salada-mix-logo.svg')
-            ->assertSee('sm-home-v2', false)
+            ->assertSee('sm-home-v3', false)
+            ->assertSee('sm-category-rail-v3', false)
             ->assertDontSee('Frete grátis')
             ->assertDontSee('name="price_cents"', false);
     }

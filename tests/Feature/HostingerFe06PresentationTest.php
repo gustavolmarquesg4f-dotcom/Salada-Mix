@@ -14,7 +14,7 @@ class HostingerFe06PresentationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_staging_home_is_the_dynamic_laravel_experience_v2(): void
+    public function test_staging_home_is_the_dynamic_laravel_experience_v3(): void
     {
         $originalEnv = app()->environment();
         $originalUrl = config('app.url');
@@ -26,9 +26,10 @@ class HostingerFe06PresentationTest extends TestCase
 
             $response = $this->get('/')->assertOk()
                 ->assertSee('Seu mix de estilos')
-                ->assertSee('Explore os departamentos')
+                ->assertSee('Nossos departamentos')
                 ->assertSee('Quero vender')
-                ->assertSee('sm-home-v2', false)
+                ->assertSee('sm-home-v3', false)
+                ->assertSee('sm-home-v3-side', false)
                 ->assertSee('(DEMO)');
 
             $this->assertNotInstanceOf(BinaryFileResponse::class, $response->baseResponse);

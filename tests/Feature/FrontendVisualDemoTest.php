@@ -13,11 +13,11 @@ class FrontendVisualDemoTest extends TestCase {
         $this->assertTrue(DemoMedia::enabled());
         $this->assertStringContainsString('images.unsplash.com', DemoMedia::product($offer));
         $this->get(route('home'))->assertOk()
-            ->assertSee('HOMOLOGAÇÃO VISUAL + FUNCIONAL')
             ->assertSee('images.unsplash.com')
             ->assertSee('Sérum facial vitamina C (DEMO)')
             ->assertSee('Conteúdo sintético de homologação')
-            ->assertSee('sm-home-v2', false)
+            ->assertSee('sm-home-v3', false)
+            ->assertSee('sm-category-rail-v3', false)
             ->assertDontSee('Comprar agora');
         $this->get(route('storefront.search'))->assertOk()->assertSee('images.unsplash.com')->assertSee('sm-demo-image');
         $this->get(route('storefront.offer', $offer))->assertOk()->assertSee('sm-detail-image')->assertSee('checkout está desativado');
