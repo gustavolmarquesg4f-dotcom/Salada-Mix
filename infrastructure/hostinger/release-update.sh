@@ -97,10 +97,6 @@ rm -rf "$stage/storage"; ln -s "$shared/storage" "$stage/storage"
 cd "$stage"
 php artisan migrate --force --no-interaction --no-ansi
 php artisan migrate:status --no-ansi >/dev/null
-# HML-only synthetic fixtures; seeder refuses non-demo commercial records and enabled checkout.
-# The database backup above protects existing HML state. Never run on production.
-php artisan db:seed --class=MarketplaceDemoSeeder --force --no-interaction --no-ansi
-php artisan tinker --execute='echo "DEMO_DATA_OK sellers=".\Illuminate\Support\Facades\DB::table("sellers")->where("trade_name", "like", "%(DEMO)%")->count()." offers=".\Illuminate\Support\Facades\DB::table("seller_offers")->count().PHP_EOL;' --no-ansi
 # Seed only the isolated, non-commercial HML after backup; the seeder refuses
 # checkout/payment flags and refuses to mix synthetic with genuine merchant/order data.
 php artisan db:seed --class=MarketplaceDemoSeeder --force --no-ansi
