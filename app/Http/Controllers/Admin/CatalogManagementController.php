@@ -9,6 +9,7 @@ use App\Models\Seller;
 use App\Models\SellerOffer;
 use App\Models\Product;
 use App\Models\StockLevel;
+use App\Support\HmlDemo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,11 @@ final class CatalogManagementController extends Controller
             'price_cents' => ['required', 'integer', 'min:1', 'max:999999999999'],
             'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
         ]);
+        if (HmlDemo::enabled()) {
+            abort_unless(Seller::query()->whereKey($data['seller_id'])
+                ->where('trade_name', 'like', '%(DEMO)')->exists(), 403);
+            $data['name'] = Str::endsWith($data['name'], '(DEMO)') ? $data['name'] : $data['name'].' (DEMO)';
+        }
         $sku = Str::upper($data['sku']);
         if (SellerOffer::query()->where('seller_id', $data['seller_id'])->where('sku', $sku)->exists()) {
             throw ValidationException::withMessages(['sku' => 'SKU já cadastrado para esta loja.']);
@@ -79,7 +85,7 @@ final class CatalogManagementController extends Controller
             $product = Product::query()->create([
                 'category_id' => $data['category_id'], 'created_by_seller_id' => $data['seller_id'],
                 'name' => $data['name'],
-                'slug' => (Str::slug($data['name']) ?: 'produto').'-'.Str::lower((string) Str::ulid()),
+                'slug' => (HmlDemo::enabled() ? 'demo-admin-' : '').(Str::slug($data['name']) ?: 'produto').'-'.Str::lower((string) Str::ulid()),
                 'description' => $data['description'] ?? null, 'review_status' => 'pending',
             ]);
             $offer = SellerOffer::query()->create([
