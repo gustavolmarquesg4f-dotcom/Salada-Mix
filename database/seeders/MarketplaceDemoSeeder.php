@@ -103,7 +103,7 @@ class MarketplaceDemoSeeder extends Seeder
                     ['role' => 'owner', 'status' => 'active']
                 );
 
-                if (! DB::table('shipping_origins')->where('seller_id', $seller->id)->exists()) {
+                if ($staging && ! DB::table('shipping_origins')->where('seller_id', $seller->id)->exists()) {
                     DB::table('shipping_origins')->insert([
                         'id' => (string) Str::ulid(), 'seller_id' => $seller->id,
                         'label' => 'Origem fictícia (DEMO)', 'postal_code' => '70000000',
