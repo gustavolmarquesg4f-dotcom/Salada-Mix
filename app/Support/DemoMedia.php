@@ -18,7 +18,7 @@ final class DemoMedia {
         'hero'=>'photo-1483985988355-763728e1935b',
         'beauty'=>'photo-1596462502278-27bfdc403348',
         'technology'=>'photo-1505740420928-5e560c06d30e',
-        'home'=>'photo-1493663284031-b7e3aefcae8c',
+        'home'=>'photo-1507473885765-e6ed057f782c',
         'pet'=>'photo-1552053831-71594a27632d',
     ];
     private const CATEGORIES = [
