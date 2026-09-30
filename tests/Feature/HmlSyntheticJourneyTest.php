@@ -6,6 +6,8 @@ use App\Models\User;
 use Database\Seeders\MarketplaceDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class HmlSyntheticJourneyTest extends TestCase
@@ -18,8 +20,6 @@ class HmlSyntheticJourneyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Preserve sessions/auth/views while bypassing both possible Laravel CSRF middleware classes in simulated staging.
-        $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class]);
         $this->previousEnv = app()->environment();
         $this->previousUrl = (string) config('app.url');
         app()->detectEnvironment(fn (): string => 'staging');
@@ -33,12 +33,21 @@ class HmlSyntheticJourneyTest extends TestCase
         parent::tearDown();
     }
 
+    private function postWithToken(string $uri, array $data = [], bool $json = false): TestResponse
+    {
+        // Simulated APP_ENV=staging enables CSRF, unlike Laravel's built-in testing env.
+        // Exercise the real web middleware and send an authentic matching session token.
+        $token = Str::random(40);
+        $this->withSession(['_token' => $token])->withHeader('X-CSRF-TOKEN', $token);
+        return $json ? $this->postJson($uri, $data) : $this->post($uri, $data);
+    }
+
     public function test_guest_can_explore_real_catalog_then_create_isolated_demo_buyer(): void
     {
         $this->seed(MarketplaceDemoSeeder::class);
         $this->get('/demo/ofertas/tech-fone')->assertRedirect();
         $this->get('/demo')->assertOk()->assertSee('Entrar como comprador fictício');
-        $this->post('/demo/comprador')->assertRedirect('/demo/checkout');
+        $this->postWithToken('/demo/comprador')->assertRedirect('/demo/checkout');
         $this->assertAuthenticated();
         $user = auth()->user();
         $this->assertSame('customer', $user->platform_role);
@@ -51,7 +60,7 @@ class HmlSyntheticJourneyTest extends TestCase
     public function test_demo_order_is_idempotent_and_runs_payment_shipping_and_post_sale_without_real_effects(): void
     {
         $this->seed(MarketplaceDemoSeeder::class);
-        $this->post('/demo/comprador')->assertRedirect();
+        $this->postWithToken('/demo/comprador')->assertRedirect();
         $user = auth()->user();
         $offer = DB::table('seller_offers')->join('products', 'products.id', '=', 'seller_offers.product_id')
             ->where('products.slug', 'demo-tech-fone')->first(['seller_offers.id']);
@@ -61,8 +70,8 @@ class HmlSyntheticJourneyTest extends TestCase
         ]);
 
         $key = 'TEST-'.str_repeat('a', 30);
-        $this->post('/demo/pedidos', ['idempotency_key' => $key])->assertRedirect();
-        $this->post('/demo/pedidos', ['idempotency_key' => $key])->assertRedirect();
+        $this->postWithToken('/demo/pedidos', ['idempotency_key' => $key])->assertRedirect();
+        $this->postWithToken('/demo/pedidos', ['idempotency_key' => $key])->assertRedirect();
         $this->assertDatabaseCount('demo_orders', 1);
         $this->assertDatabaseCount('demo_order_items', 1);
         $this->assertDatabaseCount('orders', 0);
@@ -73,13 +82,13 @@ class HmlSyntheticJourneyTest extends TestCase
         $this->get('/demo/pedidos/'.$record->id)->assertOk()->assertSee('Pedido fictício');
 
         foreach (['pay' => 'paid_demo', 'prepare' => 'preparing_demo', 'ship' => 'shipped_demo', 'deliver' => 'delivered_demo'] as $action => $status) {
-            $this->post('/demo/pedidos/'.$record->id.'/etapa', ['action' => $action])->assertRedirect();
+            $this->postWithToken('/demo/pedidos/'.$record->id.'/etapa', ['action' => $action])->assertRedirect();
             $this->assertDatabaseHas('demo_orders', ['id' => $record->id, 'status' => $status]);
         }
         $this->assertDatabaseCount('demo_order_events', 5);
         $this->assertDatabaseCount('orders', 0);
         $this->assertDatabaseHas('stock_levels', ['offer_id' => $offer->id, 'quantity_on_hand' => 16, 'quantity_reserved' => 0]);
-        $this->postJson('/demo/pedidos/'.$record->id.'/etapa', ['action' => 'pay'])->assertUnprocessable();
+        $this->postWithToken('/demo/pedidos/'.$record->id.'/etapa', ['action' => 'pay'], true)->assertUnprocessable();
         $this->get('/demo/pedidos')->assertOk()->assertSee($record->id);
     }
 
@@ -87,7 +96,7 @@ class HmlSyntheticJourneyTest extends TestCase
     {
         $real = User::factory()->create();
         $this->actingAs($real);
-        $this->post('/demo/comprador')->assertForbidden();
+        $this->postWithToken('/demo/comprador')->assertForbidden();
         $this->get('/demo/checkout')->assertForbidden();
         $this->assertSame($real->id, auth()->id());
     }
@@ -96,9 +105,9 @@ class HmlSyntheticJourneyTest extends TestCase
     {
         app()->detectEnvironment(fn (): string => 'production');
         $this->get('/demo/ofertas/tech-fone')->assertNotFound();
-        $this->post('/demo/comprador')->assertNotFound();
+        $this->postWithToken('/demo/comprador')->assertNotFound();
         app()->detectEnvironment(fn (): string => 'staging');
         config(['marketplace.checkout_enabled' => true]);
-        $this->post('/demo/comprador')->assertNotFound();
+        $this->postWithToken('/demo/comprador')->assertNotFound();
     }
 }
