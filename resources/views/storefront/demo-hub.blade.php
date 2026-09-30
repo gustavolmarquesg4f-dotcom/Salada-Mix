@@ -30,6 +30,7 @@
 </section>
 <section class="sm-preview-panel mt-6">
     <h2 class="text-2xl font-bold">Jornadas com backend</h2>
+    <div class="sm-preview-actions mt-3"><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'comprador') }}">Visão de comprador</a><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'vendedor') }}">Visão de vendedor</a><a class="sm-btn sm-btn-secondary" href="{{ route('demo.role', 'admin') }}">Visão administrativa</a></div>
     <p>Ao autenticar uma conta de teste e verificar seu e-mail, sacola, favoritos e endereços utilizam a sessão protegida e o banco de dados. A gestão de vendedor exige vínculo com a empresa; a administração exige perfil autorizado e MFA.</p>
     <div class="sm-preview-actions mt-4">
         <a class="sm-btn sm-btn-secondary" href="{{ route('buyer.cart.page') }}">Minha sacola</a>
