@@ -3,7 +3,7 @@
 @section('content')
 <nav class="sm-breadcrumb"><a href="{{ route('home') }}">Início</a><span>/</span><a href="{{ route('demo.index') }}">Demonstração</a><span>/</span><span>Pedidos</span></nav>
 <section class="sm-preview-panel"><span class="sm-eyebrow">DEMONSTRAÇÃO · SEM DINHEIRO REAL</span><h1>Meus pedidos fictícios</h1>
-<p>Estes pedidos não são compras, não diminuem estoque e não geram obrigações comerciais. Os estados são persistidos em tabelas separadas do banco.</p>
+<p>Estes pedidos não são compras comerciais. A HML reserva e consome apenas estoque sintético para validar concorrência e fechamento, sem cobrança ou transportadora real.</p>
 <div class="sm-preview-actions"><a class="sm-btn sm-btn-primary" href="{{ route('demo.checkout') }}">Nova simulação</a><a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Explorar catálogo</a></div></section>
 <section class="sm-account-panel mt-6">
 @forelse($orders as $order)

@@ -156,12 +156,13 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 });
 
 
-// Synthetic orders are isolated from the commercial orders/payment/stock tables.
+// HML-only sandbox: synthetic orders use isolated order/payment tables while exercising the DEMO stock ledger.
 Route::middleware(['auth', 'verified', 'throttle:60,1'])->prefix('demo')->name('demo.')->group(function (): void {
     Route::get('/checkout', [DemoJourneyController::class, 'checkout'])->name('checkout');
     Route::post('/pedidos', [DemoJourneyController::class, 'create'])->middleware('throttle:10,1')->name('create');
     Route::get('/pedidos', [DemoJourneyController::class, 'index'])->name('orders');
     Route::get('/pedidos/{order}', [DemoJourneyController::class, 'show'])->name('order');
+    Route::post('/pedidos/{order}/pagamento', [DemoJourneyController::class, 'payment'])->middleware('throttle:10,1')->name('payment');
     Route::post('/pedidos/{order}/etapa', [DemoJourneyController::class, 'transition'])->middleware('throttle:10,1')->name('transition');
 });
 
