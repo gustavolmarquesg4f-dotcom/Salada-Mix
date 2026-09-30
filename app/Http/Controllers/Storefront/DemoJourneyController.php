@@ -56,9 +56,11 @@ final class DemoJourneyController extends Controller
     public function checkout(
         Request $request,
         CartManager $cart,
-        HmlSandboxQuoteService $quotes
+        HmlSandboxQuoteService $quotes,
+        HmlSandboxOrderService $orders
     ): View {
         $user = HmlDemo::buyer($request);
+        $orders->expireDue(100);
         $snapshot = $cart->read($user);
         $address = DB::table('customer_addresses')->where('user_id', $user->id)
             ->orderByDesc('is_default')->orderBy('created_at')->first();
@@ -97,9 +99,10 @@ final class DemoJourneyController extends Controller
             ->with('status', 'Pedido sandbox criado com frete cotado e estoque DEMO reservado por 15 minutos.');
     }
 
-    public function index(Request $request): View
+    public function index(Request $request, HmlSandboxOrderService $service): View
     {
         $user = HmlDemo::buyer($request);
+        $service->expireDue(100);
         $orders = DB::table('demo_orders')->where('user_id', $user->id)
             ->orderByDesc('created_at')->paginate(20);
 

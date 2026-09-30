@@ -163,6 +163,31 @@ final class HmlSandboxOrderService
         ];
     }
 
+    public function expireDue(int $limit = 50): int
+    {
+        HmlDemo::requireEnabled();
+        $limit = max(1, min(200, $limit));
+        $ids = DB::table('demo_orders')->where('status', 'created_demo')
+            ->whereNotNull('expires_at')->where('expires_at', '<=', now())
+            ->orderBy('expires_at')->limit($limit)->pluck('id');
+        $expired = 0;
+
+        foreach ($ids as $id) {
+            $expired += (int) DB::transaction(function () use ($id): bool {
+                $order = DB::table('demo_orders')->where('id', $id)->lockForUpdate()->first();
+                if (! $order || $order->status !== 'created_demo' || ! $order->expires_at
+                    || Carbon::parse($order->expires_at)->greaterThan(now())) {
+                    return false;
+                }
+                $this->releaseLocked($order, 'expired_demo');
+
+                return true;
+            }, 3);
+        }
+
+        return $expired;
+    }
+
     public function cancel(User $buyer, string $orderId): void
     {
         HmlDemo::requireEnabled();
