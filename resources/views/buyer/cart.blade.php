@@ -3,7 +3,13 @@
 @section('content')
 <nav class="sm-breadcrumb" aria-label="Caminho de navegação"><a href="{{ route('home') }}">Início</a><span>/</span><a href="{{ route('buyer.account') }}">Minha conta</a><span>/</span><span aria-current="page">Minha sacola</span></nav>
 <div class="sm-shopping-title"><div><span class="sm-eyebrow">Seu mix, suas escolhas</span><h1>Minha sacola <span>({{ count($snapshot['items']) }})</span></h1><p>Itens salvos por vendedor. Os valores e a disponibilidade são revalidados pelo servidor.</p></div><a class="sm-btn sm-btn-secondary" href="{{ route('buyer.wishlist.page') }}">♡ Meus favoritos</a></div>
-<div class="sm-shopping-alert" role="status"><strong>Etapa de preparação:</strong> adicionar à sacola não reserva estoque, não gera pedido nem realiza pagamento. Frete e total final ainda indisponíveis.</div>
+<div class="sm-shopping-alert" role="status">
+    @if(\App\Support\HmlDemo::enabled())
+        <strong>Homologação:</strong> a sacola não reserva estoque nem cobra nada. O próximo passo calcula frete SANDBOX por CEP e por vendedor.
+    @else
+        <strong>Etapa de preparação:</strong> adicionar à sacola não reserva estoque, não gera pedido nem realiza pagamento. Frete e total final ainda indisponíveis.
+    @endif
+</div>
 @if(count($snapshot['items']) === 0)
     <section class="sm-shopping-empty"><span class="sm-empty-symbol" aria-hidden="true">◇</span><h2>Sua sacola está esperando seus achados.</h2><p>Explore os departamentos e salve os produtos de que gostar.</p><a class="sm-btn sm-btn-primary" href="{{ route('storefront.search') }}">Explorar produtos →</a></section>
 @else
@@ -40,7 +46,18 @@
         </section>
         @endif
     </div>
-    <aside class="sm-shopping-summary" aria-label="Resumo da sacola"><span class="sm-eyebrow">Resumo dos produtos</span><h2>Seu mix até agora</h2><div class="sm-shopping-total"><span>Subtotal dos itens disponíveis</span><strong>R$ {{ number_format($snapshot['subtotal_cents'] / 100, 2, ',', '.') }}</strong></div><p>Frete: aguardando cálculo real.</p><p>Total final: indisponível.</p><button type="button" disabled aria-disabled="true" class="sm-btn sm-btn-primary sm-shopping-disabled">Finalizar compra indisponível</button><a href="{{ route('buyer.checkout.prepare') }}" class="sm-btn sm-btn-secondary">Preparar compra e endereço →</a><small>Não há cobrança ou reserva de estoque nesta tela.</small></aside>
+    <aside class="sm-shopping-summary" aria-label="Resumo da sacola">
+        <span class="sm-eyebrow">Resumo dos produtos</span><h2>Seu mix até agora</h2>
+        <div class="sm-shopping-total"><span>Subtotal dos itens disponíveis</span><strong>R$ {{ number_format($snapshot['subtotal_cents'] / 100, 2, ',', '.') }}</strong></div>
+        @if(\App\Support\HmlDemo::enabled())
+            <p>Frete SANDBOX: calcule no próximo passo.</p><p>Total estimado: após selecionar o endereço.</p>
+        @else
+            <p>Frete: aguardando cálculo real.</p><p>Total final: indisponível.</p>
+        @endif
+        <button type="button" disabled aria-disabled="true" class="sm-btn sm-btn-primary sm-shopping-disabled">Finalizar compra indisponível</button>
+        <a href="{{ route('buyer.checkout.prepare') }}" class="sm-btn sm-btn-secondary">{{ \App\Support\HmlDemo::enabled() ? 'Calcular frete SANDBOX →' : 'Preparar compra e endereço →' }}</a>
+        <small>Não há cobrança ou reserva de estoque nesta tela.</small>
+    </aside>
 </div>
 @endif
 @endsection

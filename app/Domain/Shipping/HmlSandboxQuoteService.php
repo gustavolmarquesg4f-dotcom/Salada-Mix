@@ -17,7 +17,7 @@ final class HmlSandboxQuoteService
     ) {
     }
 
-    public function forBuyer(User $buyer): array
+    public function forBuyer(User $buyer, ?string $addressId = null): array
     {
         HmlDemo::requireEnabled();
 
@@ -26,10 +26,15 @@ final class HmlSandboxQuoteService
             throw ValidationException::withMessages(['cart' => 'A sacola DEMO precisa conter apenas produtos disponíveis.']);
         }
 
-        $address = DB::table('customer_addresses')->where('user_id', $buyer->id)
-            ->orderByDesc('is_default')->orderBy('created_at')->first();
+        $addressQuery = DB::table('customer_addresses')->where('user_id', $buyer->id);
+        if ($addressId !== null) {
+            $addressQuery->where('id', $addressId);
+        } else {
+            $addressQuery->orderByDesc('is_default')->orderBy('created_at');
+        }
+        $address = $addressQuery->first();
         if (! $address) {
-            throw ValidationException::withMessages(['address' => 'Endereço sintético não encontrado.']);
+            throw ValidationException::withMessages(['address' => 'Endereço de entrega não encontrado para esta conta.']);
         }
 
         $cartHash = $this->cartHash($snapshot, (string) $address->postal_code);
