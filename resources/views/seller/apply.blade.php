@@ -1,15 +1,17 @@
 @extends('layouts.app')
 @section('title', 'Cadastrar empresa — Salada Mix')
 @section('content')
-<div class="max-w-2xl"><h1 class="text-3xl font-black">Faça parte do Salada Mix</h1>
-<p class="mt-3 text-slate-600">Envie os dados da empresa para avaliação. A aprovação não libera automaticamente pagamentos ou publicação de produtos.</p></div>
-<form action="{{ route('seller.submit') }}" method="post" class="mt-7 max-w-2xl space-y-5 rounded-2xl border bg-white p-7">
-    @csrf
-    <label class="block text-sm font-semibold">Razão social <input name="legal_name" required maxlength="200" value="{{ old('legal_name') }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">Nome fantasia <input name="trade_name" required maxlength="160" value="{{ old('trade_name') }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">CNPJ <input name="cnpj" inputmode="text" required maxlength="18" value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00 ou 00.000.000/E08G-12" class="mt-1 w-full rounded-lg border p-3"></label>
-    <label class="block text-sm font-semibold">E-mail comercial <input name="contact_email" type="email" required maxlength="255" value="{{ old('contact_email') }}" class="mt-1 w-full rounded-lg border p-3"></label>
-    <p class="text-xs text-slate-500">Não envie documentos sensíveis por este formulário. A etapa documental será habilitada após revisão jurídica e do armazenamento privado.</p>
-    <button class="rounded-xl bg-teal-700 px-6 py-3 font-bold text-white" type="submit">Enviar para análise</button>
-</form>
+<div class="sm-portal-shell sm-seller-apply-shell">
+    <div class="sm-seller-apply-intro"><span class="sm-portal-overline">Venda no Salada Mix</span><h1>Leve sua loja para um marketplace feito para vários estilos.</h1><p>Cadastre os dados básicos da empresa. Depois da análise, você poderá organizar catálogo, fotos, estoque, logística e equipe dentro do portal.</p><div class="sm-seller-apply-points"><span>✓ Catálogo administrável</span><span>✓ Equipe com permissões</span><span>✓ Moderação antes da publicação</span></div></div>
+    <form action="{{ route('seller.submit') }}" method="post" class="sm-portal-card sm-portal-form">
+        @csrf
+        <h2>Dados da empresa</h2>
+        <label>Razão social<input name="legal_name" required maxlength="200" value="{{ old('legal_name') }}"></label>
+        <label>Nome fantasia<input name="trade_name" required maxlength="160" value="{{ old('trade_name') }}"></label>
+        <label>CNPJ<input name="cnpj" inputmode="text" required maxlength="18" value="{{ old('cnpj') }}" placeholder="00.000.000/0000-00"></label>
+        <label>E-mail comercial<input name="contact_email" type="email" required maxlength="255" value="{{ old('contact_email') }}" placeholder="contato@sualoja.com.br"></label>
+        <p class="sm-form-help">Não envie documentos sensíveis por este formulário. A análise documental possui fluxo próprio.</p>
+        <button class="sm-btn sm-btn-primary" type="submit">Enviar empresa para análise →</button>
+    </form>
+</div>
 @endsection

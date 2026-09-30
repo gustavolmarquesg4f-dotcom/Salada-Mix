@@ -1,14 +1,18 @@
 @extends('layouts.app')
 @section('title', 'Minha empresa — Salada Mix')
 @section('content')
-<p class="text-sm font-bold uppercase tracking-wider text-teal-700">Portal da empresa</p>
-<h1 class="mt-2 text-3xl font-black">{{ $seller->trade_name }}</h1>
-<p class="mt-3 text-slate-600">Razão social: {{ $seller->legal_name }}</p>
-<div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6">
-    <h2 class="font-bold">Situação do cadastro: {{ $seller->status }}</h2>
-    <p class="mt-2 text-sm">A habilitação de vendas exige análise, configuração financeira, logística e catálogo. O checkout permanece desligado.</p>
+<div class="sm-portal-shell">
+    <nav class="sm-breadcrumb"><a href="{{ route('home') }}">Início</a><span>/</span><span>Portal da empresa</span></nav>
+    <div class="sm-portal-heading">
+        <div><span class="sm-portal-overline">Portal do vendedor</span><h1>{{ $seller->trade_name }}</h1><p>{{ $seller->legal_name }} · Gerencie catálogo, logística e acessos da sua equipe em um só lugar.</p></div>
+        <span class="sm-portal-badge">Cadastro: {{ $seller->status }}</span>
+    </div>
+    <div class="sm-notice info"><strong>Prontidão comercial:</strong> a empresa pode organizar sua operação aqui, mas vendas reais dependem dos gates de logística, pagamento e homologação.</div>
+    <div class="sm-portal-grid">
+        <a class="sm-portal-card sm-portal-link-card" href="{{ route('seller.offers.index', $seller) }}"><span class="sm-portal-card-icon">▦</span><h2>Produtos e catálogo</h2><p>Cadastre produtos, imagens, preços, estoque e acompanhe a moderação.</p><strong>Gerenciar produtos →</strong></a>
+        <a class="sm-portal-card sm-portal-link-card" href="{{ route('seller.origins.index', $seller) }}"><span class="sm-portal-card-icon">⌖</span><h2>Origens de envio</h2><p>Cadastre os locais usados na cotação logística de cada pedido.</p><strong>Gerenciar origens →</strong></a>
+        <a class="sm-portal-card sm-portal-link-card" href="{{ route('seller.team.index', $seller) }}"><span class="sm-portal-card-icon">◎</span><h2>Equipe e permissões</h2><p>Convide integrantes e controle quem pode operar sua loja.</p><strong>Gerenciar equipe →</strong></a>
+        <div class="sm-portal-card"><span class="sm-portal-card-icon">✓</span><h2>Próximos passos</h2><p>Conclua catálogo, origem de envio e revisão da empresa para avançar na homologação comercial.</p></div>
+    </div>
 </div>
-<a href="{{ route('seller.offers.index', $seller) }}" class="mt-5 inline-flex rounded-xl bg-teal-700 px-5 py-3 font-bold text-white">Gerenciar meus produtos</a>
-<a href="{{ route('seller.origins.index', $seller) }}" class="ml-3 mt-5 inline-flex rounded-xl border px-5 py-3 font-bold">Origens de envio</a>
-<a href="{{ route('seller.team.index', $seller) }}" class="ml-3 mt-5 inline-flex rounded-xl border px-5 py-3 font-bold">Equipe e permissões</a>
 @endsection
