@@ -12,6 +12,10 @@ class FrontendResponsiveHomeTest extends TestCase
 
         $this->assertIsString($css);
         $this->assertStringContainsString('.sm-home-v3{', $css);
+        $this->assertStringContainsString('height:520px', $css);
+        $this->assertStringContainsString('height:470px', $css);
+        $this->assertStringContainsString('height:440px', $css);
+        $this->assertStringContainsString('grid-auto-rows:minmax(0,1fr)', $css);
         $this->assertStringContainsString('@media(min-width:1500px)', $css);
         $this->assertStringContainsString('@media(max-width:1280px)', $css);
         $this->assertStringContainsString('@media(max-width:1024px)', $css);
