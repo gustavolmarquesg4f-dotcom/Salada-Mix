@@ -5,6 +5,7 @@
 @import './salada-account.css';
 @import './salada-commerce.css';
 @import './salada-checkout.css';
+@import './salada-experience.css';
 
 @source '../views/**/*.blade.php';
 @source '../../app/**/*.php';

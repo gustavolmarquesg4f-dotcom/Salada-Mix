@@ -25,7 +25,7 @@
         <a class="sm-btn sm-btn-secondary" href="{{ route('storefront.search') }}">Busca e filtros reais</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('register') }}">Criar conta de teste</a>
         <a class="sm-btn sm-btn-secondary" href="{{ route('login') }}">Entrar</a>
-        <a class="sm-btn sm-btn-secondary" href="{{ route('home') }}">Ver FE-06 visual</a>
+        <a class="sm-btn sm-btn-secondary" href="{{ route('home') }}">Abrir nova home</a>
     </div>
 </section>
 <section class="sm-preview-panel mt-6">

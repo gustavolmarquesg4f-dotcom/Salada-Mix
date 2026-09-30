@@ -1,57 +1,21 @@
 @extends('layouts.app')
 @section('title', 'Equipe — Salada Mix')
 @section('content')
-<p class="text-sm font-bold uppercase tracking-wider text-violet-700">Portal do vendedor</p>
-<h1 class="mt-2 text-3xl font-black">Equipe de {{ $seller->trade_name }}</h1>
-<p class="mt-2 text-slate-600">Apenas o responsável da empresa pode convidar ou revogar acessos. Convites vencem em 48 horas.</p>
-
-<section class="mt-6 rounded-2xl border p-6">
-    <h2 class="text-xl font-bold">Convidar integrante</h2>
-    <form action="{{ route('seller.team.invite', $seller) }}" method="post" class="mt-4 flex flex-wrap gap-3">
-        @csrf
-        <label class="flex-1 min-w-56">E-mail
-            <input name="email" type="email" required maxlength="255" value="{{ old('email') }}" class="mt-1 block w-full rounded-xl border p-3">
-        </label>
-        <label class="min-w-44">Função
-            <select name="role" required class="mt-1 block w-full rounded-xl border p-3">
-                @foreach (['manager' => 'Gestão', 'operations' => 'Operação', 'finance' => 'Financeiro', 'support' => 'Atendimento'] as $key => $label)
-                    <option value="{{ $key }}" @selected(old('role') === $key)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </label>
-        <button class="self-end rounded-xl bg-violet-700 px-5 py-3 font-bold text-white">Enviar convite</button>
-    </form>
-</section>
-
-<section class="mt-6 rounded-2xl border p-6">
-    <h2 class="text-xl font-bold">Integrantes</h2>
-    <ul class="mt-3 space-y-3">
-    @foreach ($members as $member)
-        <li class="flex flex-wrap items-center justify-between gap-3 border-b pb-3">
-            <span>{{ $member->user->name }} — {{ $member->user->email }} ({{ $member->role }} / {{ $member->status }})</span>
-            @if ($member->role !== 'owner' && $member->status === 'active')
-                <form method="post" action="{{ route('seller.team.remove', [$seller, $member]) }}">
-                    @csrf @method('DELETE')
-                    <button class="rounded-lg border border-red-300 px-3 py-2 text-red-700">Revogar acesso</button>
-                </form>
-            @endif
-        </li>
-    @endforeach
-    </ul>
-</section>
-
-<section class="mt-6 rounded-2xl border p-6">
-    <h2 class="text-xl font-bold">Convites pendentes</h2>
-    @forelse ($invitations as $invitation)
-        <div class="mt-3 flex flex-wrap justify-between gap-3 border-b pb-3">
-            <span>{{ $invitation->email }} — {{ $invitation->role }} · Expira em {{ $invitation->expires_at }}</span>
-            <form method="post" action="{{ route('seller.team.cancel', [$seller, $invitation->id]) }}">
-                @csrf @method('DELETE')
-                <button class="rounded-lg border px-3 py-2">Cancelar convite</button>
-            </form>
-        </div>
-    @empty
-        <p class="mt-3 text-slate-600">Não há convites pendentes.</p>
-    @endforelse
-</section>
+<div class="sm-portal-shell">
+    <nav class="sm-breadcrumb"><a href="{{ route('seller.dashboard', $seller) }}">Painel da empresa</a><span>/</span><span>Equipe</span></nav>
+    <div class="sm-portal-heading"><div><span class="sm-portal-overline">Acessos da loja</span><h1>Equipe de {{ $seller->trade_name }}</h1><p>Convide integrantes e controle os acessos. Convites expiram em 48 horas.</p></div></div>
+    <section class="sm-portal-card">
+        <h2>Convidar integrante</h2>
+        <form action="{{ route('seller.team.invite', $seller) }}" method="post" class="sm-portal-form sm-portal-form-inline">
+            @csrf
+            <label>E-mail<input name="email" type="email" required maxlength="255" value="{{ old('email') }}" placeholder="nome@empresa.com"></label>
+            <label>Função<select name="role" required>@foreach (['manager' => 'Gestão', 'operations' => 'Operação', 'finance' => 'Financeiro', 'support' => 'Atendimento'] as $key => $label)<option value="{{ $key }}" @selected(old('role') === $key)>{{ $label }}</option>@endforeach</select></label>
+            <button class="sm-btn sm-btn-primary" type="submit">Enviar convite</button>
+        </form>
+    </section>
+    <div class="sm-portal-grid mt-5">
+        <section class="sm-portal-card"><h2>Integrantes</h2><div class="sm-portal-list">@foreach ($members as $member)<div class="sm-portal-row"><div><strong>{{ $member->user->name }}</strong><small>{{ $member->user->email }} · {{ $member->role }} · {{ $member->status }}</small></div>@if ($member->role !== 'owner' && $member->status === 'active')<form method="post" action="{{ route('seller.team.remove', [$seller, $member]) }}">@csrf @method('DELETE')<button class="sm-portal-danger">Revogar acesso</button></form>@endif</div>@endforeach</div></section>
+        <section class="sm-portal-card"><h2>Convites pendentes</h2><div class="sm-portal-list">@forelse ($invitations as $invitation)<div class="sm-portal-row"><div><strong>{{ $invitation->email }}</strong><small>{{ $invitation->role }} · expira em {{ $invitation->expires_at }}</small></div><form method="post" action="{{ route('seller.team.cancel', [$seller, $invitation->id]) }}">@csrf @method('DELETE')<button class="sm-portal-danger">Cancelar</button></form></div>@empty<p class="sm-account-empty">Não há convites pendentes.</p>@endforelse</div></section>
+    </div>
+</div>
 @endsection

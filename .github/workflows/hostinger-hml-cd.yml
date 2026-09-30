@@ -138,13 +138,15 @@ jobs:
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/up$fresh" -o "$RUNNER_TEMP/up.html" || return 1
             curl -fsS -H 'Cache-Control: no-cache' --retry 4 --retry-delay 3 --retry-all-errors "$base/$fresh" -o "$RUNNER_TEMP/home.html" || return 1
             grep -q 'Salada Mix' "$RUNNER_TEMP/home.html" || return 1
-            grep -q 'PRÉVIA VISUAL FE-06' "$RUNNER_TEMP/home.html" || return 1
-            grep -q '/fe06/assets/hml-bridge.js' "$RUNNER_TEMP/home.html" || return 1
-            curl -fsS "$base/fe06/assets/hml-bridge.js$fresh" -o "$RUNNER_TEMP/fe06-bridge.js" || return 1
-            cmp public/fe06/assets/hml-bridge.js "$RUNNER_TEMP/fe06-bridge.js" || return 1
+            grep -q 'Seu mix de estilos' "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'sm-home-v2' "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'Explore os departamentos' "$RUNNER_TEMP/home.html" || return 1
+            grep -q 'Quero vender' "$RUNNER_TEMP/home.html" || return 1
             curl -fsS "$base/demo$fresh" -o "$RUNNER_TEMP/demo.html" || return 1
             grep -q 'Entrar como comprador fictício' "$RUNNER_TEMP/demo.html" || return 1
             [[ "$(curl -sS -o /dev/null -w '%{http_code}' "$base/demo/ofertas/tech-fone$fresh")" == 302 ]] || return 1
+            echo 'SMOKE: dynamic responsive home and DB-backed catalog'
+            grep -q '(DEMO)' "$RUNNER_TEMP/home.html" || { echo "::error::HML / has no demo catalog data"; return 1; }
             echo 'SMOKE: functional DB-backed catalog /loja'
             curl -fsS "$base/loja$fresh" -o "$RUNNER_TEMP/live-catalog.html" || { echo "::error::HML /loja unavailable"; return 1; }
             grep -q '(DEMO)' "$RUNNER_TEMP/live-catalog.html" || { echo "::error::HML /loja has no demo product"; return 1; }
