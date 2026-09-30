@@ -107,4 +107,35 @@ class MarketplaceDemoSeederTest extends TestCase
         }
     }
 
+    public function test_staging_allows_additional_synthetic_admin_products_on_subsequent_seed(): void
+    {
+        $previous = app()->environment();
+        $url = config('app.url');
+
+        try {
+            app()->detectEnvironment(fn (): string => 'staging');
+            config(['app.url' => 'https://ivory-rook-276202.hostingersite.com']);
+            $this->seed(MarketplaceDemoSeeder::class);
+
+            $sellerId = \Illuminate\Support\Facades\DB::table('sellers')->value('id');
+            $categoryId = \Illuminate\Support\Facades\DB::table('categories')->value('id');
+            \Illuminate\Support\Facades\DB::table('products')->insert([
+                'id' => (string) \Illuminate\Support\Str::ulid(),
+                'category_id' => $categoryId, 'created_by_seller_id' => $sellerId,
+                'name' => 'Produto administrativo (DEMO)',
+                'slug' => 'demo-admin-extra-product',
+                'review_status' => 'pending',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+
+            $this->seed(MarketplaceDemoSeeder::class);
+            $this->assertDatabaseCount('products', 10);
+            $this->assertDatabaseHas('products', ['slug' => 'demo-admin-extra-product']);
+            $this->assertDatabaseCount('sellers', 3);
+        } finally {
+            app()->detectEnvironment(fn (): string => $previous);
+            config(['app.url' => $url]);
+        }
+    }
+
 }
