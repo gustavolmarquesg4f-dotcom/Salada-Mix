@@ -15,11 +15,11 @@
     "/enderecos": "/minha-conta/enderecos",
     "/sacola": "/sacola",
     "/favoritos": "/favoritos",
-    "/preparar-compra": "/demo/checkout",
-    "/resumo": "/demo/checkout",
+    "/preparar-compra": "/demo",
+    "/resumo": "/demo",
     "/vender/cadastro": "/vender/cadastro",
-    "/vendedor": "/demo",
-    "/admin": "/admin/empresas"
+    "/vendedor": "/demo/painel/vendedor",
+    "/admin": "/demo/painel/admin"
   };
   const resolve = hash => {
     const raw = hash.replace(/^#/, "");
