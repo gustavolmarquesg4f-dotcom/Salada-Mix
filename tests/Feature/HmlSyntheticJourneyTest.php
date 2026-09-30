@@ -19,7 +19,7 @@ class HmlSyntheticJourneyTest extends TestCase
     {
         parent::setUp();
         // Staging enables CSRF in Laravel; controller tests exercise authorization after bypassing this middleware.
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+        $this->withoutMiddleware();
         $this->previousEnv = app()->environment();
         $this->previousUrl = (string) config('app.url');
         app()->detectEnvironment(fn (): string => 'staging');
