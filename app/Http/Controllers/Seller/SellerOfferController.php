@@ -39,6 +39,10 @@ class SellerOfferController extends Controller
             'sku' => ['required', 'string', 'max:80', 'regex:/^[A-Za-z0-9._-]+$/'],
             'price_cents' => ['required', 'integer', 'min:1', 'max:999999999999'],
             'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'weight_grams' => ['required', 'integer', 'min:1', 'max:100000],
+            'length_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'width_cm' => ['required', 'integer', 'min:1', 'max:300'],
+            'height_cm' => ['required', 'integer', 'min:1', 'max:300'],
         ]);
 
         $action->execute($seller, $request->user(), $data);
