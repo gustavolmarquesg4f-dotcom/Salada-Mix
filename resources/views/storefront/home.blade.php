@@ -7,7 +7,7 @@
 @php($beauty = $categories->firstWhere('slug','beleza-e-cuidados'))
 @php($fashion = $categories->firstWhere('slug','moda-e-acessorios'))
 
-<section class="sm-home-v3" data-home-revision="v4-desktop-fix" aria-labelledby="sm-home-v3-title">
+<section class="sm-home-v3" data-home-revision="v5-category-fallback" aria-labelledby="sm-home-v3-title">
     <div class="sm-home-v3-copy">
         <span class="sm-home-kicker">MAIS VARIEDADE, MAIS VOCÊ</span>
         <h1 id="sm-home-v3-title">Seu mix de estilos <em>em um só lugar.</em></h1>
@@ -59,10 +59,10 @@
         @forelse ($categories as $category)
             <a class="sm-category-item-v3" href="{{ route('storefront.category', $category) }}">
                 <span class="sm-category-picture-v3">
+                    @php($fallbackIcon = $category->slug === 'casa-e-decoracao' ? 'home' : 'grid')
+                    <x-salada.icon :name="$fallbackIcon" size="27" class="sm-category-fallback-icon" />
                     @if($thumb = \App\Support\DemoMedia::category($category->slug))
                         <img src="{{ $thumb }}" alt="" loading="lazy" width="180" height="180" referrerpolicy="no-referrer" onerror="this.style.display='none'">
-                    @else
-                        <x-salada.icon name="grid" size="27" />
                     @endif
                 </span>
                 <strong>{{ $category->name }}</strong>
