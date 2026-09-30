@@ -60,6 +60,9 @@
     event.preventDefault();
     event.stopImmediatePropagation();
     const params = new URLSearchParams(new FormData(form));
+    // Preview seller values are display names; Laravel's filter expects a ULID.
+    // Let the real /buscar screen offer the correctly populated DB seller selector.
+    if (params.has("seller") && !/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(params.get("seller"))) params.delete("seller");
     const category = params.get("category") || form.dataset.category || "";
     params.delete("category");
     location.assign((category ? "/categorias/" + encodeURIComponent(category) : "/buscar") + "?" + params.toString());
