@@ -10,7 +10,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: salada-hml-first-deploy
+  group: salada-hml-release-v5
   cancel-in-progress: true
 
 jobs:
