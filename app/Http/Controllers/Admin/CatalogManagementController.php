@@ -69,7 +69,7 @@ final class CatalogManagementController extends Controller
             'name' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
             'sku' => ['required', 'string', 'max:80', 'regex:/^[A-Za-z0-9._-]+$/'],
-            'price_cents' => ['required', 'integer', 'min:1', 'max:999999999999'],
+            'price' => ['required', 'string', 'regex:/^\d{1,9}([,.]\d{1,2})?$/'],
             'stock_quantity' => ['required', 'integer', 'min:0', 'max:1000000'],
             'weight_grams' => ['required', 'integer', 'min:1', 'max:100000'],
             'length_cm' => ['required', 'integer', 'min:1', 'max:300'],
@@ -97,7 +97,7 @@ final class CatalogManagementController extends Controller
             ]);
             $offer = SellerOffer::query()->create([
                 'seller_id' => $data['seller_id'], 'product_id' => $product->id,
-                'sku' => $sku, 'price_cents' => $data['price_cents'],
+                'sku' => $sku, 'price_cents' => $this->priceToCents($data['price']),
                 'currency' => 'BRL', 'review_status' => 'pending',
             ]);
             StockLevel::query()->create([
@@ -144,7 +144,7 @@ final class CatalogManagementController extends Controller
                 'review_status' => 'pending', 'reviewed_by' => null, 'reviewed_at' => null,
             ]);
             $locked->update([
-                'price_cents' => $data['price_cents'], 'review_status' => 'pending',
+                'price_cents' => $this->priceToCents($data['price']), 'review_status' => 'pending',
                 'reviewed_by' => null, 'reviewed_at' => null,
             ]);
             $stock->update(['quantity_on_hand' => $data['stock_quantity']]);
@@ -184,4 +184,16 @@ final class CatalogManagementController extends Controller
         }, 3);
         return back()->with('status', 'Oferta retirada da vitrine e enviada para revisão.');
     }
+    private function priceToCents(string $value): int
+    {
+        $normalized = str_replace(',', '.', trim($value));
+        [$whole, $decimal] = array_pad(explode('.', $normalized, 2), 2, '');
+        $cents = ((int) $whole * 100) + (int) str_pad(substr($decimal, 0, 2), 2, '0');
+        if ($cents < 1 || $cents > 999999999999) {
+            throw ValidationException::withMessages(['price' => 'Preço fora do intervalo permitido.']);
+        }
+
+        return $cents;
+    }
+
 }
