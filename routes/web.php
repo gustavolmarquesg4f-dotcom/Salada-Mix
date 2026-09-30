@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminSellerController;
 use App\Http\Controllers\Buyer\CartController;
+use App\Http\Controllers\Buyer\AccountController;
 use App\Http\Controllers\Buyer\AddressController;
 use App\Http\Controllers\Buyer\CheckoutPreviewController;
 use App\Http\Controllers\Buyer\CheckoutPreparationController;
@@ -89,7 +90,7 @@ Route::middleware(['auth', 'verified', 'throttle:10,1'])->prefix('seguranca/mfa'
 });
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
-    Route::view('/minha-conta', 'buyer.account')->name('buyer.account');
+    Route::get('/minha-conta', [AccountController::class, 'show'])->name('buyer.account');
     Route::get('/sacola', [ShoppingPageController::class, 'cart'])->name('buyer.cart.page');
     Route::get('/favoritos', [ShoppingPageController::class, 'wishlist'])->name('buyer.wishlist.page');
     Route::get('/minha-conta/enderecos', [AddressController::class, 'index'])->name('buyer.addresses.index');
