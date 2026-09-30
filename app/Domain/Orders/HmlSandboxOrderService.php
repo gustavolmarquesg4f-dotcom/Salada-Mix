@@ -22,6 +22,12 @@ final class HmlSandboxOrderService
     public function create(User $buyer, string $idempotencyKey, array $selectedQuotes): string
     {
         HmlDemo::requireEnabled();
+        $existingBeforeQuote = DB::table('demo_orders')->where('user_id', $buyer->id)
+            ->where('idempotency_key', $idempotencyKey)->first();
+        if ($existingBeforeQuote) {
+            return $existingBeforeQuote->id;
+        }
+
         $quoteSnapshot = $this->quotes->forBuyer($buyer);
 
         return DB::transaction(function () use ($buyer, $idempotencyKey, $selectedQuotes, $quoteSnapshot): string {
@@ -33,7 +39,7 @@ final class HmlSandboxOrderService
             }
 
             $snapshot = $this->cart->read($buyer);
-            if ($snapshot['items'] === [] || collect($snapshot['items'])->contains(fn (array $line): bool => ! $line['available'])) {
+            if ($snapshot['items'] === [] || count($snapshot['items']) > 20 || collect($snapshot['items'])->contains(fn (array $line): bool => ! $line['available'])) {
                 throw ValidationException::withMessages(['cart' => 'Revise a sacola antes de reservar o estoque DEMO.']);
             }
             if ($this->quotes->cartHash($snapshot, (string) $quoteSnapshot['address']->postal_code) !== $quoteSnapshot['cart_hash']) {

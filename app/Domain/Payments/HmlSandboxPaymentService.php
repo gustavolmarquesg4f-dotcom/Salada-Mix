@@ -23,7 +23,8 @@ final class HmlSandboxPaymentService
             throw ValidationException::withMessages(['outcome' => 'Resultado sandbox inválido.']);
         }
 
-        DB::transaction(function () use ($buyer, $orderId, $outcome, $idempotencyKey): void {
+        $expired = false;
+        DB::transaction(function () use ($buyer, $orderId, $outcome, $idempotencyKey, &$expired): void {
             $order = DB::table('demo_orders')->where('id', $orderId)->where('user_id', $buyer->id)
                 ->lockForUpdate()->first();
             abort_unless($order, 404);
@@ -42,7 +43,8 @@ final class HmlSandboxPaymentService
             }
             if ($order->expires_at && Carbon::parse($order->expires_at)->lessThanOrEqualTo(now())) {
                 $this->orders->releaseLocked($order, 'expired_demo');
-                throw ValidationException::withMessages(['payment' => 'A reserva expirou. Monte outro pedido sandbox.']);
+                $expired = true;
+                return;
             }
 
             $now = now();
@@ -91,6 +93,10 @@ final class HmlSandboxPaymentService
             ]);
             $this->event($orderId, 'demo.payment.approved');
         }, 3);
+
+        if ($expired) {
+            throw ValidationException::withMessages(['payment' => 'A reserva expirou. Monte outro pedido sandbox.']);
+        }
     }
 
     private function event(string $orderId, string $type): void
