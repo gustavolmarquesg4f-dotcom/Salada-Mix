@@ -1,8 +1,11 @@
-@php($demoImage = \App\Support\DemoMedia::product($offer))
+@php($uploadedImage = $offer->product->media->first())
+@php($demoImage = $uploadedImage ? null : \App\Support\DemoMedia::product($offer))
 <article class="sm-product-card">
     <a href="{{ route('storefront.offer', $offer) }}" class="sm-product-link" aria-label="Ver oferta: {{ $offer->product->name }}">
-        <div class="sm-product-visual {{ $demoImage ? 'sm-product-photo' : '' }}">
-            @if($demoImage)
+        <div class="sm-product-visual {{ ($demoImage || $uploadedImage) ? 'sm-product-photo' : '' }}">
+            @if($uploadedImage)
+                <img class="sm-demo-image" src="{{ route('media.show', $uploadedImage) }}" alt="{{ $uploadedImage->alt }}" loading="lazy" width="480" height="480">
+            @elseif($demoImage)
                 <img class="sm-demo-image" src="{{ $demoImage }}" alt="Imagem ilustrativa: {{ $offer->product->name }}" loading="lazy" width="480" height="480" referrerpolicy="no-referrer">
                 <span class="sm-product-demo-badge">DEMO</span>
             @else
