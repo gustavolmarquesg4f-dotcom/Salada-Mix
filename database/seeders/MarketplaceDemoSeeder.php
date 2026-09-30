@@ -75,7 +75,7 @@ class MarketplaceDemoSeeder extends Seeder
             ],
         ];
 
-        DB::transaction(function () use ($shops): void {
+        DB::transaction(function () use ($shops, $staging): void {
             foreach ($shops as $shop) {
                 $owner = User::query()->firstOrCreate(
                     ['email' => $shop['email']],
